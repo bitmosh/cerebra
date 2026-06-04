@@ -46,7 +46,7 @@ def _doc(source_id: str = "src_abc") -> dict:
         "title": "Test",
         "artifact_path": "/tmp/artifact.json",
         "normalization_confidence": 0.9,
-        "parse_warnings_json": None,
+        "parse_warnings": None,
         "lifecycle_state": "active",
         "created_at": int(time.time()),
         "schema_version": 1,

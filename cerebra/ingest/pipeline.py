@@ -253,7 +253,7 @@ def _ingest_file(
             "title": doc.title,
             "artifact_path": str(artifact_path),
             "normalization_confidence": doc.normalization_confidence,
-            "parse_warnings_json": (
+            "parse_warnings": (
                 json.dumps(parse_result.warnings) if parse_result.warnings else None
             ),
             "lifecycle_state": "active",

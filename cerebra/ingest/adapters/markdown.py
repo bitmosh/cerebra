@@ -140,18 +140,23 @@ def _build_sections(
     boundaries: list[tuple[int, int, str]],
     warnings: list[str],
 ) -> list[Section]:
-    """Build Section list from lines + boundary positions."""
-    full_text = "".join(lines)
+    """
+    Build Section list from lines + boundary positions.
+
+    One section per boundary entry. Section content spans from the
+    heading's own line to the next heading's line (or EOF). Heading
+    path is built from a depth-tracking stack: when a heading of
+    depth D appears, pop all stack entries at depth >= D, then push.
+    """
     n = len(lines)
 
     if not boundaries:
-        # No headings — entire document is one H0 section
         return [
             Section(
                 heading="",
                 heading_path="/",
                 depth=0,
-                content=full_text,
+                content="".join(lines),
                 start_line=0,
                 end_line=n,
             )
@@ -161,54 +166,36 @@ def _build_sections(
     heading_stack: list[tuple[int, str]] = []  # (depth, text)
     prev_depth = 0
 
-    for idx, (line_idx, depth, text) in enumerate(boundaries):
-        # Warn on out-of-order headings (e.g. H3 directly after H1)
+    for i, (line_idx, depth, text) in enumerate(boundaries):
+        # Warn on out-of-order depth jumps (H3 directly after H1, etc.)
         if depth > prev_depth + 1 and prev_depth > 0:
             warnings.append(
                 f"Heading depth jump at line {line_idx + 1}: "
                 f"H{prev_depth} → H{depth} ('{text}')"
             )
 
-        # End of previous section
-        if heading_stack or idx == 0:
-            start = boundaries[idx - 1][0] if idx > 0 else 0
-            end = line_idx
-            if idx > 0:
-                prev_line, prev_depth_val, prev_text = boundaries[idx - 1]
-                # Pop stack to current depth
-                while heading_stack and heading_stack[-1][0] >= depth:
-                    heading_stack.pop()
-                heading_stack.append((prev_depth_val, prev_text))
-                section_content = "".join(lines[start:end])
-                sections.append(
-                    Section(
-                        heading=prev_text,
-                        heading_path=_build_heading_path(heading_stack),
-                        depth=prev_depth_val,
-                        content=section_content,
-                        start_line=start,
-                        end_line=end,
-                    )
-                )
-                heading_stack.pop()
+        # Update stack: pop all entries at same or deeper level, then push current
+        while heading_stack and heading_stack[-1][0] >= depth:
+            heading_stack.pop()
+        heading_stack.append((depth, text))
+
+        # Section content: this heading's line through the line before the next heading
+        section_start = line_idx
+        section_end = boundaries[i + 1][0] if i + 1 < len(boundaries) else n
+        section_content = "".join(lines[section_start:section_end])
+
+        sections.append(
+            Section(
+                heading=text,
+                heading_path=_build_heading_path(heading_stack),
+                depth=depth,
+                content=section_content,
+                start_line=section_start,
+                end_line=section_end,
+            )
+        )
 
         prev_depth = depth
-
-    # Last section
-    last_line, last_depth, last_text = boundaries[-1]
-    while heading_stack and heading_stack[-1][0] >= last_depth:
-        heading_stack.pop()
-    heading_stack.append((last_depth, last_text))
-    sections.append(
-        Section(
-            heading=last_text,
-            heading_path=_build_heading_path(heading_stack),
-            depth=last_depth,
-            content="".join(lines[last_line:]),
-            start_line=last_line,
-            end_line=n,
-        )
-    )
 
     return sections
 

@@ -97,3 +97,58 @@ class TestMarkdownAdapter:
         r1 = adapter.parse("src_1", f)
         r2 = adapter.parse("src_1", f)
         assert r1.parse_id != r2.parse_id
+
+
+@pytest.mark.unit
+class TestBuildSections:
+    """Regression tests for _build_sections — verifies the multi-section fix."""
+
+    def test_multi_section_produces_correct_count(
+        self, adapter: MarkdownAdapter, tmp_path: Path
+    ) -> None:
+        f = tmp_path / "doc.md"
+        f.write_text(
+            "# Title\n\n## One\n\nContent.\n\n## Two\n\nContent.\n\n## Three\n\nContent.\n"
+        )
+        result = adapter.parse("src_1", f)
+        assert result.document is not None
+        assert len(result.document.sections) == 4  # H1 + 3 H2s
+
+    def test_section_content_does_not_bleed_into_next(
+        self, adapter: MarkdownAdapter, tmp_path: Path
+    ) -> None:
+        f = tmp_path / "doc.md"
+        f.write_text("# A\n\nOnly A content.\n\n# B\n\nOnly B content.\n")
+        result = adapter.parse("src_1", f)
+        assert result.document is not None
+        sections = result.document.sections
+        assert len(sections) == 2
+        assert "Only A content." in sections[0].content
+        assert "Only A content." not in sections[1].content
+        assert "Only B content." in sections[1].content
+        assert "Only B content." not in sections[0].content
+
+    def test_h1_h2_h3_heading_path_hierarchy(
+        self, adapter: MarkdownAdapter, tmp_path: Path
+    ) -> None:
+        f = tmp_path / "doc.md"
+        f.write_text("# Root\n\n## Child\n\n### Grandchild\n\nDeep.\n")
+        result = adapter.parse("src_1", f)
+        assert result.document is not None
+        paths = [s.heading_path for s in result.document.sections]
+        assert "Root" in paths
+        assert "Root / Child" in paths
+        assert "Root / Child / Grandchild" in paths
+
+    def test_h2_at_same_depth_resets_path_correctly(
+        self, adapter: MarkdownAdapter, tmp_path: Path
+    ) -> None:
+        """Second H2 must not carry the first H2 in its path."""
+        f = tmp_path / "doc.md"
+        f.write_text("# Doc\n\n## Alpha\n\nA.\n\n## Beta\n\nB.\n")
+        result = adapter.parse("src_1", f)
+        assert result.document is not None
+        paths = [s.heading_path for s in result.document.sections]
+        assert "Doc / Alpha" in paths
+        assert "Doc / Beta" in paths
+        assert "Doc / Alpha / Beta" not in paths  # Alpha must not be an ancestor of Beta

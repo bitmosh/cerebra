@@ -85,12 +85,12 @@ class SQLiteStore:
                 INSERT INTO documents (
                     document_id, source_id, document_type, title,
                     artifact_path, normalization_confidence,
-                    parse_warnings_json, lifecycle_state, created_at,
+                    parse_warnings, lifecycle_state, created_at,
                     schema_version
                 ) VALUES (
                     :document_id, :source_id, :document_type, :title,
                     :artifact_path, :normalization_confidence,
-                    :parse_warnings_json, :lifecycle_state, :created_at,
+                    :parse_warnings, :lifecycle_state, :created_at,
                     :schema_version
                 )
                 """,

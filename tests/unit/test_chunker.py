@@ -201,3 +201,93 @@ class TestChunkProvenance:
         # Chunks from non-empty sections exist
         non_empty = [c for c in chunks if c.content.strip()]
         assert len(non_empty) >= 1
+
+
+@pytest.mark.unit
+class TestMultiSectionChunking:
+    """Regression tests for the one-chunk-per-doc bug fix."""
+
+    def test_chunker_emits_per_section(self, tmp_path) -> None:
+        """Multi-heading document produces one chunk per section, not one total."""
+        from cerebra.ingest.adapters.markdown import MarkdownAdapter
+
+        doc_text = (
+            "# Title\n\n"
+            "## Section One\n\nContent one.\n\n"
+            "## Section Two\n\nContent two.\n\n"
+            "## Section Three\n\nContent three.\n"
+        )
+        f = tmp_path / "doc.md"
+        f.write_text(doc_text)
+
+        adapter = MarkdownAdapter()
+        result = adapter.parse("src_test", f)
+        assert result.document is not None
+
+        chunks = chunk_document(result.document, ChunkOptions(max_tokens=512))
+        assert len(chunks) == 4  # H1 + 3 H2s
+
+        h2_chunks = [c for c in chunks if "Section" in c.heading_path]
+        assert len(h2_chunks) == 3
+
+        paths = [c.heading_path for c in h2_chunks]
+        assert any("Section One" in p for p in paths)
+        assert any("Section Two" in p for p in paths)
+        assert any("Section Three" in p for p in paths)
+
+        one_chunk = next(c for c in h2_chunks if "Section One" in c.heading_path)
+        two_chunk = next(c for c in h2_chunks if "Section Two" in c.heading_path)
+        three_chunk = next(c for c in h2_chunks if "Section Three" in c.heading_path)
+
+        assert "Content one." in one_chunk.content
+        assert "Content two." in two_chunk.content
+        assert "Content three." in three_chunk.content
+
+    def test_chunk_heading_path_matches_section_hierarchy(self, tmp_path) -> None:
+        from cerebra.ingest.adapters.markdown import MarkdownAdapter
+
+        f = tmp_path / "doc.md"
+        f.write_text("# Root\n\nIntro.\n\n## Child\n\nDeep.\n")
+
+        adapter = MarkdownAdapter()
+        result = adapter.parse("src_test", f)
+        chunks = chunk_document(result.document)
+
+        paths = {c.heading_path for c in chunks}
+        assert "Root" in paths
+        assert "Root / Child" in paths
+
+    def test_chunker_handles_large_section_with_sliding_window(self, tmp_path) -> None:
+        """Single H2 section exceeding max_tokens produces sliding_window chunks
+        with correct heading_path and ~20% overlap between consecutive chunks."""
+        from cerebra.ingest.adapters.markdown import MarkdownAdapter
+
+        # ~600 unique words so token_estimate (~780) exceeds max_tokens=100
+        words = [f"word{i}" for i in range(600)]
+        content = "## Big Section\n\n" + " ".join(words) + "\n"
+        f = tmp_path / "doc.md"
+        f.write_text(content)
+
+        opts = ChunkOptions(max_tokens=100, overlap_ratio=0.20)
+        adapter = MarkdownAdapter()
+        result = adapter.parse("src_test", f)
+        assert result.document is not None
+
+        chunks = chunk_document(result.document, opts)
+        section_chunks = [c for c in chunks if "Big Section" in c.heading_path]
+
+        assert len(section_chunks) > 1, "Oversized section must produce multiple chunks"
+        assert all(
+            c.chunk_strategy == ChunkStrategy.SLIDING_WINDOW for c in section_chunks
+        ), "All section chunks should be sliding_window"
+        assert all(
+            c.heading_path == section_chunks[0].heading_path for c in section_chunks
+        ), "All chunks must share the same heading_path"
+
+        # Verify 20% overlap: step = 80% of window, so consecutive chunks share ~20%
+        # Check that consecutive chunk word sets overlap
+        for a, b in zip(section_chunks, section_chunks[1:], strict=False):
+            words_a = set(a.content.split())
+            words_b = set(b.content.split())
+            overlap = words_a & words_b
+            assert len(overlap) > 0, "Consecutive chunks must share words (overlap). Got 0."

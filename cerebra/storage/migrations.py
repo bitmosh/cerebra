@@ -173,10 +173,25 @@ class Migration002_Phase1Schema(Migration):
         """)
 
 
+class Migration003_RenameParseWarnings(Migration):
+    """v0.0.1a: rename parse_warnings_json → parse_warnings on documents table.
+
+    The column was shipped as parse_warnings_json in Migration002 but the
+    approved spec and all consumer code uses parse_warnings.
+    """
+
+    version = 3
+    description = "v0.0.1a: rename documents.parse_warnings_json to parse_warnings"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.execute("ALTER TABLE documents RENAME COLUMN parse_warnings_json TO parse_warnings")
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
     Migration002_Phase1Schema(),
+    Migration003_RenameParseWarnings(),
 ]
 
 

@@ -260,3 +260,83 @@ class TestIngestCLI:
 
         data = json.loads(result.output)
         assert data["sources_found"] == 1
+
+
+# ── parse_warnings (Bug 2 regression) ────────────────────────────────────────
+
+
+@pytest.mark.integration
+class TestParseWarnings:
+    def test_parse_warnings_stored_on_document_row(self, tmp_path: Path) -> None:
+        """Out-of-order headings → parse_warnings column populated."""
+        vault = init_vault(tmp_path / "vault")
+        docs = tmp_path / "docs"
+        docs.mkdir()
+        # H1 → H3 directly (depth jump: triggers warning)
+        (docs / "jumpy.md").write_text("# Title\n\n### Skipped H2\n\nContent.\n")
+
+        ingest_path(vault, docs)
+
+        with _db(vault) as conn:
+            row = conn.execute(
+                "SELECT parse_warnings FROM documents WHERE parse_warnings IS NOT NULL"
+            ).fetchone()
+        assert row is not None, "Expected parse_warnings to be populated for depth-jump doc"
+        import json
+
+        warnings = json.loads(row[0])
+        assert len(warnings) >= 1
+        assert any("H1" in w or "jump" in w.lower() or "depth" in w.lower() for w in warnings)
+
+    def test_documentparsewarning_event_emitted(self, tmp_path: Path) -> None:
+        """Out-of-order headings → DocumentParseWarning inspector event emitted."""
+        vault = init_vault(tmp_path / "vault")
+        docs = tmp_path / "docs"
+        docs.mkdir()
+        (docs / "jumpy.md").write_text("# Title\n\n### Skipped H2\n\nContent.\n")
+
+        ingest_path(vault, docs)
+
+        with _db(vault) as conn:
+            count = conn.execute(
+                "SELECT COUNT(*) FROM inspector_events WHERE event_type = 'DocumentParseWarning'"
+            ).fetchone()[0]
+        assert count >= 1, "Expected at least one DocumentParseWarning event"
+
+    def test_clean_doc_has_null_parse_warnings(self, tmp_path: Path) -> None:
+        vault = init_vault(tmp_path / "vault")
+        docs = tmp_path / "docs"
+        docs.mkdir()
+        (docs / "clean.md").write_text("# Title\n\n## Section\n\nContent.\n")
+
+        ingest_path(vault, docs)
+
+        with _db(vault) as conn:
+            row = conn.execute("SELECT parse_warnings FROM documents").fetchone()
+        assert row is not None
+        assert row[0] is None  # no warnings for well-structured doc
+
+
+# ── cerebra status ────────────────────────────────────────────────────────────
+
+
+@pytest.mark.integration
+class TestStatusCommand:
+    def test_status_shows_vault_summary(self, tmp_path: Path) -> None:
+        from click.testing import CliRunner
+
+        from cerebra.cli.main import cli
+
+        vault = init_vault(tmp_path / "vault")
+        docs = tmp_path / "docs"
+        docs.mkdir()
+        (docs / "test.md").write_text("# Test\n\n## Section\n\nContent.\n")
+        ingest_path(vault, docs)
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["status", "--vault", str(vault)])
+        assert result.exit_code == 0
+        assert "Vault:" in result.output
+        assert "Sources:" in result.output
+        assert "Chunks:" in result.output
+        assert "wal" in result.output.lower()  # WAL mode confirmed
