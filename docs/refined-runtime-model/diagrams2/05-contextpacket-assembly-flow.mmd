@@ -1,0 +1,18 @@
+flowchart TD
+  task[Task / Agent Need] --> plan[Retrieval Plan]
+  plan --> candidates[Candidate Memories]
+  candidates --> score[Score + Rerank]
+  score --> budget[Token Budget Allocation]
+  budget --> selected[Selected Memory]
+  budget --> summaries[Source Summaries]
+  budget --> graph[Graph Context]
+  budget --> uncertain[Uncertainties]
+  budget --> excluded[Excluded Candidates]
+
+  selected --> packet[ContextPacket]
+  summaries --> packet
+  graph --> packet
+  uncertain --> packet
+  excluded --> packet
+  packet --> render[Plain Text + JSON Rendering]
+  packet --> store[(Stored Packet + Trace)]

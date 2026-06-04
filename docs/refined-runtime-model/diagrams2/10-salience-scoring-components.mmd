@@ -1,0 +1,16 @@
+flowchart LR
+  semantic[Semantic Similarity] --> salience[Salience Score]
+  lexical[Lexical Match] --> salience
+  project[Project Relevance] --> salience
+  authority[Source Authority] --> salience
+  recency[Recency] --> salience
+  access[Access Frequency] --> salience
+  pin[User Pin] --> salience
+  graph[Relationship Centrality] --> salience
+  confidence[Confidence] --> salience
+  lifecycle[Lifecycle State] --> salience
+  task[Task Relevance] --> salience
+  penalties[Contradiction / Staleness / Sensitivity Penalties] --> salience
+
+  salience --> ranking[Retrieval Ranking]
+  salience --> context[ContextPacket Selection]

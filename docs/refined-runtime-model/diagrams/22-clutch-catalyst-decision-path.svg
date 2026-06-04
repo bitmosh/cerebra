@@ -1,0 +1,102 @@
+<svg width="100%" viewBox="0 0 680 700" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Clutch and Catalyst Decision Path</title>
+  <desc>How a what-should-we-do-next decision flows. Signals arrive, clutch evaluates priority-ordered rule cascade, if select-strategy decision point the catalyst is invoked, catalyst scores its vocabulary, leeway network filters candidates, weighted-random sample produces action selection.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <text class="th" x="340" y="28" text-anchor="middle">Clutch and catalyst decision path</text>
+  <text class="ts" x="340" y="46" text-anchor="middle">Clutch decides whether to act; catalyst decides what to try</text>
+
+  <g class="c-gray">
+    <rect x="200" y="68" width="280" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="340" y="88" text-anchor="middle" dominant-baseline="central">Signal bundle arrives</text>
+    <text class="ts" x="340" y="106" text-anchor="middle" dominant-baseline="central">coherence, trajectory, failure streak</text>
+  </g>
+
+  <line x1="340" y1="124" x2="340" y2="148" stroke="#5F5E5A" stroke-width="0.5" marker-end="url(#arrow)"/>
+
+  <g class="c-blue">
+    <rect x="100" y="148" width="480" height="160" rx="10" stroke-width="0.5"/>
+    <text class="th" x="120" y="170" dominant-baseline="central">Clutch rule cascade</text>
+    <text class="ts" x="120" y="186" dominant-baseline="central">Priority ordered; first match wins</text>
+
+    <rect x="120" y="200" width="200" height="32" rx="4" fill="#85B7EB" stroke="#185FA5" stroke-width="0.5"/>
+    <text class="ts" x="130" y="216" dominant-baseline="central" fill="#0C447C">Rule 1 priority 10: emergency</text>
+
+    <rect x="120" y="240" width="200" height="32" rx="4" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.5"/>
+    <text class="ts" x="130" y="256" dominant-baseline="central" fill="#0C447C">Rule 2 priority 8: failure streak</text>
+
+    <rect x="120" y="270" width="200" height="32" rx="4" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.5" opacity="0.6"/>
+    <text class="ts" x="130" y="286" dominant-baseline="central" fill="#0C447C">Rule N priority 1: default</text>
+
+    <g>
+      <rect x="350" y="200" width="210" height="100" rx="6" fill="#E6F1FB" stroke="#378ADD" stroke-width="0.5"/>
+      <text class="th" x="455" y="218" text-anchor="middle" dominant-baseline="central" fill="#0C447C">Action groups</text>
+      <text class="ts" x="455" y="238" text-anchor="middle" dominant-baseline="central" fill="#185FA5">terminal: accept stop pause</text>
+      <text class="ts" x="455" y="256" text-anchor="middle" dominant-baseline="central" fill="#185FA5">iterative: refine critique explore</text>
+      <text class="ts" x="455" y="274" text-anchor="middle" dominant-baseline="central" fill="#185FA5">structural: branch consolidate</text>
+      <text class="ts" x="455" y="292" text-anchor="middle" dominant-baseline="central" fill="#185FA5">social: ask user</text>
+    </g>
+  </g>
+
+  <g class="c-gray">
+    <rect x="40" y="340" width="180" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="130" y="360" text-anchor="middle" dominant-baseline="central">Terminal action</text>
+    <text class="ts" x="130" y="378" text-anchor="middle" dominant-baseline="central">Direct dispatch</text>
+  </g>
+
+  <g class="c-purple">
+    <rect x="250" y="340" width="180" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="340" y="360" text-anchor="middle" dominant-baseline="central">Strategy selection</text>
+    <text class="ts" x="340" y="378" text-anchor="middle" dominant-baseline="central">Invoke catalyst</text>
+  </g>
+
+  <g class="c-gray">
+    <rect x="460" y="340" width="180" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="550" y="360" text-anchor="middle" dominant-baseline="central">Social action</text>
+    <text class="ts" x="550" y="378" text-anchor="middle" dominant-baseline="central">Ask user, wait</text>
+  </g>
+
+  <line x1="200" y1="308" x2="130" y2="340" stroke="#5F5E5A" stroke-width="0.5" marker-end="url(#arrow)"/>
+  <line x1="340" y1="308" x2="340" y2="340" stroke="#534AB7" stroke-width="0.5" marker-end="url(#arrow)"/>
+  <line x1="480" y1="308" x2="550" y2="340" stroke="#5F5E5A" stroke-width="0.5" marker-end="url(#arrow)"/>
+
+  <line x1="340" y1="396" x2="340" y2="420" stroke="#534AB7" stroke-width="0.5" marker-end="url(#arrow)"/>
+
+  <g class="c-purple">
+    <rect x="60" y="420" width="560" height="180" rx="10" stroke-width="0.5"/>
+    <text class="th" x="80" y="442" dominant-baseline="central">Catalyst scoring and selection</text>
+    <text class="ts" x="80" y="458" dominant-baseline="central">Multi-factor formula; weighted random sampling, not argmax</text>
+
+    <rect x="80" y="476" width="240" height="32" rx="4" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+    <text class="ts" x="90" y="492" dominant-baseline="central" fill="#26215C">base reward from bandit</text>
+
+    <rect x="80" y="514" width="240" height="32" rx="4" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+    <text class="ts" x="90" y="530" dominant-baseline="central" fill="#26215C">chain bonus from sequences</text>
+
+    <rect x="80" y="552" width="240" height="32" rx="4" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+    <text class="ts" x="90" y="568" dominant-baseline="central" fill="#26215C">decay and type penalty</text>
+
+    <rect x="340" y="476" width="260" height="108" rx="6" fill="#EEEDFE" stroke="#7F77DD" stroke-width="0.5"/>
+    <text class="th" x="470" y="494" text-anchor="middle" dominant-baseline="central" fill="#26215C">Scored vocabulary</text>
+    <text class="ts" x="470" y="514" text-anchor="middle" dominant-baseline="central" fill="#3C3489">explore 0.82</text>
+    <text class="ts" x="470" y="532" text-anchor="middle" dominant-baseline="central" fill="#3C3489">refine 0.71</text>
+    <text class="ts" x="470" y="550" text-anchor="middle" dominant-baseline="central" fill="#3C3489">disrupt 0.55</text>
+    <text class="ts" x="470" y="568" text-anchor="middle" dominant-baseline="central" fill="#3C3489">analogy 0.34</text>
+  </g>
+
+  <line x1="340" y1="600" x2="340" y2="624" stroke="#534AB7" stroke-width="0.5" marker-end="url(#arrow)"/>
+
+  <g class="c-amber">
+    <rect x="100" y="624" width="480" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="340" y="644" text-anchor="middle" dominant-baseline="central">Leeway filter applied before sample</text>
+    <text class="ts" x="340" y="662" text-anchor="middle" dominant-baseline="central">Permitted candidates only enter the weighted random sample</text>
+  </g>
+
+  <text class="ts" x="660" y="488" text-anchor="end" fill="#5F5E5A">factors</text>
+  <text class="ts" x="660" y="494" text-anchor="end" fill="#5F5E5A">compose to</text>
+  <text class="ts" x="660" y="500" text-anchor="end" fill="#5F5E5A">scores</text>
+</svg>

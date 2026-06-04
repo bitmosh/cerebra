@@ -1,0 +1,13 @@
+flowchart LR
+  store[(Cerebra Memory Store)] --> nodes[Graph Nodes]
+  store --> edges[Graph Edges]
+  store --> clusters[Clusters / Summaries]
+  store --> lifecycle[Lifecycle State]
+
+  nodes --> export[Graph Export JSON]
+  edges --> export
+  clusters --> export
+  lifecycle --> export
+
+  export --> luma[LumaWeave]
+  luma --> views[Graph Views<br/>memory maps / timelines / clusters]

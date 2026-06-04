@@ -1,0 +1,64 @@
+flowchart LR
+    subgraph Cycle["Single User-Facing Cycle"]
+        direction TB
+        
+        subgraph Temporal["Temporal Parallel — Sequential Continuations"]
+            direction TB
+            T_Step1[Step 1: think about requirements] --> T_Bundle1[Distill Bundle 1<br/>goal, summary, insights, next_focus]
+            T_Bundle1 --> T_Fresh1[Fresh Context]
+            T_Fresh1 --> T_Step2[Step 2: think about design<br/>Bundle 1 as priming]
+            T_Step2 --> T_Bundle2[Distill Bundle 2<br/>cumulative state]
+            T_Bundle2 --> T_Fresh2[Fresh Context]
+            T_Fresh2 --> T_Step3[Step 3: think about tests<br/>Bundle 2 as priming]
+            T_Step3 --> T_Final[Final Output to User]
+        end
+        
+        subgraph Structural["Structural Parallel — Forked Continuations"]
+            direction TB
+            S_StepN[Step N completes] --> S_Fork{Fork bundles<br/>same parent}
+            S_Fork --> S_BundleA[Bundle A:<br/>adversarial render]
+            S_Fork --> S_BundleB[Bundle B:<br/>cross-validation render]
+            S_Fork --> S_BundleC[Bundle C:<br/>chronological render]
+            S_BundleA --> S_PromptA[Fresh prompt A<br/>parallel inference]
+            S_BundleB --> S_PromptB[Fresh prompt B<br/>parallel inference]
+            S_BundleC --> S_PromptC[Fresh prompt C<br/>parallel inference]
+            S_PromptA --> S_Merge[Truth Tower absorbs all three<br/>disagreements become T3 contradictions<br/>or T4 counter-hypotheses]
+            S_PromptB --> S_Merge
+            S_PromptC --> S_Merge
+            S_Merge --> S_NextStep[Step N+1<br/>with enriched tower]
+        end
+    end
+
+    subgraph Budget["Budget Discipline"]
+        direction TB
+        B1[per_cycle_continuation_cap: 5]
+        B2[recursion_depth_cap: 5]
+        B3[token_budget_per_continuation: 8000 default]
+        B4[Clutch enforces caps<br/>force accept at cap-1]
+    end
+
+    subgraph BundleContents["ContinuationBundle Contents"]
+        direction TB
+        BC1[distilled_goal]
+        BC2[summarized_prior_prompt]
+        BC3[truth_tower_projection<br/>T5 + T4 + T3 verbatim<br/>T2 + T1 cite-only]
+        BC4[cognitive_insights]
+        BC5[next_focus]
+        BC6[open_questions]
+        BC7[constraints]
+        BC8[voice_mode: self or system]
+    end
+
+    Temporal -.uses.-> BundleContents
+    Structural -.uses.-> BundleContents
+    Cycle -.bounded by.-> Budget
+
+    classDef temporal fill:#e1e8f5,stroke:#4a5a8a
+    classDef structural fill:#e8e1f5,stroke:#5a4a8a
+    classDef budget fill:#f5e1e1,stroke:#8a4a4a
+    classDef bundle fill:#e1f5e8,stroke:#4a8a5a
+    
+    class T_Step1,T_Bundle1,T_Fresh1,T_Step2,T_Bundle2,T_Fresh2,T_Step3,T_Final temporal
+    class S_StepN,S_Fork,S_BundleA,S_BundleB,S_BundleC,S_PromptA,S_PromptB,S_PromptC,S_Merge,S_NextStep structural
+    class B1,B2,B3,B4 budget
+    class BC1,BC2,BC3,BC4,BC5,BC6,BC7,BC8 bundle

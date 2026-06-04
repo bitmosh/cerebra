@@ -1,0 +1,66 @@
+graph BT
+    subgraph T1["T1 — Source-Grounded Evidence (cap 10-20)"]
+        T1A[chunk: SKU lookup result]
+        T1B[chunk: vector match]
+        T1C[chunk: sibling pointer expansion]
+        T1D[episodic event: prior cycle output]
+        T1E[semantic record: established fact]
+    end
+
+    subgraph T2["T2 — High-Salience Memories (cap 5-12)"]
+        T2A[memory: cites T1A + T1B<br/>salience 0.84]
+        T2B[memory: cites T1D + T1E<br/>salience 0.71, user-pinned]
+        T2C[memory: cites T1C<br/>salience 0.62]
+    end
+
+    subgraph T3["T3 — Cross-Validated Insights (cap 3-7)"]
+        T3A[insight: derived from T2A + T2B<br/>confidence 0.78]
+        T3B[insight: derived from T2A + T2C<br/>confidence 0.65]
+    end
+
+    subgraph T4["T4 — Working Hypotheses (cap 2-4)"]
+        T4A[hypothesis: built on T3A<br/>counter-ev: T2C]
+        T4B[hypothesis: alternative on T3B]
+    end
+
+    subgraph T5["T5 — Active Goal (cap 1)"]
+        T5A[goal: set externally<br/>citing T4A as current best path]
+    end
+
+    T1A -.->|"PROMOTE if salience ≥ 0.5"| T2A
+    T1B -.-> T2A
+    T1C -.-> T2C
+    T1D -.->|"user-pinned, auto-promote"| T2B
+    T1E -.-> T2B
+
+    T2A -->|"LINK (cross-ref ≥ 2)"| T3A
+    T2B --> T3A
+    T2A --> T3B
+    T2C -.->|"counter-evidence link"| T3B
+
+    T3A -->|"FORM_HYPOTHESIS"| T4A
+    T3B -->|"FORM_HYPOTHESIS"| T4B
+    T2C -.->|"counter-evidence to T4A"| T4A
+
+    T4A -.->|"currently serves goal"| T5A
+    T4B -.->|"alternative path"| T5A
+
+    Op1[/"Operations:<br/>PROMOTE, LINK, STALE, REBUILD, COLLAPSE, EVICT"\]
+    
+    Stale1[/"Staleness propagation:<br/>T1 eviction → T2 stale → T3 stale → T4 stale<br/>T5 goal is anchored externally; not staled"\]
+
+    Cap1[/"Capacity contention:<br/>lowest-salience evicted first<br/>user-pinned: non-evictable<br/>cited-by-higher-tier: eviction-resistant"\]
+
+    classDef t1 fill:#f0e8d8,stroke:#7a6840
+    classDef t2 fill:#e0e8c0,stroke:#607830
+    classDef t3 fill:#c0d8e0,stroke:#306878
+    classDef t4 fill:#d8c0e0,stroke:#603078
+    classDef t5 fill:#e0c0c0,stroke:#783030
+    classDef note fill:#fff8e0,stroke:#aaa,font-style:italic
+
+    class T1A,T1B,T1C,T1D,T1E t1
+    class T2A,T2B,T2C t2
+    class T3A,T3B t3
+    class T4A,T4B t4
+    class T5A t5
+    class Op1,Stale1,Cap1 note

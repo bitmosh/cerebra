@@ -1,0 +1,73 @@
+stateDiagram-v2
+    [*] --> active: ingested or created
+    
+    active --> warm: access frequency drops
+    warm --> active: salience boost or recent access
+    warm --> cold: prolonged low access
+    cold --> warm: renewed relevance
+    
+    cold --> archived: consolidation recommends
+    archived --> warm: explicit restore
+    archived --> active: explicit restore with priority
+    
+    active --> tombstoned: user delete OR known-false detected
+    warm --> tombstoned: user delete
+    cold --> tombstoned: poisoned source detected
+    archived --> tombstoned: explicit suppression
+    
+    tombstoned --> active: explicit restore<br/>(rare, requires user confirmation)
+    
+    [*] --> quarantined: low-confidence import OR<br/>malformed source OR<br/>untrusted ingestion
+    quarantined --> active: passes review
+    quarantined --> tombstoned: review rejects
+    
+    tombstoned --> deleted: explicit purge<br/>(policy-gated, audit-logged)
+    archived --> deleted: explicit purge
+    
+    deleted --> [*]
+    
+    note right of active
+        Fully available
+        Normal retrieval, graph visibility
+        ContextPacket eligible
+    end note
+    
+    note right of warm
+        Slightly lower default salience
+        Still retrievable
+        Eligible for summaries
+    end note
+    
+    note right of cold
+        Lower default ranking
+        Candidate for archive
+        Retrievable via explicit search
+    end note
+    
+    note right of archived
+        Raw moved to compressed storage
+        Archive summary remains active
+        Retrieval card searchable
+        Graph stub visible
+        Full restore possible
+    end note
+    
+    note right of tombstoned
+        Excluded from normal retrieval
+        Blocks re-insertion of identical content
+        Tombstone marker preserved
+        Requires explicit restore to re-enable
+    end note
+    
+    note right of quarantined
+        Isolated pending review
+        Not in normal agent context
+        May contain poisoned or low-confidence data
+    end note
+    
+    note left of deleted
+        Physical removal where possible
+        Minimal deletion audit retained
+        Indexes cleaned
+        Relationships invalidated
+    end note

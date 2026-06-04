@@ -1,0 +1,21 @@
+flowchart BT
+  L8[L8 Archive / Tombstone Layer]
+  L7[L7 Consolidated Long Memory]
+  L6[L6 ContextPackets]
+  L5[L5 Relationship Graph]
+  L4[L4 Derived Summaries]
+  L3[L3 Memory Records]
+  L2[L2 Chunks]
+  L1[L1 Normalized Documents]
+  L0[L0 Source Artifacts]
+
+  L0 --> L1
+  L1 --> L2
+  L2 --> L3
+  L3 --> L4
+  L3 --> L5
+  L4 --> L7
+  L5 --> L6
+  L7 --> L6
+  L3 --> L8
+  L4 --> L8

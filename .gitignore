@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+wheels/
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+
+# Linters
+.ruff_cache/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Local development databases and vaults
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+local-vault/
+test-vault/
+tmp-vault/
+
+# Inspector event logs (these can be huge)
+events/*.ndjson
+*.ndjson
+
+# Environment files (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# Build artifacts
+*.log
+.pyenv
+
+# OS junk
+Thumbs.db

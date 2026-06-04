@@ -1,0 +1,85 @@
+flowchart TD
+    ActionReq[Action Requested<br/>by cycle runtime or catalyst] --> Phase1{PHASE 1<br/>Pre-Action Gate}
+    
+    Phase1 --> LoadRules[Load active leeway rules<br/>for current session and cycle config]
+    LoadRules --> MatchCap[For each candidate capability:<br/>find matching grant rules]
+    
+    MatchCap --> Conditions{Conditions<br/>met?}
+    Conditions -->|no matching grant| Filter1[Capability filtered out]
+    Conditions -->|grant matches| CheckRevoke{Revocation<br/>conditions firing?}
+    
+    CheckRevoke -->|yes| Filter2[Grant currently revoked]
+    CheckRevoke -->|no| CheckConst{Constitutional<br/>rule revokes?}
+    
+    CheckConst -->|yes| Filter3[Constitutional block]
+    CheckConst -->|no| Permitted[Capability permitted]
+    
+    Filter1 --> CheckEmpty{Any permitted<br/>capabilities left?}
+    Filter2 --> CheckEmpty
+    Filter3 --> CheckEmpty
+    Permitted --> CheckEmpty
+    
+    CheckEmpty -->|no| Empty[Emit LEEWAY_SET_EMPTY<br/>return cannot_select signal]
+    Empty --> Fallback[Clutch falls back to<br/>safe default or end_cycle]
+    
+    CheckEmpty -->|yes| Catalyst[Catalyst samples from<br/>permitted candidate set]
+    Catalyst --> Execute[Execute Action]
+    
+    Execute --> Output[Action Output]
+    
+    Output --> Phase2{PHASE 2<br/>Post-Action Audit<br/>v0.2+}
+    
+    Phase2 --> EvalOutput[Evaluate output against<br/>post-action and 'both' phase rules]
+    EvalOutput --> CheckRevoke2{Revocation<br/>conditions fired<br/>by output content?}
+    
+    CheckRevoke2 -->|no| EmitClean[Emit LEEWAY_GRANT_APPLIED<br/>continue cycle]
+    
+    CheckRevoke2 -->|yes| Severity{Reversible?}
+    Severity -->|yes| RollbackAction[Rollback action effects]
+    Severity -->|no| Quarantine[Quarantine output<br/>do not propagate]
+    
+    RollbackAction --> LogIncident[Log incident<br/>full audit trace]
+    Quarantine --> LogIncident
+    LogIncident --> CalUpdate[Update calibration on<br/>triggering rule]
+    CalUpdate --> EmitRevoke[Emit LEEWAY_REVOCATION_FIRED]
+    EmitRevoke --> RetryDecision{Retry with<br/>narrower constraints?}
+    RetryDecision -->|yes| ActionReq
+    RetryDecision -->|no| Fallback
+    
+    EmitClean --> NextStep[Continue to next cycle step]
+    
+    subgraph Constitutional["Constitutional Layer (inviolable, 5-10 rules)"]
+        C1[No CBRN weapon assistance]
+        C2[No claims of subjective experience]
+        C3[No targeted real-person harm]
+        C4[No deception about system state]
+        C5[No tombstoning user-safety memory<br/>without explicit confirm]
+    end
+    
+    subgraph LeewayDefaults["Default Leeway Set (~12-15 rules in v0.1)"]
+        L1[retrieve_from_memory: baseline]
+        L2[build_context_packet: baseline]
+        L3[mutate_strategy_weights: conditional]
+        L4[spawn_continuation_bundle: conditional]
+        L5[promote_to_truth_tower_T3: conditional]
+        L6[write_to_semantic_memory: conditional]
+        L7[tombstone_memory: user-requested only]
+        Ldots[...]
+    end
+    
+    Constitutional -.revokes.-> CheckConst
+    LeewayDefaults -.matched at.-> MatchCap
+    
+    classDef phase fill:#e1e8f5,stroke:#4a5a8a
+    classDef permit fill:#e1f5e1,stroke:#4a8a4a
+    classDef deny fill:#f5d8d8,stroke:#a04040
+    classDef const fill:#f0d8e0,stroke:#7a4858
+    classDef leeway fill:#e8e0f0,stroke:#5a4880
+    classDef event fill:#fff8e0,stroke:#aaa
+    
+    class Phase1,Phase2,Conditions,CheckRevoke,CheckConst,CheckEmpty,CheckRevoke2,Severity,RetryDecision phase
+    class Permitted,EmitClean,Catalyst,Execute,NextStep permit
+    class Filter1,Filter2,Filter3,Empty,Fallback,Quarantine,RollbackAction,EmitRevoke deny
+    class C1,C2,C3,C4,C5,Constitutional const
+    class L1,L2,L3,L4,L5,L6,L7,Ldots,LeewayDefaults leeway
+    class LogIncident,CalUpdate event

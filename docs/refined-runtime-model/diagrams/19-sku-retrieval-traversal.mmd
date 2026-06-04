@@ -1,0 +1,49 @@
+flowchart TD
+    Query[Incoming Query] --> Parse[Query Parser]
+    Parse --> BuildSKU[Construct Partial Query SKU<br/>D1 confident, D2/D3 weighted<br/>D5-D10 only if specified]
+    
+    BuildSKU --> Budget{Attention Budget<br/>set by clutch}
+    
+    Budget --> Step1[Step 1: Exact Match<br/>SKU exact equality on non-null query digits]
+    
+    Step1 --> Check1{Sufficient<br/>candidates?}
+    Check1 -->|"yes (shallow budget)"| Annotate[Annotate retrieval paths<br/>'exact match on D1+D2']
+    Check1 -->|no| Step2[Step 2: Partial Match<br/>D1 + D2 + D3 match,<br/>D4-D10 may vary]
+    
+    Step2 --> Check2{Sufficient<br/>candidates?}
+    Check2 -->|"yes (medium budget)"| Annotate
+    Check2 -->|no| Step3[Step 3: Sibling Pointer Traversal<br/>follow other SKU pointers<br/>from best candidates so far]
+    
+    Step3 --> Check3{Sufficient<br/>candidates?}
+    Check3 -->|"yes (medium-wide budget)"| Annotate
+    Check3 -->|no| Step4[Step 4: 1-Hop Expansion<br/>add sibling pointer neighbors<br/>of current candidate set]
+    
+    Step4 --> Check4{Sufficient<br/>candidates?}
+    Check4 -->|"yes"| Annotate
+    Check4 -->|no| Step5[Step 5: Bounded Vector Fallback<br/>vector similarity over<br/>filtered candidate set<br/>cap: 200 candidates total]
+    
+    Step5 --> Annotate
+    
+    Annotate --> Score[Step 6: Score with Salience<br/>component-based<br/>SKU sibling distance contributes<br/>attribution-aligned match contributes]
+    
+    Score --> Rerank[Rerank by Composite Salience]
+    Rerank --> Synth{Synthesis-at-endpoint?<br/>address sparse?}
+    
+    Synth -->|yes| GenSyn[Generate synthetic context<br/>from adjacent addresses]
+    GenSyn --> TagSyn[Tag D10 = synthesized<br/>route through consolidation dedup]
+    TagSyn --> Output
+    Synth -->|no| Output
+    
+    Output[Return candidates with:<br/>retrieval_path annotation<br/>SKU pointer trace<br/>score components<br/>confidence per result]
+    
+    Output --> Strategy[Update strategy bandit stats<br/>self-improving retrieval]
+    
+    classDef step fill:#e1e8f5,stroke:#4a5a8a
+    classDef check fill:#f5e1c4,stroke:#a07840
+    classDef synth fill:#f0d8e0,stroke:#7a4858
+    classDef output fill:#e1f5e1,stroke:#509050
+    
+    class Step1,Step2,Step3,Step4,Step5 step
+    class Check1,Check2,Check3,Check4,Synth,Budget check
+    class GenSyn,TagSyn synth
+    class Annotate,Score,Rerank,Output,Strategy output

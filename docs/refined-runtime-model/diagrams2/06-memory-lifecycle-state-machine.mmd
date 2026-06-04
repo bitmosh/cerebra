@@ -1,0 +1,16 @@
+stateDiagram-v2
+  [*] --> active
+  active --> warm
+  warm --> cold
+  cold --> archived
+  archived --> warm: restore
+  archived --> tombstoned
+  active --> tombstoned
+  warm --> tombstoned
+  cold --> tombstoned
+  tombstoned --> active: explicit restore
+  tombstoned --> deleted: explicit purge
+  active --> quarantined
+  quarantined --> active: review approved
+  quarantined --> tombstoned: review rejected
+  deleted --> [*]

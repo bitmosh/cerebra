@@ -1,0 +1,67 @@
+graph TD
+    subgraph Top["Higher-Order / Derived"]
+        direction TB
+        M9[M9 Consolidated / Archive Memory<br/>summaries, retrieval cards, archive packages]
+        M10[M10 Tombstone / Suppression Memory<br/>blocks accidental resurrection]
+    end
+
+    subgraph Cognitive["Cognitive Workspace"]
+        direction TB
+        TT_LAYER[M4.5 Truth Tower<br/>derived structure built on M4<br/>T5 Goal / T4 Hypotheses / T3 Insights / T2 / T1]
+        M4[M4 Working Memory<br/>bounded contested slots, attention items]
+    end
+
+    subgraph Knowledge["Structured Knowledge"]
+        direction TB
+        M5[M5 Semantic Memory<br/>durable facts, summaries, project knowledge]
+        M6[M6 Procedural Memory<br/>how-to knowledge, cycle configs, policies]
+        M7[M7 Predictive Memory<br/>predictions, outcomes, prediction errors]
+        M8[M8 Relationship Graph<br/>typed edges between memory items]
+    end
+
+    subgraph History["Time-Indexed"]
+        direction TB
+        M3[M3 Episodic Runtime Memory<br/>cycle events, agent outputs, clutch decisions]
+    end
+
+    subgraph Foundation["Source-Grounded Substrate"]
+        direction TB
+        M2[M2 Chunk Memory<br/>retrievable units, lexical and vector candidates]
+        M1[M1 Normalized Document Memory<br/>parser output, stable representations]
+        M0[M0 Source Memory<br/>files, content hashes, provenance]
+    end
+
+    M0 --> M1 --> M2
+    M2 -->|"becomes records"| M5
+    M2 -.->|"populates"| M4
+    M3 -->|"consolidates into"| M5
+    M3 -->|"consolidates into"| M6
+    M3 -->|"prediction records"| M7
+    M5 -.->|"populates"| M4
+    M6 -.->|"populates"| M4
+    M4 -->|"derives"| TT_LAYER
+    M2 -->|"creates edges"| M8
+    M5 -->|"creates edges"| M8
+    M3 -->|"low-access cluster"| M9
+    M5 -->|"superseded or stale"| M9
+    M9 -->|"may become"| M10
+    M5 -->|"contradicted/wrong"| M10
+    M4 -.->|"runtime cycle emits"| M3
+
+    note1[Every memory at M2 and above carries a SKU address]
+    note2[Tombstones at M10 block re-insertion of identical content]
+    note3[Provenance arrows trace upward; consolidation flows downward into archive]
+
+    classDef foundation fill:#f0e8d8,stroke:#7a6840
+    classDef history fill:#e8e0f0,stroke:#5a4880
+    classDef knowledge fill:#d8e8f0,stroke:#40687a
+    classDef cognitive fill:#e8f0d8,stroke:#587a40
+    classDef higher fill:#f0d8e0,stroke:#7a4858
+    classDef note fill:#fff8e0,stroke:#aaa,font-style:italic
+
+    class M0,M1,M2 foundation
+    class M3 history
+    class M5,M6,M7,M8 knowledge
+    class M4,TT_LAYER cognitive
+    class M9,M10 higher
+    class note1,note2,note3 note

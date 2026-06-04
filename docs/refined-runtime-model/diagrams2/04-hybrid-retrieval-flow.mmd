@@ -1,0 +1,17 @@
+flowchart LR
+  query[Query / Task] --> planner[Query Planner]
+  planner --> lexical[Lexical Retrieval]
+  planner --> vector[Vector Retrieval]
+  planner --> metadata[Metadata Filters]
+
+  lexical --> fusion[Hybrid Fusion]
+  vector --> fusion
+  metadata --> fusion
+
+  fusion --> graph[Graph Expansion]
+  graph --> summaries[Summary / Community Retrieval]
+  summaries --> salience[Salience Scoring]
+  salience --> rerank[Reranking]
+  rerank --> budget[Context Budget Allocation]
+  budget --> packet[ContextPacket]
+  budget --> trace[(Retrieval Trace)]

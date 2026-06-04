@@ -1,0 +1,105 @@
+graph TB
+    subgraph Sources["Source Bank"]
+        SRC[Files / Docs / Code / Reports]
+    end
+
+    subgraph Ingestion["Ingestion Subsystem"]
+        REG[Source Registry]
+        ROUT[Ingestion Router]
+        PARSE[Parser Adapters]
+        NORM[Normalization]
+        CHUNK[Chunker]
+        RBUILD[Memory Record Builder]
+        SKUC[SKU Classifier]
+    end
+
+    subgraph Storage["Storage Layer"]
+        SQL[(SQLite Store)]
+        ARTI[(Artifact Store)]
+        LEX[(Lexical Index)]
+        VEC[(Vector Index)]
+        GS[(Graph Store)]
+        EVT[(Event Log)]
+    end
+
+    subgraph Runtime["Cognitive Runtime"]
+        CFG[Cycle Config Registry]
+        SESS[Runtime Session]
+        WM[Working Memory]
+        TT[Truth Tower]
+        CLU[Clutch]
+        CAT[Catalyst]
+        SIG[Signal Pipeline]
+        PRED[Prediction Engine]
+        RI[Re-injection Loop]
+    end
+
+    subgraph Retrieval["Retrieval Engine"]
+        QP[Query Planner]
+        TRAV[SKU Traversal]
+        SAL[Salience Scorer]
+        CP[ContextPacket Builder]
+        TRACE[Retrieval Trace]
+    end
+
+    subgraph Maintenance["Memory Maintenance"]
+        CONS[Consolidation Engine]
+        LIFE[Lifecycle Manager]
+        ABL[Orthogonal Ablation]
+    end
+
+    subgraph Governance["Governance Layer"]
+        LEE[Leeway Network]
+        CONST[Constitutional Rules]
+    end
+
+    subgraph Surface["Observability Surface"]
+        INSP[Inspector]
+        GEXP[Graph Exporter]
+    end
+
+    SRC --> REG
+    REG --> ROUT --> PARSE --> NORM --> CHUNK --> RBUILD --> SKUC
+    SKUC --> SQL
+    RBUILD --> ARTI
+    SKUC --> LEX & VEC & GS
+
+    CFG --> SESS
+    SESS --> WM
+    WM <--> TT
+    SESS --> CLU
+    CLU -.consults.-> CAT
+    CAT -.filtered by.-> LEE
+    LEE -.revoked by.-> CONST
+    SESS --> SIG --> PRED
+    PRED -.feeds back to.-> CLU
+    SESS --> RI
+    RI -.spawns.-> SESS
+
+    SESS --> QP --> TRAV --> SAL --> CP
+    TRAV -.reads.-> LEX & VEC & GS & SQL
+    CP --> TRACE
+
+    SQL --> CONS
+    CONS --> LIFE
+    CONS --> ABL
+    ABL -.attribution to.-> SAL
+
+    SESS --> EVT
+    CONS --> EVT
+    LEE --> EVT
+    EVT --> INSP
+    GS --> GEXP
+
+    GEXP -.events.-> EXT[LumaWeave]
+    INSP -.CLI.-> USR[User]
+
+    classDef storage fill:#e1f5e1,stroke:#4a8a4a
+    classDef runtime fill:#e1e8f5,stroke:#4a5a8a
+    classDef gov fill:#f5e1e1,stroke:#8a4a4a
+    classDef ext fill:#f5f0e1,stroke:#8a7a4a
+
+    class SQL,ARTI,LEX,VEC,GS,EVT storage
+    class CFG,SESS,WM,TT,CLU,CAT,SIG,PRED,RI runtime
+    class LEE,CONST gov
+    class EXT,USR ext

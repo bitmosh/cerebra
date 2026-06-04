@@ -1,0 +1,19 @@
+flowchart TD
+  trigger[Consolidation Trigger] --> select[Candidate Selection]
+  select --> cluster[Grouping / Clustering]
+  cluster --> duplicates[Duplicate Detection]
+  cluster --> summarize[Summary Generation]
+  cluster --> contradictions[Contradiction Checks]
+  cluster --> stale[Staleness Checks]
+
+  duplicates --> relationships[Relationship Updates]
+  summarize --> relationships
+  contradictions --> relationships
+  stale --> lifecycle[Lifecycle Recommendations]
+
+  relationships --> salience[Salience Updates]
+  lifecycle --> record[Consolidation Record]
+  salience --> record
+  record --> review{Human Review Needed?}
+  review -->|yes| pending[Pending Review]
+  review -->|no| write[Write Outputs]

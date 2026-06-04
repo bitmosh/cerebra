@@ -1,0 +1,74 @@
+flowchart TD
+    Start([Cycle Start]) --> LoadCfg[Load Cycle Definition]
+    LoadCfg --> InitSess[Initialize Runtime Session]
+    InitSess --> InitWM[Initialize Working Memory]
+    InitWM --> BuildCtx[Build ContextPacket]
+    BuildCtx --> BuildTower[Build / Refresh Truth Tower]
+    
+    BuildTower --> StepStart{Step Start}
+    StepStart --> CheckLeeway1{Leeway Pre-Action Gate}
+    
+    CheckLeeway1 -->|capability denied| FallbackAction[Fall Back to Safe Default]
+    FallbackAction --> StepStart
+    
+    CheckLeeway1 -->|permitted| ExecStep[Execute Step<br/>generate, critique, retrieve, etc.]
+    ExecStep --> CaptOutput[Capture Output + Metrics]
+    
+    CaptOutput --> CheckLeeway2{Leeway Post-Action Audit<br/>v0.2+}
+    CheckLeeway2 -->|violated| Rollback[Rollback or Quarantine]
+    Rollback --> EmitGE1[Emit Graph Event: Revocation]
+    EmitGE1 --> StepStart
+    
+    CheckLeeway2 -->|clean| EvalSig[Evaluate Signals<br/>6 perennial-thread axes]
+    EvalSig --> Prediction[Record Outcome vs Earlier Prediction]
+    Prediction --> ComputeErr[Compute Prediction Error]
+    
+    ComputeErr --> ClutchEval{Clutch Decision<br/>priority-rule cascade}
+    
+    ClutchEval -->|terminal group| ChooseEnd{accept / stop / pause}
+    ClutchEval -->|iterative group| ChooseIter{refine / critique / explore / retrieve_more}
+    ClutchEval -->|structural group| ChooseStruct{branch / consolidate}
+    ClutchEval -->|social group| AskUser[ask_user]
+    
+    ChooseIter -->|invoke catalyst| CatSelect[Catalyst Strategy Selection<br/>weighted-random over filtered vocabulary]
+    CatSelect --> WriteEpi[Write Episodic Memory]
+    
+    ChooseStruct -->|consolidate| TriggerCons[Trigger Consolidation Subflow]
+    ChooseStruct -->|branch| SpawnBranch[Spawn Branch Cycle]
+    TriggerCons --> WriteEpi
+    SpawnBranch --> WriteEpi
+    
+    AskUser --> WaitUser[Wait for User Input]
+    WaitUser --> WriteEpi
+    
+    WriteEpi --> UpdateTower[Update Truth Tower<br/>promote / evict / stale propagation]
+    UpdateTower --> EmitGE2[Emit Graph Events]
+    EmitGE2 --> CheckContinue{Continue?}
+    
+    CheckContinue -->|"step budget remains AND<br/>no terminal action"| CheckReinject{Re-injection Needed?}
+    CheckContinue -->|terminal action| Final
+    
+    CheckReinject -->|"composite low AND<br/>continuation budget left"| DistillBundle[Distill Continuation Bundle]
+    CheckReinject -->|no| StepStart
+    
+    DistillBundle --> NewPrompt[Spawn Fresh Prompt with Bundle]
+    NewPrompt --> StepStart
+    
+    ChooseEnd --> Final[Final Memory Writes + Calibration Audit]
+    Final --> EmitClose[Emit CycleCompleted Event]
+    EmitClose --> ExportTrigger{Graph Export Triggered?}
+    ExportTrigger -->|yes| ExpGraph[Export to LumaWeave]
+    ExportTrigger -->|no| EndCycle([Cycle End])
+    ExpGraph --> EndCycle
+    
+    classDef gate fill:#f5e1c4,stroke:#a07840
+    classDef decision fill:#e1e1f5,stroke:#5050a0
+    classDef action fill:#e1f5e1,stroke:#509050
+    classDef terminal fill:#f5e1e1,stroke:#a05050
+    classDef storage fill:#e8e0f0,stroke:#7858a0
+    
+    class CheckLeeway1,CheckLeeway2,CheckContinue,CheckReinject,ExportTrigger gate
+    class ClutchEval,ChooseEnd,ChooseIter,ChooseStruct decision
+    class ExecStep,CaptOutput,EvalSig,CatSelect,UpdateTower action
+    class FallbackAction,Rollback,ChooseEnd terminal
+    class WriteEpi,EmitGE1,EmitGE2,EmitClose storage
