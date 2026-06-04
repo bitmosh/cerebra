@@ -7,19 +7,19 @@ from pathlib import Path
 
 import pytest
 
+from cerebra.storage.db import connect
 from cerebra.storage.migrations import run_migrations
 
 
 @pytest.fixture
 def in_memory_db() -> sqlite3.Connection:
-    """Return a migrated in-memory SQLite connection."""
+    """Return a migrated in-memory SQLite connection (WAL mode via connect())."""
     import tempfile
 
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db_path = Path(f.name)
     run_migrations(db_path)
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
+    conn = connect(db_path)
     yield conn
     conn.close()
     db_path.unlink(missing_ok=True)

@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from cerebra.inspector.event import InspectorEvent
+from cerebra.storage.db import connect
 
 
 class SQLiteEventLog:
@@ -20,9 +21,7 @@ class SQLiteEventLog:
         self._db_path = db_path
 
     def _connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self._db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
+        return connect(self._db_path)
 
     def write(self, event: InspectorEvent) -> None:
         with self._connect() as conn:
