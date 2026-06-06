@@ -1,0 +1,302 @@
+[
+  {
+    "record_id": "rec_2d21ae6ff627",
+    "doc_title": "Cerebra \u2014 Drift Fix Patches v8.1",
+    "stratum": "short",
+    "content_len": 126
+  },
+  {
+    "record_id": "rec_ab29ece8684c",
+    "doc_title": "Cerebra \u2014 Mermaid Diagrams",
+    "stratum": "short",
+    "content_len": 30
+  },
+  {
+    "record_id": "rec_87cac27985ce",
+    "doc_title": "Cerebra \u2014 Salience Scoring",
+    "stratum": "short",
+    "content_len": 79
+  },
+  {
+    "record_id": "rec_f19a5fcd5b20",
+    "doc_title": "Cerebra \u2014 Matrices and Reference Tables",
+    "stratum": "short",
+    "content_len": 154
+  },
+  {
+    "record_id": "rec_0baf6ea0607b",
+    "doc_title": "Cerebra \u2014 Visual Production Plan",
+    "stratum": "short",
+    "content_len": 50
+  },
+  {
+    "record_id": "rec_148e13e09f41",
+    "doc_title": "Cerebra \u2014 Inspector",
+    "stratum": "short",
+    "content_len": 72
+  },
+  {
+    "record_id": "rec_fe9ea308374c",
+    "doc_title": "Cerebra \u2014 Visual Production Plan",
+    "stratum": "short",
+    "content_len": 38
+  },
+  {
+    "record_id": "rec_f6a16d030e99",
+    "doc_title": "Cerebra \u2014 Prototype Checklist",
+    "stratum": "short",
+    "content_len": 33
+  },
+  {
+    "record_id": "rec_c0d6ba67507b",
+    "doc_title": "Cerebra \u2014 Visual Production Plan",
+    "stratum": "short",
+    "content_len": 46
+  },
+  {
+    "record_id": "rec_1506bda7ae4c",
+    "doc_title": "Cerebra v0.1 \u2014 Implementing Agent Kickoff Prompt",
+    "stratum": "short",
+    "content_len": 52
+  },
+  {
+    "record_id": "rec_c3e55d41aed4",
+    "doc_title": "Cerebra \u2014 Documentation Index",
+    "stratum": "long",
+    "content_len": 1559
+  },
+  {
+    "record_id": "rec_9727828b8900",
+    "doc_title": "Cerebra \u2014 Orthogonal Ablation",
+    "stratum": "long",
+    "content_len": 1310
+  },
+  {
+    "record_id": "rec_8eb8e825f552",
+    "doc_title": "Cerebra \u2014 SKU Addressing",
+    "stratum": "long",
+    "content_len": 1815
+  },
+  {
+    "record_id": "rec_727179806038",
+    "doc_title": "Cerebra \u2014 Re-injection Loop",
+    "stratum": "long",
+    "content_len": 1094
+  },
+  {
+    "record_id": "rec_9a7b35068c27",
+    "doc_title": "Cerebra \u2014 Drift Fix Patches v8.1",
+    "stratum": "long",
+    "content_len": 2049
+  },
+  {
+    "record_id": "rec_19900afaa2a6",
+    "doc_title": "Cerebra \u2014 SKU Addressing",
+    "stratum": "long",
+    "content_len": 1265
+  },
+  {
+    "record_id": "rec_b9e25e67e114",
+    "doc_title": "Cerebra \u2014 Truth Tower",
+    "stratum": "long",
+    "content_len": 1039
+  },
+  {
+    "record_id": "rec_28a81689c5ed",
+    "doc_title": "Cerebra \u2014 Inspector",
+    "stratum": "long",
+    "content_len": 1123
+  },
+  {
+    "record_id": "rec_66677b6eab79",
+    "doc_title": "Cerebra \u2014 SKU Addressing",
+    "stratum": "long",
+    "content_len": 1493
+  },
+  {
+    "record_id": "rec_585c430cb4bc",
+    "doc_title": "Cerebra \u2014 Development Roadmap v8.1",
+    "stratum": "long",
+    "content_len": 1281
+  },
+  {
+    "record_id": "rec_171395cb9a4d",
+    "doc_title": "Cerebra \u2014 Orthogonal Ablation",
+    "stratum": "code",
+    "content_len": 868
+  },
+  {
+    "record_id": "rec_746f68209f77",
+    "doc_title": "Cerebra \u2014 Project Scope",
+    "stratum": "code",
+    "content_len": 144
+  },
+  {
+    "record_id": "rec_3fc6ca3640cc",
+    "doc_title": "Cerebra \u2014 Catalyst",
+    "stratum": "code",
+    "content_len": 954
+  },
+  {
+    "record_id": "rec_edc381918d8a",
+    "doc_title": "Cerebra \u2014 Mermaid Diagrams",
+    "stratum": "code",
+    "content_len": 978
+  },
+  {
+    "record_id": "rec_252298139a1e",
+    "doc_title": "Cerebra \u2014 Leeway Network",
+    "stratum": "code",
+    "content_len": 812
+  },
+  {
+    "record_id": "rec_636d2a069a4b",
+    "doc_title": "Cerebra \u2014 State Governance",
+    "stratum": "code",
+    "content_len": 290
+  },
+  {
+    "record_id": "rec_c022ebe84912",
+    "doc_title": "Cerebra \u2014 Diagram Manifest",
+    "stratum": "code",
+    "content_len": 143
+  },
+  {
+    "record_id": "rec_3a8a58579d7f",
+    "doc_title": "Cerebra \u2014 Prototype Checklist",
+    "stratum": "code",
+    "content_len": 181
+  },
+  {
+    "record_id": "rec_a7daed1fbd2c",
+    "doc_title": "Cerebra \u2014 Orthogonal Ablation",
+    "stratum": "code",
+    "content_len": 692
+  },
+  {
+    "record_id": "rec_8a1af5c110cf",
+    "doc_title": "Lattica \u2014 Shared Primitives Reference",
+    "stratum": "code",
+    "content_len": 439
+  },
+  {
+    "record_id": "rec_7ed6342a881d",
+    "doc_title": "Cerebra \u2014 Inspector",
+    "stratum": "medium",
+    "content_len": 959
+  },
+  {
+    "record_id": "rec_c75528610560",
+    "doc_title": "Cerebra \u2014 Consolidation Engine",
+    "stratum": "medium",
+    "content_len": 390
+  },
+  {
+    "record_id": "rec_1e1c6cac42c2",
+    "doc_title": "Cerebra \u2014 State Governance",
+    "stratum": "medium",
+    "content_len": 244
+  },
+  {
+    "record_id": "rec_50f86777611d",
+    "doc_title": "Cerebra \u2014 Memory Lifecycle",
+    "stratum": "medium",
+    "content_len": 247
+  },
+  {
+    "record_id": "rec_d743b8e70697",
+    "doc_title": "Cerebra \u2014 Development Roadmap v8.1",
+    "stratum": "medium",
+    "content_len": 562
+  },
+  {
+    "record_id": "rec_9afc97868f24",
+    "doc_title": "Cerebra \u2014 Ingestion Architecture",
+    "stratum": "medium",
+    "content_len": 285
+  },
+  {
+    "record_id": "rec_0b801d6e490b",
+    "doc_title": "Cerebra \u2014 Leeway Network",
+    "stratum": "medium",
+    "content_len": 411
+  },
+  {
+    "record_id": "rec_70c8acf16dbd",
+    "doc_title": "Cerebra \u2014 ContextPacket Protocol",
+    "stratum": "medium",
+    "content_len": 391
+  },
+  {
+    "record_id": "rec_6a6df640d722",
+    "doc_title": "Cerebra \u2014 Consolidation Engine",
+    "stratum": "medium",
+    "content_len": 300
+  },
+  {
+    "record_id": "rec_2456fc7bcdbb",
+    "doc_title": "Cerebra \u2014 Signal Epistemology",
+    "stratum": "medium",
+    "content_len": 794
+  },
+  {
+    "record_id": "rec_4ef383b7a6e2",
+    "doc_title": "Cerebra \u2014 Open Questions (Resolved)",
+    "stratum": "random",
+    "content_len": 1036
+  },
+  {
+    "record_id": "rec_176d54541886",
+    "doc_title": "Cerebra \u2014 Salience Scoring",
+    "stratum": "random",
+    "content_len": 30
+  },
+  {
+    "record_id": "rec_f8c4a7324a6d",
+    "doc_title": "Cerebra \u2014 Leeway Network",
+    "stratum": "random",
+    "content_len": 515
+  },
+  {
+    "record_id": "rec_b862ae2304b4",
+    "doc_title": "Cerebra \u2014 Prediction and Evaluation",
+    "stratum": "random",
+    "content_len": 221
+  },
+  {
+    "record_id": "rec_66a12a962b54",
+    "doc_title": "Cerebra \u2014 Orthogonal Ablation",
+    "stratum": "random",
+    "content_len": 765
+  },
+  {
+    "record_id": "rec_34d74585cf76",
+    "doc_title": "Cerebra \u2014 Inspector",
+    "stratum": "random",
+    "content_len": 374
+  },
+  {
+    "record_id": "rec_46793e294be9",
+    "doc_title": "Cerebra \u2014 State Governance",
+    "stratum": "random",
+    "content_len": 420
+  },
+  {
+    "record_id": "rec_5552f11c43c7",
+    "doc_title": "Cerebra \u2014 Memory Layers",
+    "stratum": "random",
+    "content_len": 327
+  },
+  {
+    "record_id": "rec_76b6168a62c3",
+    "doc_title": "Cerebra \u2014 SKU Addressing",
+    "stratum": "random",
+    "content_len": 774
+  },
+  {
+    "record_id": "rec_2e5477434027",
+    "doc_title": "Cerebra \u2014 Ingestion Architecture",
+    "stratum": "random",
+    "content_len": 342
+  }
+]

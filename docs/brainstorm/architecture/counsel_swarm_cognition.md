@@ -163,6 +163,22 @@ In other words:
 
 The two ideas multiply rather than add.
 
+## Diverse failure modes — empirical support from calibration data
+
+The multi-model calibration runs (Round 1 + Round 2) produced data that directly supports the counsel approach. Specifically: **different models miss different fixtures**, with limited overlap in failure modes.
+
+For example, Qwen 3.5 9B and Granite 4.1 3B both score 58% partial accuracy on the calibration set, but their miss lists are substantially different:
+
+- Qwen 9B uniquely misses: clear_12, clear_13, hard_09, hard_12
+- Granite 4.1 3B uniquely misses: clear_04, clear_08, clear_15, hard_14
+- Both miss: clear_07, clear_10, clear_11, hard_01, hard_02, hard_03, hard_04, hard_05, hard_07, hard_11
+
+The blind spots don't overlap completely. A counsel including both models would correctly classify fixtures that either alone misses, simply by virtue of the other model getting it right.
+
+This is the empirical validation of counsel cognition's central claim: **disagreement among diverse models is signal, not noise**. The 13-model calibration data is the foundation for selecting counsel members in v0.2+. Models with maximally different failure patterns make the best counsel partners.
+
+When v0.2 counsel mode comes online, the candidate selection should weight by failure-mode diversity, not just by individual model accuracy. Two 60%-accurate models with disjoint failure modes are more useful than two 70%-accurate models with overlapping failure modes.
+
 ## Open questions
 
 - How many counsel members is enough? 3? 5? When do diminishing returns hit?

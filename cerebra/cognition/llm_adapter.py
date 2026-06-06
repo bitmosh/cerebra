@@ -9,7 +9,7 @@ OllamaDirectAdapter (preferred for classification):
   classifier to pass options that LiteLLM drops (think: false, format: json).
   Config via env vars:
     OLLAMA_BASE_URL  default: http://127.0.0.1:11434
-    OLLAMA_MODEL     default: qwen3.5:latest
+    OLLAMA_MODEL     default: huggingface.co/unsloth/granite-4.1-3b-GGUF:Q4_K_M
 
 ProxyLLMAdapter (legacy; retained for other backends):
   Calls the LiteLLM Docker proxy at ~/Projects/ai-stack/. JSON adherence
@@ -211,8 +211,11 @@ class OllamaDirectAdapter(LLMAdapter):
                       which was causing 1–3 minute per-call latency
       format: json  — grammar-constrained JSON output, eliminating parse failures
 
-    Fallback: if options.think is not respected by the running Ollama version,
-    prepend "/no_think\n\n" to the user message — Qwen 3 recognises this token.
+    Production default: huggingface.co/unsloth/granite-4.1-3b-GGUF:Q4_K_M (Granite 4.1 3B base).
+    Granite 4.1 3B has no thinking mode by design — think: false is a no-op but harmless.
+    Override via OLLAMA_MODEL env var or constructor argument.
+    Fallback (legacy): if options.think is not respected by the running Ollama version,
+    prepend "/no_think\n\n" to the user message — Qwen 3 recognised this token.
     """
 
     def __init__(
@@ -227,7 +230,9 @@ class OllamaDirectAdapter(LLMAdapter):
         self._base_url = (
             base_url or os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
         ).rstrip("/")
-        self._model = model or os.environ.get("OLLAMA_MODEL", "qwen3.5:latest")
+        self._model = model or os.environ.get(
+            "OLLAMA_MODEL", "huggingface.co/unsloth/granite-4.1-3b-GGUF:Q4_K_M"
+        )
         self._timeout = timeout if timeout is not None else TIMEOUT_SECONDS
         self._temperature = temperature
 

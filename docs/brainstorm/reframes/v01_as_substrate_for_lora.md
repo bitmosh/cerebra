@@ -107,7 +107,7 @@ Specific things this reframe argues for:
 
 **Don't waste effort on calibration set expansion.** 30 hand-labeled fixtures is enough for the merge gate. Expanding to 100 fixtures would help v0.2 evaluation but doesn't help v0.1 ship. Build the bigger calibration set in v0.2 after we have a better classifier to evaluate.
 
-**Pick the model that LoRA-trains best, not the model that classifies best now.** This argues for OLMo 3 7B as the LoRA target (full transparency, model flow approach) even if it doesn't score best on initial calibration. Or Granite 4 Micro for fast iteration cycles. The model we LoRA-train doesn't have to be the model we use in v0.1; we can switch substrate when we switch versions.
+**Pick the model that LoRA-trains best, not the model that classifies best now.** Round 2 calibration data shifted the LoRA target recommendation to Granite 4.1 3B. Round 2 results: Granite 4.1 3B base scored 58% partial accuracy — tying Qwen 3.5 9B instruct — with 73% Pass 1 quadrant accuracy (highest of any model tested across both rounds). At 3B dense, it's the most LoRA-trainable substrate that performs at production-model quality, with Apache 2.0 licensing and IBM's documented QLoRA methodology. OLMo 3 remains a secondary candidate / fallback for the model-flow capabilities (full training transparency, OlmoTrace) if Granite training doesn't yield expected results, but Granite 4.1 3B is the primary path. The model we LoRA-train doesn't have to be the model we use in v0.1; we can switch substrate when we switch versions.
 
 ## The honest framing
 

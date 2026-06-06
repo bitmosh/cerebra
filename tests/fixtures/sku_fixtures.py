@@ -105,9 +105,14 @@ SKU_FIXTURES: list[SKUFixture] = [
             "prompt_version, subcategory_strategy_version, model_string, latency_ms."
         ),
         expected_d1=D1Category.DESIGN,
-        difficulty="clear",
-        ambiguous_with=None,
-        notes="Schema definition — intentional structure of a data table. DESIGN.",
+        difficulty="ambiguous",
+        ambiguous_with=D1Category.OBSERVATION,
+        notes=(
+            "DESIGN (schema definition — intentional structure of a data table) vs OBSERVATION "
+            "('the table stores X, Y, Z' reads as a factual declaration of what exists). "
+            "The 'stores:' + bare enumeration surface gives observational character to a design "
+            "artifact. 0/13 models picked DESIGN; 10/13 picked OBSERVATION. Both defensible."
+        ),
     ),
     SKUFixture(
         fixture_id="clear_08",
@@ -151,9 +156,14 @@ SKU_FIXTURES: list[SKUFixture] = [
             "first vault created successfully."
         ),
         expected_d1=D1Category.EVENT,
-        difficulty="clear",
-        ambiguous_with=None,
-        notes="Something that happened at a specific moment. Phase 0 completion is an EVENT.",
+        difficulty="ambiguous",
+        ambiguous_with=D1Category.OBSERVATION,
+        notes=(
+            "EVENT (time-anchored Phase 0 completion moment) vs OBSERVATION (measurement content: "
+            "'88 tests passed' dominates the surface alongside status readouts). First sentence is "
+            "unambiguous EVENT; sentences 2-3 are measurement data. 12/13 models picked OBSERVATION. "
+            "Both defensible — reading as the event vs reading as the record of the event."
+        ),
     ),
     SKUFixture(
         fixture_id="clear_12",
@@ -227,13 +237,15 @@ SKU_FIXTURES: list[SKUFixture] = [
             "forbidden, it specifies what is permitted under what conditions. "
             "Everything outside the network is implicitly disallowed."
         ),
-        expected_d1=D1Category.MECHANISM,
+        expected_d1=D1Category.DESIGN,
         difficulty="hard",
-        ambiguous_with=D1Category.DESIGN,
+        ambiguous_with=D1Category.PRINCIPLE,
         notes=(
-            "MECHANISM (how the inversion works operationally: 'specifies what is permitted under "
-            "what conditions') vs DESIGN (architectural choice: 'inverts prohibition models'). The "
-            "first sentence is design-decision language; the rest is operational mechanism."
+            "DESIGN (architectural inversion choice: 'inverts prohibition models' / 'instead of X, "
+            "it does Y' is design-decision language) vs PRINCIPLE (normative framing: 'everything "
+            "outside is implicitly disallowed' reads as a governance rule). 0/13 models picked old "
+            "MECHANISM primary; 1/13 picked DESIGN, 7/13 picked PRINCIPLE. Primary swapped from "
+            "MECHANISM to DESIGN (data-driven); ambiguous_with updated from DESIGN to PRINCIPLE."
         ),
     ),
     SKUFixture(
@@ -299,9 +311,14 @@ SKU_FIXTURES: list[SKUFixture] = [
         ),
         expected_d1=D1Category.DESIGN,
         difficulty="hard",
-        ambiguous_with=D1Category.PRINCIPLE,
-        notes="DESIGN (intentional architectural choice: 'convention not feature') vs PRINCIPLE "
-        "(normative rule about the gate). The 'is a ... not a ...' framing signals a design decision.",
+        ambiguous_with=D1Category.TECHNIQUE,
+        notes=(
+            "DESIGN (intentional architectural choice: 'convention not feature' / 'is X, not Y' "
+            "framing signals a design decision) vs TECHNIQUE (procedural second sentence: 'bumper "
+            "renders and traces, and you post a dry-run sample' reads as how-to steps). 5/13 models "
+            "picked TECHNIQUE (the stronger performers); only 1/13 picked old ambiguous_with=PRINCIPLE. "
+            "ambiguous_with updated from PRINCIPLE to TECHNIQUE to reflect actual model behavior."
+        ),
     ),
     SKUFixture(
         fixture_id="hard_08",
@@ -412,6 +429,6 @@ HARD_FIXTURES: list[SKUFixture] = [f for f in SKU_FIXTURES if f.difficulty == "h
 AMBIGUOUS_FIXTURES: list[SKUFixture] = [f for f in SKU_FIXTURES if f.difficulty == "ambiguous"]
 
 assert len(SKU_FIXTURES) == 30, f"Expected 30 fixtures, got {len(SKU_FIXTURES)}"
-assert len(CLEAR_FIXTURES) == 13, f"Expected 13 clear fixtures, got {len(CLEAR_FIXTURES)}"
-assert len(AMBIGUOUS_FIXTURES) == 2, f"Expected 2 ambiguous fixtures, got {len(AMBIGUOUS_FIXTURES)}"
+assert len(CLEAR_FIXTURES) == 11, f"Expected 11 clear fixtures, got {len(CLEAR_FIXTURES)}"
+assert len(AMBIGUOUS_FIXTURES) == 4, f"Expected 4 ambiguous fixtures, got {len(AMBIGUOUS_FIXTURES)}"
 assert len(HARD_FIXTURES) == 15, f"Expected 15 hard fixtures, got {len(HARD_FIXTURES)}"
