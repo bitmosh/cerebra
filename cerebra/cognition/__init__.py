@@ -4,12 +4,12 @@ cerebra.cognition — public cognitive runtime API.
 Other Cerebra modules access cognitive primitives only through this module.
 This discipline approximates the eventual lattica-cognition package extraction.
 
-Phase 0: empty surface — populated as phases add runtime components.
-Phase 1+: SKU classifier, working memory, signal pipeline, clutch, catalyst.
+Phase 0: Lattica primitives surface.
+Phase 2: SKU classifier, address model, LLM adapter.
+Phase 3+: working memory, signal pipeline, clutch, catalyst.
 """
 
-# Re-export the six Lattica primitives as the cognition module's public surface.
-# Consumers should import from here, not directly from cerebra._primitives.
+# Lattica primitives
 from cerebra._primitives import (
     Clutch,
     CompositeScore,
@@ -27,7 +27,32 @@ from cerebra._primitives import (
     triangulate_with_components,
 )
 
+# Phase 2 — SKU addressing
+from cerebra.cognition.llm_adapter import (
+    ClassificationError,
+    ClassificationResult,
+    LLMAdapter,
+    OllamaDirectAdapter,
+    ProxyLLMAdapter,
+)
+from cerebra.cognition.sku import (
+    D9Modality,
+    D10Provenance,
+    SKUAddress,
+    SKUAssignment,
+    d9_from_detected_type,
+)
+from cerebra.cognition.sku_categories import CATEGORY_DESCRIPTIONS, D1Category, quadrant_of
+from cerebra.cognition.sku_classifier import (
+    CLASSIFIER_VERSION,
+    PROMPT_VERSION,
+    BackfillReport,
+    SKUClassifier,
+)
+from cerebra.cognition.sku_relationships import D4Relationship
+
 __all__ = [
+    # Lattica primitives
     "Clutch",
     "Decision",
     "Rule",
@@ -42,4 +67,23 @@ __all__ = [
     "TrajectoryTracker",
     "triangulate",
     "triangulate_with_components",
+    # SKU addressing
+    "D1Category",
+    "CATEGORY_DESCRIPTIONS",
+    "quadrant_of",
+    "D4Relationship",
+    "D9Modality",
+    "D10Provenance",
+    "SKUAddress",
+    "SKUAssignment",
+    "d9_from_detected_type",
+    "LLMAdapter",
+    "OllamaDirectAdapter",
+    "ProxyLLMAdapter",
+    "ClassificationResult",
+    "ClassificationError",
+    "SKUClassifier",
+    "BackfillReport",
+    "CLASSIFIER_VERSION",
+    "PROMPT_VERSION",
 ]

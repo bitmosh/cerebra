@@ -48,12 +48,22 @@ Every pass follows this exact sequence:
 2. Post brief START to #current-task.
 3. Work + verify, foreground.
 4. Post brief END to #current-task.
-5. MERGE GATE: post to #approve-this. Wait for approval. Commit with explicit paths.
-6. Post PASS COMPLETE to #changelog with real SHA.
-7. BUMP+PUSH GATE: `bumper bump --dry` → post to #approve-this → wait for approval → execute.
+5. MERGE GATE: post to #approve-this with the draft PASS COMPLETE text
+   as a code block. Run len() on it first — must be ≤1800 chars.
+   Wait for approval. Commit with explicit paths on approval.
+6. Post the PASS COMPLETE verbatim to #changelog (exactly the text
+   approved in step 5 — no changes). Single message only.
+7. BUMP+PUSH GATE: run `bumper bump --dry` (no --msg; buffer=1 picks
+   the previous message, so step 6 must be the most recent #changelog
+   entry before the dry run). Post dry-run output to #approve-this.
+   Wait for approval → run `bumper bump` live.
 ```
 
 Do not skip steps. Do not combine steps. Each gate is a real pause.
+
+**Between step 6 and step 7: do not post anything else to #changelog.**
+Buffer=1 means bumper takes the second-most-recent message. The PASS COMPLETE
+from step 6 must stay as the latest entry until the bump completes.
 
 ## 4. PASS COMPLETE Format (Load-Bearing)
 
@@ -83,6 +93,37 @@ Branch: <clean | branch name>
 
 The `── PASS COMPLETE ·` delimiter is the bump trigger. Messages without it are ignored by the bumper.
 
+### 1800-character hard budget (CRITICAL)
+
+The PASS COMPLETE **must land in a single Discord message**. Discord's limit is 2000 chars; the hard budget is **1800 chars** (200-char safety margin). A split message means bumper cannot find the Commit: field and parse fails.
+
+**Before posting, run `len()` on the string. If over 1800, trim — do not split.**
+
+Budget breakdown by field (approximate):
+
+```
+Delimiter line:   ~55 chars  (fixed)
+Title:            ~85 chars  (label + max title)
+Summary:         ~265 chars  (label + max 250 chars)
+Project:          ~20 chars  (fixed)
+Highlights:      ~660 chars  (6 bullets × ~100 chars + labels)
+Learnings:       ~330 chars  (3 bullets × ~100 chars + labels)
+Commit:           ~20 chars  (fixed)
+Tests:            ~55 chars  (fixed)
+Branch:           ~20 chars  (fixed)
+Whitespace/newlines: ~90 chars
+──────────────────────────────
+Total cap:      ~1600 chars  (leaves ~200 chars headroom)
+```
+
+Per-field limits when trimming:
+- Summary: max 250 chars (1–2 sentences)
+- Highlights: max 6 bullets, max 100 chars each
+- Learnings: max 3 bullets, max 100 chars each
+- Title: max 80 chars
+
+**Commit: is load-bearing. It must be in the same message as the delimiter. Trim everything else first.**
+
 ## 5. Approval Gate Discipline
 
 **Always ping #approve-this before:**
@@ -101,12 +142,28 @@ The `── PASS COMPLETE ·` delimiter is the bump trigger. Messages without it
 ## 6. Monitoring Approval Responses
 
 After posting to #approve-this:
-- Re-fetch the channel immediately to check if a response was already there.
-- If no response after posting, use Monitor tool with a flat 30–45s poll (fetch limit 15).
-- Do not spin a fake background loop.
+- Re-fetch the channel immediately to check if a response is already there.
+- If no response, use `Bash sleep 15 run_in_background` and call
+  `fetch_messages` when the notification fires. Repeat until a response lands.
+- The Monitor tool cannot call MCP tools — do not use it for Discord polling.
 - Do not proceed without an explicit approval response.
 
-## 7. Dependency Request Format
+## 7. Merge Gate Self-Check
+
+Before posting the merge gate to #approve-this, verify all five:
+
+1. Does my code do exactly what the approved plan said? Where it doesn't, is it in the deviation log?
+2. Are there schema columns the plan specified that aren't in my migration?
+3. Are there events the plan said should emit that don't?
+4. Are there tests for behaviors the plan listed?
+5. **Does the draft PASS COMPLETE fit in a single Discord message under 1800 chars?**
+   Run `len()` on the string. If over, trim before including it in the gate.
+
+The merge gate post must include the PASS COMPLETE as a code block so the developer
+can review the exact text before approving. The text approved here is posted verbatim
+to #changelog — no regenerating, expanding, or contracting after approval.
+
+## 8. Dependency Request Format
 
 Post to #approve-this (NOT #current-task):
 
@@ -123,7 +180,7 @@ Waiting for developer to install + confirm after vetting.
 
 Then wait. Do not proceed. The developer installs and confirms.
 
-## 8. MCP Failure Protocol
+## 9. MCP Failure Protocol
 
 If Discord MCP is down:
 - HALT before any gate.
@@ -131,7 +188,7 @@ If Discord MCP is down:
 - Report the MCP failure to the developer directly in chat.
 - Wait for MCP to be restored before any gated action.
 
-## 9. Version in PASS COMPLETE
+## 10. Version in PASS COMPLETE
 
 Version format: `v<arc>.<sub-arc>.<pass>[letter]`
 

@@ -242,3 +242,71 @@ def status(vault: str | None) -> None:
     click.echo(f"  Last ingest:  {last_ingest}")
     click.echo(f"  Schema ver:   {schema_version}")
     click.echo(f"  Journal mode: {journal_mode}")
+
+
+# ── classify ──────────────────────────────────────────────────────────────────
+
+
+@cli.command()
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option("--batch-size", default=50, show_default=True, help="Records per commit batch.")
+@click.option(
+    "--dry-run", is_flag=True, default=False, help="Count records needing SKU, write nothing."
+)
+@click.option("--json", "output_json", is_flag=True, default=False, help="Output report as JSON.")
+def classify(
+    vault: str | None,
+    batch_size: int,
+    dry_run: bool,
+    output_json: bool,
+) -> None:
+    """Assign SKU addresses to all unclassified memory records."""
+    import json as json_mod
+
+    from cerebra.cognition.llm_adapter import OllamaDirectAdapter
+    from cerebra.cognition.sku_classifier import SKUClassifier
+    from cerebra.inspector.ndjson_log import NDJSONEventLog
+    from cerebra.inspector.sqlite_log import SQLiteEventLog
+    from cerebra.storage.migrations import run_migrations
+    from cerebra.storage.sqlite_store import SQLiteStore
+
+    vault_path = _get_vault(vault)
+    db_path = vault_path / "data" / "cerebra.db"
+    events_log = vault_path / "events" / "classify.ndjson"
+
+    run_migrations(db_path)
+    store = SQLiteStore(db_path)
+    event_log = SQLiteEventLog(db_path)
+    ndjson = NDJSONEventLog(events_log)
+
+    adapter = OllamaDirectAdapter()
+    if not dry_run and not adapter.health_check():
+        raise click.ClickException(
+            "Ollama unreachable. Start the AI stack:\n"
+            "  cd ~/Projects/ai-stack && docker compose up -d"
+        )
+
+    classifier = SKUClassifier(
+        store=store,
+        event_log=event_log,
+        ndjson=ndjson,
+        adapter=adapter,
+    )
+
+    try:
+        report = classifier.backfill_null_records(batch_size=batch_size, dry_run=dry_run)
+    except Exception as e:
+        raise click.ClickException(f"Classify failed: {e}") from e
+
+    if output_json:
+        click.echo(json_mod.dumps(report.as_dict(), indent=2))
+        return
+
+    prefix = "[dry-run] " if dry_run else ""
+    click.echo(f"{prefix}Classify complete:")
+    click.echo(f"  Found:          {report.records_found}")
+    click.echo(f"  Classified:     {report.classified}")
+    click.echo(f"  Skipped:        {report.skipped}")
+    click.echo(f"  Failed:         {report.failed}")
+    click.echo(f"  Low confidence: {report.low_confidence}")
+    click.echo(f"  Elapsed:        {report.elapsed_ms}ms")

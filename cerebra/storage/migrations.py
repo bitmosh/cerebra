@@ -187,11 +187,88 @@ class Migration003_RenameParseWarnings(Migration):
         conn.execute("ALTER TABLE documents RENAME COLUMN parse_warnings_json TO parse_warnings")
 
 
+class Migration004_SKUAssignments(Migration):
+    """Phase 2: sku_assignments table for SKU classifier output.
+
+    Stores full classifier output per memory record including all 16 raw
+    category scores, the derived digit values, version metadata, and
+    performance telemetry (latency_ms, token counts, model_string).
+
+    D2/D3 intentionally 0x0 ('v1-stub') pending CEREBRA_SKU_SUBCATEGORIES.md.
+    subcategory_strategy_version is the reclassification trigger when that
+    doc lands.
+    """
+
+    version = 4
+    description = "Phase 2: sku_assignments table for SKU classifier output"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS sku_assignments (
+                assignment_id               TEXT    PRIMARY KEY,
+                record_id                   TEXT    NOT NULL
+                    REFERENCES memory_records(record_id),
+                sku_address                 TEXT    NOT NULL,
+                d1                          INTEGER NOT NULL,
+                d2                          INTEGER NOT NULL DEFAULT 0,
+                d3                          INTEGER NOT NULL DEFAULT 0,
+                d4                          INTEGER NOT NULL DEFAULT 0,
+                d5                          INTEGER NOT NULL DEFAULT 0,
+                d6                          INTEGER NOT NULL DEFAULT 0,
+                d7                          INTEGER NOT NULL,
+                d8                          INTEGER NOT NULL,
+                d9                          INTEGER NOT NULL,
+                d10                         INTEGER NOT NULL DEFAULT 0,
+                raw_scores_json             TEXT    NOT NULL,
+                d1_confidence               REAL    NOT NULL,
+                classifier_version          TEXT    NOT NULL,
+                prompt_version              TEXT    NOT NULL,
+                subcategory_strategy_version TEXT   NOT NULL DEFAULT 'v1-stub',
+                model_string                TEXT,
+                latency_ms                  INTEGER,
+                input_tokens                INTEGER,
+                output_tokens               INTEGER,
+                created_at                  INTEGER NOT NULL,
+                schema_version              INTEGER NOT NULL DEFAULT 1
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_sku_record
+                ON sku_assignments(record_id);
+            CREATE INDEX IF NOT EXISTS idx_sku_d1
+                ON sku_assignments(d1);
+            CREATE INDEX IF NOT EXISTS idx_sku_address
+                ON sku_assignments(sku_address);
+            CREATE INDEX IF NOT EXISTS idx_sku_location
+                ON sku_assignments(d1, d2, d3, d4, d5, d6, d9, d10);
+        """)
+
+
+class Migration005_AddPassCount(Migration):
+    """v0.1.0: add pass_count column to sku_assignments.
+
+    Defaults to 1 for all existing single-pass assignments.
+    Two-pass assignments (PROMPT_VERSION 2.0.0+) will write pass_count=2.
+    """
+
+    version = 5
+    description = "v0.1.0: add pass_count to sku_assignments"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        # Idempotent: check column existence before adding
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(sku_assignments)").fetchall()}
+        if "pass_count" not in cols:
+            conn.execute(
+                "ALTER TABLE sku_assignments ADD COLUMN pass_count INTEGER NOT NULL DEFAULT 1"
+            )
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
     Migration002_Phase1Schema(),
     Migration003_RenameParseWarnings(),
+    Migration004_SKUAssignments(),
+    Migration005_AddPassCount(),
 ]
 
 

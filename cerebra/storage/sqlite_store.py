@@ -203,3 +203,92 @@ class SQLiteStore:
                 (source_id,),
             ).fetchone()
         return row[0] if row else 0
+
+    # ── SKU assignments ───────────────────────────────────────────────────────
+
+    def insert_sku_assignment(self, assignment: dict[str, Any]) -> None:
+        with self._conn() as conn:
+            conn.execute(
+                """
+                INSERT INTO sku_assignments (
+                    assignment_id, record_id, sku_address,
+                    d1, d2, d3, d4, d5, d6, d7, d8, d9, d10,
+                    raw_scores_json, d1_confidence,
+                    classifier_version, prompt_version,
+                    subcategory_strategy_version,
+                    model_string, latency_ms, input_tokens, output_tokens,
+                    pass_count, created_at, schema_version
+                ) VALUES (
+                    :assignment_id, :record_id, :sku_address,
+                    :d1, :d2, :d3, :d4, :d5, :d6, :d7, :d8, :d9, :d10,
+                    :raw_scores_json, :d1_confidence,
+                    :classifier_version, :prompt_version,
+                    :subcategory_strategy_version,
+                    :model_string, :latency_ms, :input_tokens, :output_tokens,
+                    :pass_count, :created_at, :schema_version
+                )
+                """,
+                assignment,
+            )
+
+    def get_sku_assignment_for_record(self, record_id: str) -> dict[str, Any] | None:
+        with self._conn() as conn:
+            row = conn.execute(
+                "SELECT * FROM sku_assignments WHERE record_id = ? ORDER BY created_at DESC LIMIT 1",
+                (record_id,),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def delete_sku_assignment_for_record(self, record_id: str) -> None:
+        with self._conn() as conn:
+            conn.execute(
+                "DELETE FROM sku_assignments WHERE record_id = ?",
+                (record_id,),
+            )
+
+    def update_record_sku(self, record_id: str, sku_address: str, assigned_at: int) -> None:
+        with self._conn() as conn:
+            conn.execute(
+                "UPDATE memory_records SET sku_address = ?, sku_assigned_at = ? WHERE record_id = ?",
+                (sku_address, assigned_at, record_id),
+            )
+
+    def count_sku_location_occupancy(
+        self, d1: int, d2: int, d3: int, d4: int, d5: int, d6: int, d9: int, d10: int
+    ) -> int:
+        """Count existing sku_assignments at the full location tuple for D7-D8 derivation."""
+        with self._conn() as conn:
+            row = conn.execute(
+                """
+                SELECT COUNT(*) FROM sku_assignments
+                WHERE d1=? AND d2=? AND d3=? AND d4=? AND d5=? AND d6=? AND d9=? AND d10=?
+                """,
+                (d1, d2, d3, d4, d5, d6, d9, d10),
+            ).fetchone()
+        return row[0] if row else 0
+
+    def get_records_needing_classification(
+        self, classifier_version: str, prompt_version: str
+    ) -> list[dict[str, Any]]:
+        """
+        Return all memory records that need SKU classification:
+        - sku_address IS NULL (never classified), OR
+        - existing assignment has mismatched classifier_version or prompt_version
+        """
+        with self._conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT mr.record_id, mr.content, s.detected_type
+                FROM memory_records mr
+                LEFT JOIN sources s ON mr.source_id = s.source_id
+                LEFT JOIN sku_assignments sa ON mr.record_id = sa.record_id
+                WHERE mr.lifecycle_state = 'active'
+                  AND (
+                    mr.sku_address IS NULL
+                    OR sa.classifier_version != ?
+                    OR sa.prompt_version != ?
+                  )
+                """,
+                (classifier_version, prompt_version),
+            ).fetchall()
+        return [dict(row) for row in rows]

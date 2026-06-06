@@ -52,6 +52,8 @@ Channel IDs (verified 2026-06-04):
 10. **Ask before inventing.** Planning docs have thought this through; guessing creates compounding debt.
 11. **Evidence before fix.** Diagnostics → confirm → fix. Never patch from hypothesis.
 12. **Respect the protocol.** Bumper depends on PASS COMPLETE format. Developer's live feed depends on bumper.
+    PASS COMPLETE must be a single Discord message ≤1800 chars. Run `len()` before posting. Commit: line is load-bearing.
+    Full rules: `docs/agent/CEREBRA_DISCORD_PROTOCOL.md` §4.
 
 ## STOP Conditions
 

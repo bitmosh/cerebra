@@ -55,6 +55,16 @@ local-vault/
 test-vault/
 tmp-vault/
 
+# Defensive: vault artifacts must never be at project root
+/artifacts/
+/data/
+/events/
+/exports/
+/indexes/
+/leeway/
+/constitutional/
+/config.yaml
+
 # Inspector event logs (these can be huge)
 events/*.ndjson
 *.ndjson
