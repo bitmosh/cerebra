@@ -60,13 +60,19 @@ def mark_updated(
     *,
     model_name: str | None = None,
     model_version: str | None = None,
+    timestamp: int | None = None,
 ) -> None:
     """Record a successful index update.
 
     model_name and model_version are only meaningful for the 'vector' index;
     pass them when updating after an embedding drain.
+
+    timestamp: explicit epoch seconds to record as last_updated_at. Defaults
+    to int(time.time()). Pass max(time.time(), max_record_created_at) from
+    the lexical index so that records with future created_at values are
+    covered without requiring a subsequent rebuild.
     """
-    now = int(time.time())
+    now = timestamp if timestamp is not None else int(time.time())
     with connect(db_path) as conn:
         conn.execute(
             """
