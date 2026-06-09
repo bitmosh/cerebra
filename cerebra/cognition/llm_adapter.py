@@ -211,7 +211,7 @@ class OllamaDirectAdapter(LLMAdapter):
                       which was causing 1–3 minute per-call latency
       format: json  — grammar-constrained JSON output, eliminating parse failures
 
-    Production default: huggingface.co/unsloth/granite-4.1-3b-GGUF:Q4_K_M (Granite 4.1 3B base).
+    Production default: huggingface.co/unsloth/granite-4.1-3b-GGUF:Q4_K_M (Granite 4.1 3B instruct — verified by modelfile template having full chat/tool-call format).
     Granite 4.1 3B has no thinking mode by design — think: false is a no-op but harmless.
     Override via OLLAMA_MODEL env var or constructor argument.
     Fallback (legacy): if options.think is not respected by the running Ollama version,
