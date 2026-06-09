@@ -11,6 +11,8 @@ dependencies = [
     "pydantic>=2.7",
     "pyyaml>=6.0",
     "click>=8.1",
+    "numpy>=2.0,<3.0",
+    "sentence-transformers>=3.0",
 ]
 
 [project.optional-dependencies]
@@ -60,13 +62,19 @@ no_implicit_reexport = true
 module = "tests.*"
 disallow_untyped_defs = false
 
+[[tool.mypy.overrides]]
+module = ["sentence_transformers", "sentence_transformers.*"]
+ignore_missing_imports = true
+
 # ── pytest ────────────────────────────────────────────────────────────────────
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
     "unit: fast, in-memory, no filesystem I/O",
-    "integration: uses temp vault + real SQLite",
+    "integration: uses temp vault + real SQLite; may load ML models (~1.5 GB on first run)",
 ]
+# Integration tests run by default. To skip model-loading tests:
+#   python -m pytest -m "not integration"
 addopts = "--cov=cerebra --cov-report=term-missing --cov-fail-under=80"
 
 # ── coverage ──────────────────────────────────────────────────────────────────
