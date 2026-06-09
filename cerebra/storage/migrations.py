@@ -262,6 +262,140 @@ class Migration005_AddPassCount(Migration):
             )
 
 
+class Migration006_Phase3Schema(Migration):
+    """Phase 3: storage and index layer — embeddings, graph, freshness tracking.
+
+    Adds five tables per docs/agent/plans/v01_phase3_design.md:
+
+      embeddings        — float32 BLOB per record per model; embedding_alt_*
+                          columns reserved for future secondary embeddings
+                          (e.g. LoRA training auxiliary). origin_event_id is a
+                          soft reference to inspector_events — not a FK because
+                          event compaction (CEREBRA_INSPECTOR.md §6.3) must be
+                          allowed without cascade issues.
+
+      pending_embeddings — drain queue; decouples slow embedding generation
+                           from the ingest pipeline.
+
+      index_state        — one row per index name ('lexical', 'vector', 'graph');
+                           tracks last_updated_at and current model version.
+                           Populated at vault init, not here.
+
+      graph_nodes        — polymorphic node table with node_type discriminator.
+                           entity_id/entity_table are soft FKs (SQLite has no
+                           polymorphic FK support). updated_at is application-
+                           maintained — no trigger, by design (triggers fire
+                           silently without inspector events).
+
+      graph_edges        — polymorphic edge table. ON DELETE RESTRICT on both
+                           node FKs: graph cleanup is lifecycle-state-driven;
+                           hard-deleting a node that still has edges is a bug,
+                           not a supported operation.
+    """
+
+    version = 6
+    description = "Phase 3: embeddings, pending_embeddings, index_state, graph_nodes, graph_edges"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS embeddings (
+                embedding_id        TEXT    PRIMARY KEY,
+                record_id           TEXT    NOT NULL
+                    REFERENCES memory_records(record_id),
+                embedding_model     TEXT    NOT NULL,
+                model_version       TEXT    NOT NULL,
+                vector_bytes        BLOB    NOT NULL,
+                dimensions          INTEGER NOT NULL,
+                embedding_alt       BLOB    NULL,
+                embedding_alt_model TEXT    NULL,
+                embedding_alt_dim   INTEGER NULL,
+                created_at          INTEGER NOT NULL,
+                schema_version      INTEGER NOT NULL DEFAULT 1,
+                UNIQUE (record_id, embedding_model, model_version)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_emb_record
+                ON embeddings(record_id);
+            CREATE INDEX IF NOT EXISTS idx_emb_model
+                ON embeddings(embedding_model, model_version);
+
+            CREATE TABLE IF NOT EXISTS pending_embeddings (
+                record_id   TEXT    PRIMARY KEY
+                    REFERENCES memory_records(record_id),
+                queued_at   INTEGER NOT NULL,
+                attempt     INTEGER NOT NULL DEFAULT 0
+            );
+
+            CREATE TABLE IF NOT EXISTS index_state (
+                index_name      TEXT    PRIMARY KEY,
+                last_updated_at INTEGER NOT NULL,
+                record_count    INTEGER NOT NULL DEFAULT 0,
+                model_name      TEXT,
+                model_version   TEXT,
+                is_building     INTEGER NOT NULL DEFAULT 0,
+                schema_version  INTEGER NOT NULL DEFAULT 1
+            );
+
+            CREATE TABLE IF NOT EXISTS graph_nodes (
+                node_id         TEXT    PRIMARY KEY,
+                node_type       TEXT    NOT NULL,
+                label           TEXT    NOT NULL,
+                entity_id       TEXT,
+                entity_table    TEXT,
+                sku_address     TEXT,
+                lifecycle_state TEXT    NOT NULL DEFAULT 'active',
+                origin_event_id TEXT,
+                payload_json    TEXT    NOT NULL DEFAULT '{}',
+                created_at      INTEGER NOT NULL,
+                updated_at      INTEGER NOT NULL,
+                schema_version  INTEGER NOT NULL DEFAULT 1
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_gn_entity
+                ON graph_nodes(entity_id, entity_table);
+            CREATE INDEX IF NOT EXISTS idx_gn_type
+                ON graph_nodes(node_type);
+            CREATE INDEX IF NOT EXISTS idx_gn_type_state
+                ON graph_nodes(node_type, lifecycle_state);
+            CREATE INDEX IF NOT EXISTS idx_gn_sku
+                ON graph_nodes(sku_address);
+            CREATE INDEX IF NOT EXISTS idx_gn_state
+                ON graph_nodes(lifecycle_state);
+            CREATE INDEX IF NOT EXISTS idx_gn_created
+                ON graph_nodes(created_at);
+
+            CREATE TABLE IF NOT EXISTS graph_edges (
+                edge_id         TEXT    PRIMARY KEY,
+                edge_type       TEXT    NOT NULL,
+                source_node_id  TEXT    NOT NULL
+                    REFERENCES graph_nodes(node_id) ON DELETE RESTRICT,
+                target_node_id  TEXT    NOT NULL
+                    REFERENCES graph_nodes(node_id) ON DELETE RESTRICT,
+                confidence      REAL    NOT NULL DEFAULT 1.0,
+                weight          REAL    NOT NULL DEFAULT 1.0,
+                evidence        TEXT,
+                created_by      TEXT    NOT NULL,
+                origin_event_id TEXT,
+                lifecycle_state TEXT    NOT NULL DEFAULT 'active',
+                payload_json    TEXT    NOT NULL DEFAULT '{}',
+                created_at      INTEGER NOT NULL,
+                updated_at      INTEGER NOT NULL,
+                schema_version  INTEGER NOT NULL DEFAULT 1
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_ge_source
+                ON graph_edges(source_node_id, edge_type, lifecycle_state);
+            CREATE INDEX IF NOT EXISTS idx_ge_target
+                ON graph_edges(target_node_id, edge_type, lifecycle_state);
+            CREATE INDEX IF NOT EXISTS idx_ge_type
+                ON graph_edges(edge_type, lifecycle_state);
+            CREATE INDEX IF NOT EXISTS idx_ge_sibling
+                ON graph_edges(source_node_id, target_node_id);
+            CREATE INDEX IF NOT EXISTS idx_ge_created
+                ON graph_edges(created_at);
+        """)
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -269,6 +403,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration003_RenameParseWarnings(),
     Migration004_SKUAssignments(),
     Migration005_AddPassCount(),
+    Migration006_Phase3Schema(),
 ]
 
 
