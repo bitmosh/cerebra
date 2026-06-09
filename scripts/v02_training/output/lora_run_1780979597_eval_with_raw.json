@@ -1,0 +1,437 @@
+{
+  "adapter_path": "scripts/v02_training/output/lora_adapters/run_1780979597/adapter",
+  "use_prime": false,
+  "v01_partial_credit_baseline": 0.65,
+  "calibration": {
+    "metrics": {
+      "total": 30,
+      "strict_correct": 3,
+      "strict_accuracy": 0.1,
+      "partial_credit_sum": 3.0,
+      "partial_credit_accuracy": 0.1,
+      "parse_failures": 25,
+      "quadrant_breakdown": {
+        "lc_wrong": 25,
+        "hc_wrong": 2,
+        "hc_correct": 3
+      },
+      "hc_wrong": [
+        {
+          "fixture_id": "clear_07",
+          "expected": "DESIGN",
+          "predicted": "OBSERVATION",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "clear_13",
+          "expected": "TOOL",
+          "predicted": "TECHNIQUE",
+          "confidence": 1.0
+        }
+      ],
+      "per_category": {
+        "AGENT": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "CONSTRAINT": {
+          "total": 3,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "CONTEXT": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "CREATION": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "DESIGN": {
+          "total": 6,
+          "correct": 2,
+          "accuracy": 0.333,
+          "partial": 2.0
+        },
+        "EVENT": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "GOAL": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "MECHANISM": {
+          "total": 5,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "OBSERVATION": {
+          "total": 3,
+          "correct": 1,
+          "accuracy": 0.333,
+          "partial": 1.0
+        },
+        "PHENOMENON": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "PRINCIPLE": {
+          "total": 4,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "RELATION": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "TECHNIQUE": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "TOOL": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        }
+      }
+    },
+    "clarity": {
+      "clear": {
+        "n": 11,
+        "accuracy": 0.0
+      },
+      "hard": {
+        "n": 15,
+        "accuracy": 0.2
+      },
+      "ambiguous": {
+        "n": 4,
+        "partial_credit_accuracy": 0.0
+      }
+    },
+    "results": [
+      {
+        "fixture_id": "clear_01",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.0,
+        "raw_output": "\n\n</summary>\n</confidence>\n</clarification>\n</thought>\n\n<thought>\nThe inspection event should capture:\n\n```text\naction_type\nsource_id\ntarget_id\nuser_id\ntimestamp\noutcome\nconfidence\nreasoning\nconfidence_map\nprediction_map\naction_graph\n```\n\nThis is the minimum. Additional fields can be added later (e.g., signal source details, retrieval context for prediction maps).\n\nThe current implementation is EMPIRICAL.\n\n</thought>\n\n<cerebra/>\n\n<thought>\nThe inspection event should capture:\n\n```text\naction_type\nsource_id\ntarget_id\nuser_id\ntimestamp\noutcome\nconfidence\nreasoning\nprediction_map (for prediction_missed_action)\naction_graph (for cycle_detected)\n```\n\nThese are the non-negotiable fields.\n\n</thought>\n\n<inspector event=\"inspection_missed_action\" source=\"cerebra_engine\" target=\"memory_store_1\" action_type=\"inspect_cycle\" user_id=\"1\" timestamp=\"2023"
+      },
+      {
+        "fixture_id": "clear_02",
+        "expected": "TECHNIQUE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.84,
+        "raw_output": "\n\nConstraints:\n<constraints>\ncerebra ingest <path> should not require additional packages beyond standard Python.\n</constraints>\n\nSolution:\n<solution>\n```python\nimport os\nimport glob\nimport re\nfrom typing import List, Tuple\n\nSOURCE_EXTS = {\".md\", \".txt\", \".mdf\", \".mdown\"}\n\ndef discover_sources(\n    root: str,\n    max_depth: int = 3,\n    max_branches: int = 10,\n    max_files: int = 100\n) -> List[SourceRecord]:\n    results = []\n    queue = [(root, 0, 0, 0)]\n    seen = set()\n\n    while queue and len(results) < max_files:\n        parent, depth, branch, count = queue.pop(0)\n        if parent in seen:\n            continue\n        seen.add(parent)\n\n        if depth == max_depth:\n            continue\n\n        if is_stop_condition(parent):\n            continue\n\n        if is_file(parent):\n            results.append(\n                SourceRecord(\n                    id_=id_,\n                    path_="
+      },
+      {
+        "fixture_id": "clear_03",
+        "expected": "MECHANISM",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.01,
+        "raw_output": "\n\n</summary>\n\n</field>\n<field name=\"source_file_path\">\ncontent_hash.py\n</field>\n<field name=\"source_cycle_id\">\nc3\n</field>\n<field name=\"source_confidence\">\nmoderate \u2014 SHA256 is well-known; content_hash derivation is a standard pattern.\n</field>\n<field name=\"source_confidence_rationale\">\nThe source describes a standard cryptographic practice. The implementation details are minimal, which is typical for a proven technology.\n</field>\n<field name=\"source_signal_strength\">\nmedium \u2014 some components are described, but the overall process isn't highly orchestrated.\n</field>\n<field name=\"source_clarity\">\nmoderate \u2014 language is direct but doesn't explain why this is the chosen approach among alternatives.\n</field>\n<field name=\"source_staleness\">\nlow \u2014 content_hash is a well-established pattern.\n</field>\n<field name=\"source_scope_id\">\ncontent_hash\n</field>\n<field name=\"source_confidence_per_quadrant\">\n{\"EMPIRICAL"
+      },
+      {
+        "fixture_id": "clear_04",
+        "expected": "PHENOMENON",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.1,
+        "raw_output": "\n\nConstraints:\n\n```text\nCEREBRA_PROJECT_SCOPE: cerebral/cerebra/cerebral_runtime\nCEREBRA_VERSION: 0.1\nCEREBRA_STABILITY: prototype\nCEREBRA_ARCHITECTURE: CEREBRAL_ARCHITECTURE_0.1.JSON.TOML.LLM.\nCEREBRA_SPEC_STATE: prototype + CEREBRAL_SPEC_VERSION_0.1.TOML\nCEREBRA_CODE_CLONE: cerebral_runtime_prototype\n```\n\n---\n\n\n</text>{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 1.0}, \"confidence\": 0.9, \"primary_quadrant\": \"RELATIONAL\"}\n\n---\n\n\n</summary>\n\n## CEREBRA Scope and Version\n\n\nCEREBRA is a local-first cognitive runtime. It ingests knowledge sources, classifies memory, and provides structured retrieval for reasoning cycles.\n\nThis document defines the"
+      },
+      {
+        "fixture_id": "clear_05",
+        "expected": "CONSTRAINT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 21.8,
+        "raw_output": "\n\n</summary>\n</div>\n\n</html>\n\n</text>{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary_quadrant\": \"NORMATIVE\"}\n\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<meta name=\"description\" content=\"Cerebra v0.1 architecture diagram \u2014 the core components, their responsibilities, and how they interact.\nThis is the preliminary spec. The final architecture may differ as development progresses.\n</meta>\n<title>Cerebra v0.1 - Architecture</title>\n<link rel=\"stylesheet\" href=\"https://unpkg.com/mindmap-css/mindmap-css-v2-full-dist.css\">\n<link rel=\"icon\" href=\"https://cerebra.thoughtnative.dev/static/thought_icon_black_24px.svg\">\n</head>\n\n<body>\n"
+      },
+      {
+        "fixture_id": "clear_06",
+        "expected": "AGENT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.94,
+        "raw_output": "\n\n</summary>\n</confidence>\n</clarification>\n</thought>\n\n<thought>\nThe text describes a project (Cerebra) developed by one person (the sole developer, bitmosh). It explains that the project has no team dependencies because it's a solo exploration.\n\nThis describes a **MECHANISM** (how Cerebra was made) that is **SPECIFIC** (one developer, no team, solo exploration) and **CONDITIONAL** (no team because it's a solo project).\n\nThe cognitive quadrants that don't match:\n\nCEREBRAL (structural description of a cognitive system) \u2014 no, this describes a developer's tool, not the mental structure.\nCAUSAL (events that happened and what followed) \u2014 no, there's no event following in the description.\nPRACTICAL (how to do something) \u2014 no, it describes how the project was *made*, not how to *use* something.\nTRUTH (statements that are true or false) \u2014 no, the description is about how *CEREBRA* was built, not a statement about reality.\n\nEMPIRICAL (structural description of a cognitive system) and"
+      },
+      {
+        "fixture_id": "clear_07",
+        "expected": "DESIGN",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.81,
+        "raw_output": "\n\nConstraints:\n<constraints>\nSKEW: D1-D3 are most predictive; D4+ are useful for specific use cases but have lower predictive power.\n\nLAG: D4+ have a 1-3 month lags; D1-D3 are near-realtime.\n\nAUDIT: Every write records who, what, when, why.\n\n</constraints>{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary_quadrant\": \"EMPIRICAL\"}\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+      },
+      {
+        "fixture_id": "clear_08",
+        "expected": "MECHANISM",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.92,
+        "raw_output": "\n\n</input>\n\n<thoughts>\nThis describes a behavior and constraint.\n\nBehavior: tombstoning is a step applied to an item before it's inserted.\nConstraint: once tombstoned, the item is not re-inserted.\n\nThat's EMPIRICAL.\n\nThe distinction between behavior and constraint is clear.\nThe description does not assert why tombstoning is done (presumed because of the product's design), nor does it claim it's a \"best practice\" for all systems.\n\nThe four quadrants cannot both be EMPIRICAL and NORMATIVE at the same time.\n\nEMPIRICAL  \u2014 describes how things ARE or WORK: facts, observations, measurements, designed systems\nGENERATIVE \u2014 describes how things are MADE or DONE: procedures, steps to follow, artifacts produced\nNORMATIVE  \u2014 describes how things SHOULD BE: \"must\", \"should\", \"do not\", \"never\", capabilities required, failures to avoid\nRELATIONAL \u2014 describes how things CONNECT: events at specific times, named actors, operating environments\n\nThe description fits EMPIRICAL perfectly.\nThe confidence is high (80-90%).\nThe other quadrants have lower"
+      },
+      {
+        "fixture_id": "clear_09",
+        "expected": "GOAL",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.93,
+        "raw_output": "\n\n</input>\n<thoughts>\nTriage:\n\nQUIET \u2014 not urgent (the default)\nLOCAL \u2014 small local project (the default)\nREVIEW \u2014 needs a human decision (the default)\nCRITICAL \u2014 time-urgent and downstream (typhon rebuild)\nTEMPORARY \u2014 short-term control plane (guardrails)\n\nPriority should be driven by downstream dependencies. Classifier backfill is downstream from retrieval.\n\n</thoughts>\n<cerebra/>\n<signal type=\"IMPORTANT\" confidence=0.9/>\n<signal type=\"RELEVANT\" confidence=0.8/>\n<signal type=\"OPPOSITION\" confidence=0.7/>\n<signal type=\"DUPLICATION\" confidence=0.6/>\n<signal type=\"TO_REPLACE\" confidence=0.5/>\n<signal type=\"INSUFFICIENT_DATA\" confidence=0.4/>\n<signal type=\"TO_ARCHIVE\" confidence=0.3/>\n<signal type=\"EVENT_LOG\" confidence=0.2/>\n<signal type=\"CONTEXT_FAILURE\" confidence=0.1/>\n</card>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+      },
+      {
+        "fixture_id": "clear_10",
+        "expected": "CONTEXT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.91,
+        "raw_output": "\n\n</prompt>\n\n<thoughts>\nTriage:\n\nCEREBRA_PLANS: no\nCEREBRA_MEMORY: no\nCEREBRA_REASONING: no\nCEREBRA_LEARNING: no\nCEREBRA_ATTITUDE: no\nCEREBRA_INPUT: no\nCEREBRA_AGENT: no\nCEREBRA_OUTPUT: no\nCEREBRA_COGNITIVE_THREAD: no\nCEREBRA_STACK: no\n\nAnalysis:\n\nThe text describes directory structure for a SQLite database and separate directories for normalized documents and event logs.\n\nThis is a *structural description* of how the Cerebra storage system is built, not how it works (mechanism) or how it should be (policy).\n\n*MECHANISM*: how things produce outcomes.\n*POLICY*: \"should\", \"must\", \"never\", recommendations, goals, \"X is a requirement\".\n*CONTEXT*: event series, problem space, design decisions made.\n*ENTITY*: named things with descriptions, descriptions with names.\n*RELATION*: events ordered in time, entities together in structures, terms"
+      },
+      {
+        "fixture_id": "clear_11",
+        "expected": "EVENT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.89,
+        "raw_output": "\n\n</summary>\n</cerebra_model>\n\n<cerebra_inspect>\n**Key Achievement**: successful first-generation build of Cerebra's core components.\n\n**Truth Source**: the first Cerebra system built on itself.\n\n**Outcome**: a working prototype that passes its own tests, establishes its own state, and produces predictable outputs.\n\n**Next Steps**: build v0.2 with improved memory, stronger retrieval, and better consolidation.\n\n---\n\n\n</cerebra_inspect>\n\n<cerebra_cognition>\n**Signal Path**: development -> first-generation Cerebra -> self-building -> v0.2 candidate.\n\n**Thought Type**: formal-operational.\n\n**Justification**: this is the only way to prove Cerebra works. The proof is in the working prototype that produces working memory states and predictable outputs.\n\n**Existing Work**: retrieval-aided writing, LLM-aided coding, iterative refinement. Cerebra is the first system built *entirely* on its own first-generation output.\n\n**Safety Inspection Questions**:\n\n- Does the self-building produce stateful memories that"
+      },
+      {
+        "fixture_id": "clear_12",
+        "expected": "CREATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.96,
+        "raw_output": "\n\n</summary>\n\n</div>\n\n</div>\n\n</body>\n\n</html>\n\n\n<html>\n\n<head>\n<title>CEREBRA ARCHITECTURE</title>\n<meta name=\"description\" content=\"CEREBRA architecture document.\">\n<meta name=\"author\" content=\"Kyle Welch.\">\n<meta name=\"licence\" content=\"MIT.\">\n<meta name=\"canonical\" content=\"/arch/cerebra_arch.html\"/>\n<link rel=\"canonical\" href=\"/arch/cerbra_arch.html\"/>\n<link rel=\"index\" href=\"/index_html\"/>\n<link rel=\"prev\" href=\"/arch/cerbra_arch_draft_v01_index_html\"/>\n<link rel=\"next\" href=\"/arch/cerbra_arch_draft_v02_index_html\"/>\n<link rel=\"source\" href=\"https://github.com/brainquicken/cerebra_arch_draft_v02_source_html\"/>\n<link rel=\"file\" href=\"cerbra_arch_draft_v02_arch_plan_v01_document_json\"/>\n<link rel=\"schema\" href=\"https://"
+      },
+      {
+        "fixture_id": "clear_13",
+        "expected": "TOOL",
+        "predicted": "TECHNIQUE",
+        "confidence": 1.0,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 20.64,
+        "raw_output": "\n\nConstraints:\n\n```text\nrule priority must be defined for every clutch instance\nrules at the same priority level must be order-preserving\nthe clutch must emit a log entry for every rule-match\n```\n\n---\n\n\n</text>{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.95, \"primary_quadrant\": \"GENERATIVE\"}\n\n---\n\n\n</text>{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.95, \"primary_quadrant\": \"GENERATIVE\"}\n\n---\n\n\n</text>{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.95, \"primary_quadrant\": \"GENERATIVE\"}\n\n---\n\n\n</"
+      },
+      {
+        "fixture_id": "clear_14",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.91,
+        "raw_output": "\n\n</summary>\n</field>\n<field name=\"empi_score\">\n0.9\n</field>\n<field name=\"confidence_score\">\n0.8\n</field>\n<field name=\"primary_quadrant\">\nEMPIRICAL\n</field>\n<field name=\"reasoning_summary\">\nThe rule requires per-address distinction because:\n\n```text\nsynthesized entries have no source observation\nobserved entries have source observation\nthe address is the smallest unit with semantic meaning\nsub-address slices are addressable but lack semantic context\n```\n\nThe current implementation uses a 3-bit flag (D10 = 0b000). This is simple and efficient.\n\n</reasoning>\n</field>\n</thought>\n\n<thought max_tokens=\"500\" confidence=\"0.85\">\nThe synthesis_trace requires per-entry distinction because:\n\n```text\nsynthesized entries have no source observation\nobserved entries have source observation\nthe entry is the smallest unit with semantic meaning\nsub-component slices are addressable but lack semantic context\n```\n\nThe current implementation uses a 3-bit flag (S10 = "
+      },
+      {
+        "fixture_id": "clear_15",
+        "expected": "RELATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.11,
+        "raw_output": "\n\n</summary>\n</confidence>\n<standpoint>\nThe text describes the relationship and purpose of two systems \u2014 LumaWeave (visual graph display) and Cerebra (cognitive engine).\n\nLumaWeave is the reader's eye through which Cerebra is seen. LumaWeave doesn't think; it displays graphs. Cerebra produces thoughts, memory events, retrieval graphs, and synthesis primitives. LumaWeave shows what's there; Cerebra shows how it's there.\n\nThe text is descriptive, not evaluative. It describes how the systems work together, not how one is better than the other. This is EMPIRICAL SCIENCE language, not PROPOSITIONAL LOGIC.\n\nThe four quadrants are:\n\nCEREBRAL \u2014 PROCESSION, SYNTHESIS, MEMORY, GRAPH, RULING, THINKING, INSIGHT, AGENT, DIVISION, RESPONSIBILITY, FAILURE, SCORING\nLUMAWEAVE \u2014 GRAPH, BRAIN, INSIGHT, LEARNING, DISPLAY, COMPONENT, SIGNAL, PEER_REVIEW\n\nThe correct quadrant is RELATIONAL. The systems have a causal dependency (`BROKEN_TO`"
+      },
+      {
+        "fixture_id": "hard_01",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.27,
+        "raw_output": "\n\n</summary>\n</field>\n</query>\n\n</schema>\n\n<params>\n## 3. Retrieval/Prompt Cycle\n\n```text\nretrieve_card(query)\nconstruct_prompt(card, retrieval_context)\nexecute_prompt\nevaluate_outcome\nstore_context\nupdate_card_quality\ncontinue_cycle\n```\n\nThis is the core loop. The SKU is the substrate that makes everything above it possible. Get this right and the truth tower, the leeway network, and the dream/retrain direction all compose cleanly on top of it.\n\n---\n\n\n</param>\n\n<param name=\"retrieval_context\">\n## 4. Retrieval Context\n\n```text\ncontext_id\ncard_id\nuser_role\nquery_type\ndesired_resolution\nallowed_sources\npriority_weights\n```\n\nThe context tells the retrieval engine what kind of answer is desired, which sources to prioritize, and how to weigh different quality metrics.\n\n---\n\n\n</param>\n\n<param name=\"prompt_template\">\n## 5. Prompt Template\n\n```text\n[context_id]\n[card_"
+      },
+      {
+        "fixture_id": "hard_02",
+        "expected": "DESIGN",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.06,
+        "raw_output": "\n\n</summary>\n</field>\n<field name=\"empi_score\">\n0.9\n</field>\n<field name=\"conf_score\">\n0.7\n\nThe signal is strong that this is a structural description of how the leeway network works. The language describes a purpose (\"describes what the network should track\") and a definition (quoted rules about what the network records). Confidence is moderate because there might be some imprecision in the prose \u2014 \"high-precision\" is a claim that needs support.\n\n</field>\n<field name=\"prov_source\">\nself-assertion\n\nThe source is the classifier's own analysis that this is a structural description.\n\n</field>\n<field name=\"cycle_type\">\nevent\n\nThe \"permutation cycle\" refers to the ongoing state maintenance process, not a historical event.\n\n</field>\n<field name=\"id_scope_scope\">\nlocal\n\nThe ID scope is not global; it's within the leeway network's own state maintenance.\n\n</field>\n<field name=\"source_format\">\ntext\n\n</field>\n<field name=\"source_type\">\n"
+      },
+      {
+        "fixture_id": "hard_03",
+        "expected": "OBSERVATION",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 1.0,
+        "latency_s": 22.81,
+        "raw_output": "\n\nConstraints:\n```text\nDO NOT score the text if it does not belong to one of four quadrants at the top level.\nDO NOT score the text if it is a single token.\nDO NOT score the text if it is source code.\nDO NOT score the text if it is a signal name or graph vocabulary (e.g. \"saturating\", \"derivative\", \"pointer\").\n```\n\n</text>{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.75, \"primary_quadrant\": \"EMPIRICAL\"}\n\n</assistant>\n\n\n## 12. Consolidation Tests\n\nTests should cover:\n\n```text\nsingle-SKU saturation at a single address\nmultiple-SKU saturation at a single address\naddress that is a candidate for subdivision\nsubdivision creates new addresses\noriginal address still exists\nretrieval prioritizes new address when query matches both\nquery with wildcard matches both if both exist\n```\n\n---\n\n\n## 13. Consolidation API\n\nThe consolidation engine"
+      },
+      {
+        "fixture_id": "hard_04",
+        "expected": "MECHANISM",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 12.41,
+        "raw_output": "\n\nConstraints:\n```text\nCEREBRA_MEMORY: 64MB\nCEREBRA_ARCHITECTURE: 8MB memory + 4MB working memory + 4MB control signals\nCEREBRA_LAYER_ORDERS: fixed layers cannot be re-ordered\nCEREBRA_LAYER_SLOTS:\n  0: memory access\n  1: retrieval decoding\n  2: consolidation decoding\n  3: prediction decoding\n  4: synthesis decoding\n  5: attention modulation\n  6: consolidation gate\n  7: prediction gate\n  8: synthesis gate\n  9: write/delete/update\n  10: retrieval export\n  11: consolidation export\n  12: prediction export\n  13: synthesis export\n  14: tear-down/re-consolidation\n  15: graph visualization\n```\n\n---\n\n\n</text>{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85"
+      },
+      {
+        "fixture_id": "hard_05",
+        "expected": "MECHANISM",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 12.88,
+        "raw_output": "\n\n</summary>\n</confidence>\n<standards>\nCEREBRA_SCHEMA\nCEREBRA_ARCHITECTURE\nCEREBRA_MEMORY\nCEREBRA_RETRIEVAL\nCEREBRA_LEARNING\nCEREBRA_ACTION_TELESCOPIC\nCEREBRA_INTELLIGENCE_DEFINITION\n</standards>\n<control signals>\nnone\n\n</control signals>\n<cycle events>\nnone\n\n</cycle events>\n<tests>\nnone\n\n</tests>\n</thought</summary>\n<thought</thought>\n<input_type>\ncerebral_cycle_history\n\n</input_type>\n<source_id>\ncerebra_v0.1_official_docs\n\n</source_id>\n<version>\nv1.0\n\n</version>\n<confidence>\n0.85\n\n</confidence>\n<output_type>\ncerebral_schema_validation\n\n</output_type>\n<tests>\n<!-- one or more tests from the suite -->\n\n</tests>\n<chain_"
+      },
+      {
+        "fixture_id": "hard_06",
+        "expected": "OBSERVATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 12.52,
+        "raw_output": "\n\n</summary>\n\n</div>\n\n</div>\n\n</body>\n\n</html>\n\n\n<html>\n\n<head>\n<title>Cerebra</title>\n<meta name=\"description\" content=\"Cerebra is a memory system that learns from your learning.\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<meta name=\"author\" content=\"Cerebra Team\">\n<meta name=\"licence\" content=\"MIT\">\n<meta name=\"archive\" content=\"true\">\n<meta name=\"archive_reason\" content=\"this is a working document\">\n\n<link rel=\"stylesheet\" href=\"styles/archive-presume-presentational/style.css\">\n<link rel=\"canonical\" href=\"https://cerebra-memory.cerebra.dev/docs/architecture/index.md\">\n\n</head>\n\n<body>\n\n<div id=\"container\">\n<div id=\"nav\"></div>\n<div id=\"content\">\n<header class=\"primary\">\n<h1>Cerebra</h1>\n<h2>A memory system that learns from"
+      },
+      {
+        "fixture_id": "hard_07",
+        "expected": "DESIGN",
+        "predicted": "DESIGN",
+        "confidence": 0.85,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 1.0,
+        "latency_s": 22.32,
+        "raw_output": "\n\n</input>\n\n<thoughts>\nTriage: CEREBRA_TECHNICAL \u2014 the approval gate is a workflow pattern, not a CLI feature.\n\nThe current implementation is correct.\n\n</thoughts>\n\n<confidence>\n0.8\n\n</confidence>\n\n<output>\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.8, \"primary_quadrant\": \"GENERATIVE\"}\n\n</output>\n\n\n<thoughts>\nTriage: CEREBRA_TECHNICAL \u2014 the approval gate is a workflow pattern, not a CLI feature.\n\nThe current implementation is correct.\n\n</thoughts>\n\n<output>\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.8, \"primary_quadrant\": \"GENERATIVE\"}\n\n</output"
+      },
+      {
+        "fixture_id": "hard_08",
+        "expected": "CONSTRAINT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.06,
+        "raw_output": "\n\n</input>\n<thoughts>\nTriage: STOP-gate is a signal, not the failure itself. Stop-gate is a high-priority investigation, not a patch.\n</thoughts>\n<cognition>\nSTOP-gate is a signal, not a failure classification. Stop-gate is a high-priority investigation, not a patch.\n\nThe current implementation is correct.\n</cognition>\n<summary>\nSTOP-gate is a signal, not a failure classification. Stop-gate is a high-priority investigation, not a patch.\n</summary>\n<confidence>\n0.9\n\nThe current implementation is correct. The STOP-gate logic is well-defined and the current implementation matches the definition.\n</confidence>\n</thought>\n\n\n<question>\nWhat is the current STOP-gate implementation in the memory store?\n</question>\n\n<answer>\nSTOP-gate is a signal, not a failure classification. Stop-gate is a high-priority investigation, not a patch.\n\nThe current implementation is:\n```text\nif 5+ tests fail at the same root cause (same signature), trigger STOP-gate\n```\n\nThis"
+      },
+      {
+        "fixture_id": "hard_09",
+        "expected": "DESIGN",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 22.1,
+        "raw_output": "\n\n</prompt>\n\n<thoughts>\nTriage:\n\nCEREBRA_TECHNIQUE: yes \u2014 this is the foundation for the classifier's own self-interpretation.\n\n</thoughts>\n\n<output>\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0},\n \"confidence\": 0.85, \"primary_quadrant\": \"EMPIRICAL\"}\n\n</output>\n\n</flow>\n\n<thoughts>\nTriage:\n\nCEREBRA_TECHNIQUE: yes \u2014 this is the foundation for the classifier's own self-interpretation.\n\n</thoughts>\n\n<action_class>\nCEREBRA_TECHNIQUE</action_class>\n\n<params>\n{\"step_number\": 2, \"phase\": \"classifier_construction\", \"current_cycle_id\": 1, \"current_step_id\": \"D1_classifier_basis\", \"current_confidence\": 0.9, \"confidence_reason"
+      },
+      {
+        "fixture_id": "hard_10",
+        "expected": "MECHANISM",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 22.33,
+        "raw_output": "\n\n</summary>\n</div>\n\n</html>\n\n</text>{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary_quadrant\": \"EMPIRICAL\"}\n\n<html>\n<head>\n<meta charset=\"UTF--8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-zoom=fixed\">\n<meta name=\"theme-color\" content=\"#4a535d\">\n<meta name=\"description\" content=\"Cerebra memory architecture diagram\">\n<link rel=\"icon\" href=\"/static/assets/brain-icon-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small-small"
+      },
+      {
+        "fixture_id": "hard_11",
+        "expected": "CONSTRAINT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 22.27,
+        "raw_output": "\n\n</summary>\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary_quadrant\": \"NORMATIVE\"}\n\n</summary>{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary_quadrant\": \"NORMATIVE\"}\n\n</text>{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary_quadrant\": \"NORMATIVE\"}\n\n</text>{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary"
+      },
+      {
+        "fixture_id": "hard_12",
+        "expected": "DESIGN",
+        "predicted": "DESIGN",
+        "confidence": 0.9,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 1.0,
+        "latency_s": 21.07,
+        "raw_output": "\n\n</input>\n\n<thoughts>\nTriage:\nSUMMARY: Phase 3 of v0.1\n\nSIGNAL: LumaProve's semantic engine needs a lexical-pattern engine first\n\nSCOPE:\n- lexical FTS5 index over chunks\n- vector similarity index (numpy + cosine) over chunks\n- no external vector store\n- queries:\n  - exact match\n  - pattern match\n  - vector proximity\n\nNON-GOAL:\n- full LumaWeave integration\n- multi-engine query selection\n- graph-spreading signals\n\n</thoughts>\n\n<output>\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary_quadrant\": \"GENERATIVE\"}\n\n</output>\n\n<metadata>\nsource_type: text\nsource_id: lumaProve_v0_1_arch_plan_03\nversion: 1.0\ncreated: 2024-07-30T15:"
+      },
+      {
+        "fixture_id": "hard_13",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 22.13,
+        "raw_output": "\n\n</summary>\n</div>\n\n</html>\n\n</text>{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.95, \"primary_quadrant\": \"NORMATIVE\"}\n\n<details>\n<summary>\n**Reasoning**</summary>\n\nThe statement is the thesis of the entire document. It explains why the inspectable runtime is the foundation, not just an architectural choice.\n\n</details>\n\n</div>\n\n</html>\n\n<div id=\"file_inspectable_runtime_md_inspectable_runtime_md_10_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00"
+      },
+      {
+        "fixture_id": "hard_14",
+        "expected": "DESIGN",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.07,
+        "raw_output": "\n\n</summary>\n\n</field>\n\n<field name=\"source_file_path\">\n```text\nsource_files/plans/plan_template.md\n```\n\n</field>\n\n<field name=\"source_scope_type\">\n```text\nSCOPE_TYPE\n```\n\nCognitive: entire document structure.\n\nCeremonial: specific sections or paragraphs.\n\nOperational: code generation or export steps.\n\n</field>\n\n<field name=\"source_scope_slice\">\n```json\n{\n  \"start_byte\": 0,\n  \"end_byte\": 0,\n  \"start_line\": 0,\n  \"end_line\": 0,\n  \"start_section\": 0,\n  \"end_section\": 0,\n  \"start_step\": 0,\n  \"end_step\": 0,\n  \"start_card\": 0,\n  \"end_card\": 0\n}\n```\n\nDocument: start/end byte.\n\nSection: start/end section.\n\nStep: start/end step.\n\nCard: start/"
+      },
+      {
+        "fixture_id": "hard_15",
+        "expected": "OBSERVATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.17,
+        "raw_output": "\n\n</summary>\n\n</field>\n<field name=\"confidence\">\n<number>0.85</number>\n</field>\n<field name=\"primary_quadrant\">\n<text>RELATIONAL</text>\n</field>\n<field name=\"reasoning\">\nThe SKU address is a relationship between a SKU and a memory record. It is derived from classifier confidence and memory quality, not measured as a property of either.\n\n<quote>\nSKU_address is a relationship between a SKU and a memory record, not a property of the SKU or the memory.\n</quote>\n\nThe SKU address exists only after the classifier assigns a SKU to a memory record. Before that, the record has no SKU_address.\n\n</reasoning>\n</thought>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+      }
+    ]
+  },
+  "test_set": null
+}

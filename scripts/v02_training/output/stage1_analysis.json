@@ -1,0 +1,120 @@
+{
+  "total": 745,
+  "threshold": 0.7,
+  "retained": 583,
+  "dropped": 162,
+  "distribution": {
+    ">=0.9": {
+      "count": 285,
+      "pct": 38.3
+    },
+    "0.8-0.9": {
+      "count": 221,
+      "pct": 29.7
+    },
+    "0.7-0.8": {
+      "count": 77,
+      "pct": 10.3
+    },
+    "0.6-0.7": {
+      "count": 20,
+      "pct": 2.7
+    },
+    "<0.6": {
+      "count": 142,
+      "pct": 19.1
+    }
+  },
+  "per_category": {
+    "DESIGN": {
+      "total": 136,
+      "retained": 81,
+      "pct_retained": 59.6,
+      "mean_conf": 0.688
+    },
+    "PRINCIPLE": {
+      "total": 221,
+      "retained": 210,
+      "pct_retained": 95.0,
+      "mean_conf": 0.866
+    },
+    "TECHNIQUE": {
+      "total": 96,
+      "retained": 81,
+      "pct_retained": 84.4,
+      "mean_conf": 0.773
+    },
+    "RELATION": {
+      "total": 84,
+      "retained": 53,
+      "pct_retained": 63.1,
+      "mean_conf": 0.639
+    },
+    "CONSTRAINT": {
+      "total": 7,
+      "retained": 6,
+      "pct_retained": 85.7,
+      "mean_conf": 0.857
+    },
+    "CREATION": {
+      "total": 59,
+      "retained": 52,
+      "pct_retained": 88.1,
+      "mean_conf": 0.785
+    },
+    "TOOL": {
+      "total": 27,
+      "retained": 7,
+      "pct_retained": 25.9,
+      "mean_conf": 0.561
+    },
+    "OBSERVATION": {
+      "total": 40,
+      "retained": 38,
+      "pct_retained": 95.0,
+      "mean_conf": 0.808
+    },
+    "GOAL": {
+      "total": 11,
+      "retained": 5,
+      "pct_retained": 45.5,
+      "mean_conf": 0.573
+    },
+    "CONTEXT": {
+      "total": 13,
+      "retained": 5,
+      "pct_retained": 38.5,
+      "mean_conf": 0.473
+    },
+    "PATTERN": {
+      "total": 11,
+      "retained": 10,
+      "pct_retained": 90.9,
+      "mean_conf": 0.8
+    },
+    "MECHANISM": {
+      "total": 24,
+      "retained": 24,
+      "pct_retained": 100.0,
+      "mean_conf": 0.816
+    },
+    "EVENT": {
+      "total": 2,
+      "retained": 2,
+      "pct_retained": 100.0,
+      "mean_conf": 0.775
+    },
+    "PHENOMENON": {
+      "total": 8,
+      "retained": 6,
+      "pct_retained": 75.0,
+      "mean_conf": 0.7
+    },
+    "JUDGMENT": {
+      "total": 6,
+      "retained": 3,
+      "pct_retained": 50.0,
+      "mean_conf": 0.542
+    }
+  }
+}

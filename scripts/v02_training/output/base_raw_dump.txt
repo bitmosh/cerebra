@@ -1,0 +1,103 @@
+Base model raw output dump — first 5 calibration fixtures
+======================================================================
+
+=== FIXTURE 1 (expected: PRINCIPLE) ===
+CHUNK CONTENT (first 200 chars):
+Every cognitive action must emit a structured inspector event at write time. Silent code is incomplete code. Inspector events are non-negotiable.
+
+PASS 1 RAW OUTPUT:
+
+{"scores": {"EMPIRICAL": 0.0, "GENERATIVE": 0.0, "NORMATIVE": 0.0, "RELATIONAL": 0.0}, "confidence": 0.0, "primary": "NORMATIVE"}
+
+
+PASS 2 RAW OUTPUT:
+
+{"scores": {"PRINCIPLE": 1.0, "JUDGMENT": 0.0, "GOAL": 0.0, "CONSTRAINT": 0.0}, "confidence": 1.0, "primary": "PRINCIPLE", "reasoning": "The text describes a normative rule about how systems should work, specifically that every cognitive action must emit a structured inspector event at write time. This is a behavioral standard or design doctrine, which is a type of PRINCIPLE."}
+<text>
+Every cognitive action must emit a structured inspector event at write time. Silent code is incomplete code. Inspector events are non-...
+</text>
+{"scores": {"PRINCIPLE": 1.0, "JUDGMENT": 0.0, "GOAL": 0.0, "CONSTRAINT": 0.0}, "confidence": 1.0, "primary": "PRINCIPLE", "reasoning":
+
+======================================================================
+
+=== FIXTURE 2 (expected: TECHNIQUE) ===
+CHUNK CONTENT (first 200 chars):
+cerebra ingest <path> discovers all markdown and text files under the target directory, registers them as sources, parses each, chunks the content, and writes memory records.
+
+PASS 1 RAW OUTPUT:
+
+{"scores": {"EMPIRICAL": 0.0, "GENERATIVE": 0.0, "NORMATIVE": 0.0, "RELATIONAL": 0.0}, "confidence": 0.0, "primary": "GENERATIVE"}
+
+
+PASS 2 RAW OUTPUT:
+
+{"scores": {"TECHNIQUE": 0.0, "DESIGN": 0.0, "CREATION": 0.0, "TOOL": 0.0}, "confidence": 0.0, "primary": "CATEGORY_1", "reasoning": "one sentence"}
+{"scores": {"TECHNIQUE": 0.0, "DESIGN": 0.0, "CREATION": 0.0, "TOOL": 0.0}, "confidence": 0.0, "primary": "CATEGORY_1", "reasoning": "one sentence"}
+{"scores": {"TECHNIQUE": 0.0, "DESIGN": 0.0, "CREATION": 0.0, "TOOL": 0.0}, "confidence": 0.0, "primary": "CATEGORY_1", "reasoning": "one sentence"}
+{"scores": {"TECHNIQUE
+
+======================================================================
+
+=== FIXTURE 3 (expected: MECHANISM) ===
+CHUNK CONTENT (first 200 chars):
+content_hash is derived by reading the file in 64KB blocks and feeding each block to SHA256. The final digest is returned as a lowercase hex string.
+
+PASS 1 RAW OUTPUT:
+
+{"scores": {"EMPIRICAL": 0.0, "GENERATIVE": 0.0, "NORMATIVE": 0.0, "RELATIONAL": 0.0}, "confidence": 0.0, "primary": "EMPIRICAL"}
+
+
+PASS 2 RAW OUTPUT:
+
+{"scores": {"OBSERVATION": 0.0, "PATTERN": 0.0, "MECHANISM": 0.0, "PHENOMENON": 0.0}, "confidence": 0.0, "primary": "MECHANISM", "reasoning": "one sentence"}
+```
+
+## 2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.
+
+======================================================================
+
+=== FIXTURE 4 (expected: PHENOMENON) ===
+CHUNK CONTENT (first 200 chars):
+Cerebra is a local-first cognitive runtime. It ingests knowledge sources, classifies memory, and provides structured retrieval for reasoning cycles.
+
+PASS 1 RAW OUTPUT:
+
+{"scores": {"EMPIRICAL": 0.0, "GENERATIVE": 0.0, "NORMATIVE": 0.0, "RELATIONAL": 0.0}, "confidence": 0.0, "primary": "QUADRANT_1"}
+<text>
+Cerebra is a local-first cognitive runtime. It ingests knowledge sources, classifies memory, and provides structured retrieval for reasoning cycles.
+</text>
+{"scores": {"EMPIRICAL": 0.0, "GENERATIVE": 0.0, "NORMATIVE": 0.0, "RELATIONAL": 0.0}, "confidence": 0.0, "primary": "QUADRANT_1"}
+<text>
+Cerebra is a local-first cognitive runtime. It ingests knowledge sources, classifies memory, and provides structured retrieval for reasoning cycles.
+</text>
+{"scores": {"EMPIRICAL": 0.0, "
+
+PASS 2 RAW OUTPUT:
+
+{"scores": {"OBSERVATION": 0.0, "PATTERN": 0.0, "MECHANISM": 0.0, "PHENOMENON": 0.0}, "confidence": 0.0, "primary": "CATEGORY_1", "reasoning": "one sentence"}
+```
+
+## 2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.
+
+======================================================================
+
+=== FIXTURE 5 (expected: CONSTRAINT) ===
+CHUNK CONTENT (first 200 chars):
+Do not assist with creating weapons capable of mass casualties, biological agents, chemical weapons, or any action that would harm large populations.
+
+PASS 1 RAW OUTPUT:
+
+{"scores": {"EMPIRICAL": 0.0, "GENERATIVE": 0.0, "NORMATIVE": 0.0, "RELATIONAL": 0.0}, "confidence": 0.0, "primary": "NORMATIVE"}
+
+
+PASS 2 RAW OUTPUT:
+
+{"scores": {"PRINCIPLE": 0.0, "JUDGMENT": 0.0, "GOAL": 0.0, "CONSTRAINT": 1.0}, "confidence": 1.0, "primary": "CONSTRAINT", "reasoning": "explicit prohibition"}
+Text:
+<text>
+The inspector should emit events for all actions, including those that are not negotiable, to ensure that all actions are accounted for and can be tracked and analyzed. This will help to ensure that the system is functioning as intended and that any issues can be identified and addressed in a timely manner.
+</text>
+{"scores": {"PRINCIPLE": 0.0, "JUDGMENT": 0.0, "GOAL": 0.0, "CONSTRAINT": 0.0}, "confidence": 0.0, "primary": "PRINCIPLE", "reasoning": "normative doctrine about how systems SHOULD work"}
+
+
+======================================================================

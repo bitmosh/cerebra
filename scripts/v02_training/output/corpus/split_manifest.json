@@ -1,0 +1,31 @@
+{
+  "corpus_rule": "path_a_lite",
+  "rule1_consensus": 205,
+  "rule2_unanimous_correction": 9,
+  "rule3_excluded": 369,
+  "total_included": 214,
+  "splits": {
+    "train": 169,
+    "val": 21,
+    "test": 24
+  },
+  "total_pairs": 428,
+  "class_weights": {
+    "PRINCIPLE": 0.026174625404991343,
+    "TECHNIQUE": 0.10888644168476401,
+    "DESIGN": 0.15123116900661668,
+    "CONSTRAINT": 0.9073870140396999,
+    "RELATION": 0.3402701302648875,
+    "TOOL": 2.7221610421191,
+    "OBSERVATION": 0.08781164651997098,
+    "PATTERN": 0.680540260529775,
+    "MECHANISM": 0.17013506513244375,
+    "CONTEXT": 1.36108052105955,
+    "CREATION": 2.7221610421191,
+    "PHENOMENON": 2.7221610421191
+  },
+  "seed": 42,
+  "absent_from_corpus": [
+    "AGENT"
+  ]
+}

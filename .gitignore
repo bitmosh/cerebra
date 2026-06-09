@@ -77,6 +77,10 @@ events/*.ndjson
 # Build artifacts
 *.log
 .pyenv
+unsloth_compiled_cache/
+
+# LoRA adapter weights (large binary files — not versioned)
+scripts/v02_training/output/lora_adapters/
 
 # OS junk
 Thumbs.db

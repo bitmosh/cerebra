@@ -1,0 +1,737 @@
+{
+  "adapter_path": "scripts/v02_training/output/lora_adapters/run_1780981685/adapter",
+  "use_prime": false,
+  "v01_partial_credit_baseline": 0.65,
+  "calibration": {
+    "metrics": {
+      "total": 30,
+      "strict_correct": 0,
+      "strict_accuracy": 0.0,
+      "partial_credit_sum": 0.5,
+      "partial_credit_accuracy": 0.0167,
+      "parse_failures": 25,
+      "quadrant_breakdown": {
+        "lc_wrong": 25,
+        "hc_wrong": 5
+      },
+      "hc_wrong": [
+        {
+          "fixture_id": "clear_08",
+          "expected": "MECHANISM",
+          "predicted": "OBSERVATION",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "clear_10",
+          "expected": "CONTEXT",
+          "predicted": "OBSERVATION",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "clear_14",
+          "expected": "PRINCIPLE",
+          "predicted": "OBSERVATION",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "hard_09",
+          "expected": "DESIGN",
+          "predicted": "TECHNIQUE",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "hard_10",
+          "expected": "MECHANISM",
+          "predicted": "OBSERVATION",
+          "confidence": 0.85
+        }
+      ],
+      "per_category": {
+        "AGENT": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "CONSTRAINT": {
+          "total": 3,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "CONTEXT": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "CREATION": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "DESIGN": {
+          "total": 6,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.5
+        },
+        "EVENT": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "GOAL": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "MECHANISM": {
+          "total": 5,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "OBSERVATION": {
+          "total": 3,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "PHENOMENON": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "PRINCIPLE": {
+          "total": 4,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "RELATION": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "TECHNIQUE": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "TOOL": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        }
+      }
+    },
+    "clarity": {
+      "clear": {
+        "n": 11,
+        "accuracy": 0.0
+      },
+      "hard": {
+        "n": 15,
+        "accuracy": 0.0
+      },
+      "ambiguous": {
+        "n": 4,
+        "partial_credit_accuracy": 0.0
+      }
+    },
+    "results": [
+      {
+        "fixture_id": "clear_01",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.0
+      },
+      {
+        "fixture_id": "clear_02",
+        "expected": "TECHNIQUE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.91
+      },
+      {
+        "fixture_id": "clear_03",
+        "expected": "MECHANISM",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.88
+      },
+      {
+        "fixture_id": "clear_04",
+        "expected": "PHENOMENON",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.91
+      },
+      {
+        "fixture_id": "clear_05",
+        "expected": "CONSTRAINT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.87
+      },
+      {
+        "fixture_id": "clear_06",
+        "expected": "AGENT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.57
+      },
+      {
+        "fixture_id": "clear_07",
+        "expected": "DESIGN",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.85
+      },
+      {
+        "fixture_id": "clear_08",
+        "expected": "MECHANISM",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.79
+      },
+      {
+        "fixture_id": "clear_09",
+        "expected": "GOAL",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 21.76
+      },
+      {
+        "fixture_id": "clear_10",
+        "expected": "CONTEXT",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.87
+      },
+      {
+        "fixture_id": "clear_11",
+        "expected": "EVENT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.89
+      },
+      {
+        "fixture_id": "clear_12",
+        "expected": "CREATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.91
+      },
+      {
+        "fixture_id": "clear_13",
+        "expected": "TOOL",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.75
+      },
+      {
+        "fixture_id": "clear_14",
+        "expected": "PRINCIPLE",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.89
+      },
+      {
+        "fixture_id": "clear_15",
+        "expected": "RELATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 21.91
+      },
+      {
+        "fixture_id": "hard_01",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 5.42
+      },
+      {
+        "fixture_id": "hard_02",
+        "expected": "DESIGN",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.96
+      },
+      {
+        "fixture_id": "hard_03",
+        "expected": "OBSERVATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.13
+      },
+      {
+        "fixture_id": "hard_04",
+        "expected": "MECHANISM",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.98
+      },
+      {
+        "fixture_id": "hard_05",
+        "expected": "MECHANISM",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.98
+      },
+      {
+        "fixture_id": "hard_06",
+        "expected": "OBSERVATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.97
+      },
+      {
+        "fixture_id": "hard_07",
+        "expected": "DESIGN",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 21.86
+      },
+      {
+        "fixture_id": "hard_08",
+        "expected": "CONSTRAINT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.68
+      },
+      {
+        "fixture_id": "hard_09",
+        "expected": "DESIGN",
+        "predicted": "TECHNIQUE",
+        "confidence": 0.85,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 0.5,
+        "latency_s": 21.81
+      },
+      {
+        "fixture_id": "hard_10",
+        "expected": "MECHANISM",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.94
+      },
+      {
+        "fixture_id": "hard_11",
+        "expected": "CONSTRAINT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.89
+      },
+      {
+        "fixture_id": "hard_12",
+        "expected": "DESIGN",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.71
+      },
+      {
+        "fixture_id": "hard_13",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.99
+      },
+      {
+        "fixture_id": "hard_14",
+        "expected": "DESIGN",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.94
+      },
+      {
+        "fixture_id": "hard_15",
+        "expected": "OBSERVATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.93
+      }
+    ]
+  },
+  "test_set": {
+    "metrics": {
+      "total": 24,
+      "strict_correct": 0,
+      "strict_accuracy": 0.0,
+      "partial_credit_sum": 0.0,
+      "partial_credit_accuracy": 0.0,
+      "parse_failures": 22,
+      "quadrant_breakdown": {
+        "lc_wrong": 23,
+        "hc_wrong": 1
+      },
+      "hc_wrong": [
+        {
+          "fixture_id": "test_13",
+          "expected": "TOOL",
+          "predicted": "OBSERVATION",
+          "confidence": 0.85
+        }
+      ],
+      "per_category": {
+        "CONSTRAINT": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "CONTEXT": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "CREATION": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "DESIGN": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "MECHANISM": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "OBSERVATION": {
+          "total": 3,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "PATTERN": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "PHENOMENON": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "PRINCIPLE": {
+          "total": 10,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "RELATION": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "TECHNIQUE": {
+          "total": 2,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "TOOL": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        }
+      }
+    },
+    "results": [
+      {
+        "fixture_id": "test_1",
+        "expected": "OBSERVATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.01
+      },
+      {
+        "fixture_id": "test_2",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 5.5
+      },
+      {
+        "fixture_id": "test_3",
+        "expected": "RELATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.0
+      },
+      {
+        "fixture_id": "test_4",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 22.0
+      },
+      {
+        "fixture_id": "test_5",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.91
+      },
+      {
+        "fixture_id": "test_6",
+        "expected": "OBSERVATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.67
+      },
+      {
+        "fixture_id": "test_7",
+        "expected": "TECHNIQUE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 22.07
+      },
+      {
+        "fixture_id": "test_8",
+        "expected": "PRINCIPLE",
+        "predicted": "OBSERVATION",
+        "confidence": 0.0,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.93
+      },
+      {
+        "fixture_id": "test_9",
+        "expected": "OBSERVATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.91
+      },
+      {
+        "fixture_id": "test_10",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 11.01
+      },
+      {
+        "fixture_id": "test_11",
+        "expected": "PATTERN",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.86
+      },
+      {
+        "fixture_id": "test_12",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.96
+      },
+      {
+        "fixture_id": "test_13",
+        "expected": "TOOL",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 22.34
+      },
+      {
+        "fixture_id": "test_14",
+        "expected": "CONTEXT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.0,
+        "latency_s": 22.19
+      },
+      {
+        "fixture_id": "test_15",
+        "expected": "DESIGN",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.92
+      },
+      {
+        "fixture_id": "test_16",
+        "expected": "TECHNIQUE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.93
+      },
+      {
+        "fixture_id": "test_17",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.89
+      },
+      {
+        "fixture_id": "test_18",
+        "expected": "CREATION",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 21.78
+      },
+      {
+        "fixture_id": "test_19",
+        "expected": "PHENOMENON",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 21.61
+      },
+      {
+        "fixture_id": "test_20",
+        "expected": "CONSTRAINT",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 21.58
+      },
+      {
+        "fixture_id": "test_21",
+        "expected": "MECHANISM",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": null,
+        "partial_credit": 0.0,
+        "latency_s": 10.78
+      },
+      {
+        "fixture_id": "test_22",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 21.71
+      },
+      {
+        "fixture_id": "test_23",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 21.62
+      },
+      {
+        "fixture_id": "test_24",
+        "expected": "PRINCIPLE",
+        "predicted": null,
+        "confidence": 0.0,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 21.46
+      }
+    ]
+  }
+}

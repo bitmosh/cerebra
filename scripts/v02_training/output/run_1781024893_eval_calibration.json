@@ -1,0 +1,550 @@
+{
+  "adapter_path": "scripts/v02_training/output/lora_adapters/run_1781024893/adapter",
+  "use_prime": true,
+  "v01_partial_credit_baseline": 0.65,
+  "calibration": {
+    "metrics": {
+      "total": 30,
+      "strict_correct": 14,
+      "strict_accuracy": 0.4667,
+      "partial_credit_sum": 14.5,
+      "partial_credit_accuracy": 0.4833,
+      "parse_failures": 0,
+      "quadrant_breakdown": {
+        "hc_correct": 14,
+        "hc_wrong": 16
+      },
+      "hc_wrong": [
+        {
+          "fixture_id": "clear_04",
+          "expected": "PHENOMENON",
+          "predicted": "DESIGN",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "clear_06",
+          "expected": "AGENT",
+          "predicted": "DESIGN",
+          "confidence": 0.9
+        },
+        {
+          "fixture_id": "clear_07",
+          "expected": "DESIGN",
+          "predicted": "OBSERVATION",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "clear_08",
+          "expected": "MECHANISM",
+          "predicted": "OBSERVATION",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "clear_09",
+          "expected": "GOAL",
+          "predicted": "PRINCIPLE",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "clear_10",
+          "expected": "CONTEXT",
+          "predicted": "OBSERVATION",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "clear_11",
+          "expected": "EVENT",
+          "predicted": "OBSERVATION",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "clear_15",
+          "expected": "RELATION",
+          "predicted": "DESIGN",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "hard_01",
+          "expected": "PRINCIPLE",
+          "predicted": "RELATION",
+          "confidence": 0.9
+        },
+        {
+          "fixture_id": "hard_02",
+          "expected": "DESIGN",
+          "predicted": "RELATION",
+          "confidence": 0.9
+        },
+        {
+          "fixture_id": "hard_04",
+          "expected": "MECHANISM",
+          "predicted": "PATTERN",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "hard_05",
+          "expected": "MECHANISM",
+          "predicted": "RELATION",
+          "confidence": 0.9
+        },
+        {
+          "fixture_id": "hard_07",
+          "expected": "DESIGN",
+          "predicted": "PRINCIPLE",
+          "confidence": 0.9
+        },
+        {
+          "fixture_id": "hard_08",
+          "expected": "CONSTRAINT",
+          "predicted": "PATTERN",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "hard_11",
+          "expected": "CONSTRAINT",
+          "predicted": "MECHANISM",
+          "confidence": 0.85
+        },
+        {
+          "fixture_id": "hard_14",
+          "expected": "DESIGN",
+          "predicted": "OBSERVATION",
+          "confidence": 0.85
+        }
+      ],
+      "per_category": {
+        "AGENT": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "CONSTRAINT": {
+          "total": 3,
+          "correct": 1,
+          "accuracy": 0.333,
+          "partial": 1.0
+        },
+        "CONTEXT": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "CREATION": {
+          "total": 1,
+          "correct": 1,
+          "accuracy": 1.0,
+          "partial": 1.0
+        },
+        "DESIGN": {
+          "total": 6,
+          "correct": 2,
+          "accuracy": 0.333,
+          "partial": 2.0
+        },
+        "EVENT": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "GOAL": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "MECHANISM": {
+          "total": 5,
+          "correct": 2,
+          "accuracy": 0.4,
+          "partial": 2.0
+        },
+        "OBSERVATION": {
+          "total": 3,
+          "correct": 3,
+          "accuracy": 1.0,
+          "partial": 3.0
+        },
+        "PHENOMENON": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "PRINCIPLE": {
+          "total": 4,
+          "correct": 3,
+          "accuracy": 0.75,
+          "partial": 3.5
+        },
+        "RELATION": {
+          "total": 1,
+          "correct": 0,
+          "accuracy": 0.0,
+          "partial": 0.0
+        },
+        "TECHNIQUE": {
+          "total": 1,
+          "correct": 1,
+          "accuracy": 1.0,
+          "partial": 1.0
+        },
+        "TOOL": {
+          "total": 1,
+          "correct": 1,
+          "accuracy": 1.0,
+          "partial": 1.0
+        }
+      }
+    },
+    "clarity": {
+      "clear": {
+        "n": 11,
+        "accuracy": 0.455
+      },
+      "hard": {
+        "n": 15,
+        "accuracy": 0.467
+      },
+      "ambiguous": {
+        "n": 4,
+        "partial_credit_accuracy": 0.5
+      }
+    },
+    "results": [
+      {
+        "fixture_id": "clear_01",
+        "expected": "PRINCIPLE",
+        "predicted": "PRINCIPLE",
+        "confidence": 0.9,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 1.0,
+        "latency_s": 6.62,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary\": \"NORMATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"PRINCIPLE\": 1.0, \"JUDGMENT\": 0.0, \"GOAL\": 0.0, \"CONSTRAINT\": 0.0}, \"confidence\": 0.9, \"primary\": \"PRINCIPLE\", \"reasoning\": \"This excerpt is best classified as PRINCIPLE within the NORMATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_02",
+        "expected": "TECHNIQUE",
+        "predicted": "TECHNIQUE",
+        "confidence": 0.95,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 1.0,
+        "latency_s": 5.78,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary\": \"GENERATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"TECHNIQUE\": 1.0, \"DESIGN\": 0.0, \"CREATION\": 0.0, \"TOOL\": 0.0}, \"confidence\": 0.95, \"primary\": \"TECHNIQUE\", \"reasoning\": \"This excerpt is best classified as TECHNIQUE within the GENERATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_03",
+        "expected": "MECHANISM",
+        "predicted": "MECHANISM",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 1.0,
+        "latency_s": 6.07,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 0.0, \"PATTERN\": 0.0, \"MECHANISM\": 1.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"MECHANISM\", \"reasoning\": \"This excerpt is best classified as MECHANISM within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_04",
+        "expected": "PHENOMENON",
+        "predicted": "DESIGN",
+        "confidence": 0.85,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 5.55,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"GENERATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"TECHNIQUE\": 0.0, \"DESIGN\": 1.0, \"CREATION\": 0.0, \"TOOL\": 0.0}, \"confidence\": 0.85, \"primary\": \"DESIGN\", \"reasoning\": \"This excerpt is best classified as DESIGN within the GENERATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_05",
+        "expected": "CONSTRAINT",
+        "predicted": "CONSTRAINT",
+        "confidence": 0.95,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 1.0,
+        "latency_s": 5.71,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.95, \"primary\": \"NORMATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"PRINCIPLE\": 0.0, \"JUDGMENT\": 0.0, \"GOAL\": 0.0, \"CONSTRAINT\": 1.0}, \"confidence\": 0.95, \"primary\": \"CONSTRAINT\", \"reasoning\": \"This excerpt is best classified as CONSTRAINT within the NORMATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_06",
+        "expected": "AGENT",
+        "predicted": "DESIGN",
+        "confidence": 0.9,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 5.5,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary\": \"GENERATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"TECHNIQUE\": 0.0, \"DESIGN\": 1.0, \"CREATION\": 0.0, \"TOOL\": 0.0}, \"confidence\": 0.9, \"primary\": \"DESIGN\", \"reasoning\": \"This excerpt is best classified as DESIGN within the GENERATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_07",
+        "expected": "DESIGN",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 6.11,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 1.0, \"PATTERN\": 0.0, \"MECHANISM\": 0.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"OBSERVATION\", \"reasoning\": \"This excerpt is best classified as OBSERVATION within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_08",
+        "expected": "MECHANISM",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 6.1,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 1.0, \"PATTERN\": 0.0, \"MECHANISM\": 0.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"OBSERVATION\", \"reasoning\": \"This excerpt is best classified as OBSERVATION within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_09",
+        "expected": "GOAL",
+        "predicted": "PRINCIPLE",
+        "confidence": 0.85,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 5.88,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary\": \"NORMATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"PRINCIPLE\": 1.0, \"JUDGMENT\": 0.0, \"GOAL\": 0.0, \"CONSTRAINT\": 0.0}, \"confidence\": 0.85, \"primary\": \"PRINCIPLE\", \"reasoning\": \"This excerpt is best classified as PRINCIPLE within the NORMATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_10",
+        "expected": "CONTEXT",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 6.09,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 1.0, \"PATTERN\": 0.0, \"MECHANISM\": 0.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"OBSERVATION\", \"reasoning\": \"This excerpt is best classified as OBSERVATION within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_11",
+        "expected": "EVENT",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 6.13,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 1.0, \"PATTERN\": 0.0, \"MECHANISM\": 0.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"OBSERVATION\", \"reasoning\": \"This excerpt is best classified as OBSERVATION within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_12",
+        "expected": "CREATION",
+        "predicted": "CREATION",
+        "confidence": 0.9,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 1.0,
+        "latency_s": 5.62,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary\": \"GENERATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"TECHNIQUE\": 0.0, \"DESIGN\": 0.0, \"CREATION\": 1.0, \"TOOL\": 0.0}, \"confidence\": 0.9, \"primary\": \"CREATION\", \"reasoning\": \"This excerpt is best classified as CREATION within the GENERATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_13",
+        "expected": "TOOL",
+        "predicted": "TOOL",
+        "confidence": 0.9,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 1.0,
+        "latency_s": 5.57,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"GENERATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"TECHNIQUE\": 0.0, \"DESIGN\": 0.0, \"CREATION\": 0.0, \"TOOL\": 1.0}, \"confidence\": 0.9, \"primary\": \"TOOL\", \"reasoning\": \"This excerpt is best classified as TOOL within the GENERATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_14",
+        "expected": "PRINCIPLE",
+        "predicted": "PRINCIPLE",
+        "confidence": 0.9,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 1.0,
+        "latency_s": 5.88,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary\": \"NORMATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"PRINCIPLE\": 1.0, \"JUDGMENT\": 0.0, \"GOAL\": 0.0, \"CONSTRAINT\": 0.0}, \"confidence\": 0.9, \"primary\": \"PRINCIPLE\", \"reasoning\": \"This excerpt is best classified as PRINCIPLE within the NORMATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "clear_15",
+        "expected": "RELATION",
+        "predicted": "DESIGN",
+        "confidence": 0.85,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 5.58,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"GENERATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"TECHNIQUE\": 0.0, \"DESIGN\": 1.0, \"CREATION\": 0.0, \"TOOL\": 0.0}, \"confidence\": 0.85, \"primary\": \"DESIGN\", \"reasoning\": \"This excerpt is best classified as DESIGN within the GENERATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_01",
+        "expected": "PRINCIPLE",
+        "predicted": "RELATION",
+        "confidence": 0.9,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.5,
+        "latency_s": 5.44,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 1.0}, \"confidence\": 0.9, \"primary\": \"RELATIONAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"EVENT\": 0.0, \"AGENT\": 0.0, \"CONTEXT\": 0.0, \"RELATION\": 1.0}, \"confidence\": 0.9, \"primary\": \"RELATION\", \"reasoning\": \"This excerpt is best classified as RELATION within the RELATIONAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_02",
+        "expected": "DESIGN",
+        "predicted": "RELATION",
+        "confidence": 0.9,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.0,
+        "latency_s": 5.36,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 1.0}, \"confidence\": 0.9, \"primary\": \"RELATIONAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"EVENT\": 0.0, \"AGENT\": 0.0, \"CONTEXT\": 0.0, \"RELATION\": 1.0}, \"confidence\": 0.9, \"primary\": \"RELATION\", \"reasoning\": \"This excerpt is best classified as RELATION within the RELATIONAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_03",
+        "expected": "OBSERVATION",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 1.0,
+        "latency_s": 6.09,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 1.0, \"PATTERN\": 0.0, \"MECHANISM\": 0.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"OBSERVATION\", \"reasoning\": \"This excerpt is best classified as OBSERVATION within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_04",
+        "expected": "MECHANISM",
+        "predicted": "PATTERN",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 5.98,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 0.0, \"PATTERN\": 1.0, \"MECHANISM\": 0.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"PATTERN\", \"reasoning\": \"This excerpt is best classified as PATTERN within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_05",
+        "expected": "MECHANISM",
+        "predicted": "RELATION",
+        "confidence": 0.9,
+        "quadrant": "RELATIONAL",
+        "partial_credit": 0.0,
+        "latency_s": 5.37,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 1.0}, \"confidence\": 0.9, \"primary\": \"RELATIONAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"EVENT\": 0.0, \"AGENT\": 0.0, \"CONTEXT\": 0.0, \"RELATION\": 1.0}, \"confidence\": 0.9, \"primary\": \"RELATION\", \"reasoning\": \"This excerpt is best classified as RELATION within the RELATIONAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_06",
+        "expected": "OBSERVATION",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 1.0,
+        "latency_s": 6.09,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 1.0, \"PATTERN\": 0.0, \"MECHANISM\": 0.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"OBSERVATION\", \"reasoning\": \"This excerpt is best classified as OBSERVATION within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_07",
+        "expected": "DESIGN",
+        "predicted": "PRINCIPLE",
+        "confidence": 0.9,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 0.0,
+        "latency_s": 5.83,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary\": \"NORMATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"PRINCIPLE\": 1.0, \"JUDGMENT\": 0.0, \"GOAL\": 0.0, \"CONSTRAINT\": 0.0}, \"confidence\": 0.9, \"primary\": \"PRINCIPLE\", \"reasoning\": \"This excerpt is best classified as PRINCIPLE within the NORMATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_08",
+        "expected": "CONSTRAINT",
+        "predicted": "PATTERN",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 5.93,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 0.0, \"PATTERN\": 1.0, \"MECHANISM\": 0.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"PATTERN\", \"reasoning\": \"This excerpt is best classified as PATTERN within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_09",
+        "expected": "DESIGN",
+        "predicted": "DESIGN",
+        "confidence": 0.9,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 1.0,
+        "latency_s": 5.48,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary\": \"GENERATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"TECHNIQUE\": 0.0, \"DESIGN\": 1.0, \"CREATION\": 0.0, \"TOOL\": 0.0}, \"confidence\": 0.9, \"primary\": \"DESIGN\", \"reasoning\": \"This excerpt is best classified as DESIGN within the GENERATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_10",
+        "expected": "MECHANISM",
+        "predicted": "MECHANISM",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 1.0,
+        "latency_s": 6.02,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 0.0, \"PATTERN\": 0.0, \"MECHANISM\": 1.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"MECHANISM\", \"reasoning\": \"This excerpt is best classified as MECHANISM within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_11",
+        "expected": "CONSTRAINT",
+        "predicted": "MECHANISM",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 5.99,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 0.0, \"PATTERN\": 0.0, \"MECHANISM\": 1.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"MECHANISM\", \"reasoning\": \"This excerpt is best classified as MECHANISM within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_12",
+        "expected": "DESIGN",
+        "predicted": "DESIGN",
+        "confidence": 0.85,
+        "quadrant": "GENERATIVE",
+        "partial_credit": 1.0,
+        "latency_s": 5.57,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 1.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary\": \"GENERATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"TECHNIQUE\": 0.0, \"DESIGN\": 1.0, \"CREATION\": 0.0, \"TOOL\": 0.0}, \"confidence\": 0.85, \"primary\": \"DESIGN\", \"reasoning\": \"This excerpt is best classified as DESIGN within the GENERATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_13",
+        "expected": "PRINCIPLE",
+        "predicted": "PRINCIPLE",
+        "confidence": 0.9,
+        "quadrant": "NORMATIVE",
+        "partial_credit": 1.0,
+        "latency_s": 5.86,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 0.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 1.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.9, \"primary\": \"NORMATIVE\"}",
+        "raw_output_p2": "\n{\"scores\": {\"PRINCIPLE\": 1.0, \"JUDGMENT\": 0.0, \"GOAL\": 0.0, \"CONSTRAINT\": 0.0}, \"confidence\": 0.9, \"primary\": \"PRINCIPLE\", \"reasoning\": \"This excerpt is best classified as PRINCIPLE within the NORMATIVE quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_14",
+        "expected": "DESIGN",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 0.0,
+        "latency_s": 6.09,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 1.0, \"PATTERN\": 0.0, \"MECHANISM\": 0.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"OBSERVATION\", \"reasoning\": \"This excerpt is best classified as OBSERVATION within the EMPIRICAL quadrant.\"}"
+      },
+      {
+        "fixture_id": "hard_15",
+        "expected": "OBSERVATION",
+        "predicted": "OBSERVATION",
+        "confidence": 0.85,
+        "quadrant": "EMPIRICAL",
+        "partial_credit": 1.0,
+        "latency_s": 6.03,
+        "raw_output": "\n{\"scores\": {\"EMPIRICAL\": 1.0, \"GENERATIVE\": 0.0, \"NORMATIVE\": 0.0, \"RELATIONAL\": 0.0}, \"confidence\": 0.85, \"primary\": \"EMPIRICAL\"}",
+        "raw_output_p2": "\n{\"scores\": {\"OBSERVATION\": 1.0, \"PATTERN\": 0.0, \"MECHANISM\": 0.0, \"PHENOMENON\": 0.0}, \"confidence\": 0.85, \"primary\": \"OBSERVATION\", \"reasoning\": \"This excerpt is best classified as OBSERVATION within the EMPIRICAL quadrant.\"}"
+      }
+    ]
+  },
+  "test_set": null
+}
