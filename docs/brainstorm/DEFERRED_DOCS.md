@@ -107,17 +107,10 @@ How they compose. What each is best for. When to reach for each.
 
 Source: 2026-06-05 web search on open training methodologies.
 
-### `architecture/lora_training_track.md`
+### `agent/deferred/v02_lora_track.md` — LoRA track (written, benched 2026-06-09)
 
-The v0.2 LoRA plan:
-- Training on Phase 2 backfill corpus
-- QLoRA via Unsloth
-- Target model selection (Granite Micro vs Qwen 4B vs OLMo 7B)
-- Expected accuracy lift (60-70% → 85-90%)
-- Per-pair disambiguation as natural training data structure
-- Hardware reality (4070 Super 12GB)
-
-Source: ongoing LoRA discussions.
+Full record of Phase 1/2/3 work, key learnings, resume conditions, and resume plan.
+See `docs/agent/deferred/v02_lora_track.md` — do not rewrite, it exists.
 
 ### `infrastructure/training_knowledge_mcp_design.md`
 

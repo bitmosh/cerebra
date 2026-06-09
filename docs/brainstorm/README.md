@@ -35,6 +35,8 @@ brainstorm/
 
 ## Current contents (2026-06-05)
 
+**Status:** v0.1.0 shipped on 2026-06-06. Several reframes here have transitioned from hypothesis to implemented architecture. Where docs reflect that transition, they note "What actually shipped" sections. Docs that remain hypothetical (counsel mode, cognitive nature as perceptual lens) describe future-state architecture.
+
 ### Philosophy
 - `triangle_balance_perception_understanding.md` — the three-corner perceptual model with attentive gravity
 

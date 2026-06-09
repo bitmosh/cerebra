@@ -99,7 +99,7 @@ Phase 2's inspector logs should be designed with the second use case in mind, ev
 
 **3. Pick models that LoRA-train into representation change, not just output change.**
 
-Granite 4.1 3B (dense, 3B parameters, Apache 2.0) is the current primary candidate — Round 2 calibration validated it as the strongest LoRA target: 58% partial accuracy at baseline (matching Qwen 3.5 9B instruct), 73% Pass 1 quadrant accuracy, and IBM's explicit positioning for fine-tuning use cases. Same model can serve as both v0.1.0 production substrate and v0.2 LoRA target, cleanly avoiding the swap-models-at-version-bump complexity. OLMo 3 7B remains a secondary candidate for its full training transparency and checkpoint access — useful if representation-level inspection becomes a priority. Closed models that only support LoRA on the last few layers can't support this trajectory.
+Granite 4.1 3B base (dense, Apache 2.0). Round 2 calibration validated the dense architecture as the strongest substrate (Granite 4.1 3B instruct at 58% partial / 73% Pass 1 quadrant — best of 13 tested models). The base variant is the v0.2 LoRA training target; the instruct variant is already in production as the v0.1.0 substrate (shipped 2026-06-06, 745-record backfill, 65% partial-credit accuracy). OLMo 3 7B remains a secondary candidate for its full training transparency and checkpoint access — useful if representation-level inspection becomes a priority. Closed models that only support LoRA on the last few layers can't support this trajectory.
 
 **4. Build the per-pair disambiguation logic into something the model can eventually learn, not just look up.**
 

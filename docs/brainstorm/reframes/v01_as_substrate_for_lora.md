@@ -83,11 +83,13 @@ These aren't just "better models." They're better *substrates* because we can se
 
 A Qwen 3.5 fine-tune is a black box layered on a black box. An OLMo 3 fine-tune is an interpretable adjustment to a documented foundation.
 
+Round 2 calibration (13 models, 30 fixtures) shifted the primary LoRA target to **Granite 4.1 3B base**: 58% partial accuracy matching Qwen 3.5 9B instruct, 73% Pass 1 quadrant accuracy (highest of any model tested), 3.7GB VRAM, Apache 2.0 license. OLMo 3 7B remains the secondary candidate / fallback for model-flow capabilities (full training transparency, OlmoTrace, intermediate checkpoints) — useful if Granite LoRA training doesn't yield expected results, but no longer the primary path.
+
 ## The longer arc
 
 This reframe also clarifies what Cerebra is doing at the meta level.
 
-v0.1: imperfect classifier with full instrumentation
+v0.1: imperfect classifier — DONE, shipped 2026-06-06 at 65% partial-credit accuracy
 v0.2: LoRA-tuned classifier (~85% accuracy)
 v0.3: per-pair disambiguation + counsel mode (~92% accuracy)
 v0.4: structured epistemic output, multi-round refinement (~95% accuracy)
@@ -108,6 +110,20 @@ Specific things this reframe argues for:
 **Don't waste effort on calibration set expansion.** 30 hand-labeled fixtures is enough for the merge gate. Expanding to 100 fixtures would help v0.2 evaluation but doesn't help v0.1 ship. Build the bigger calibration set in v0.2 after we have a better classifier to evaluate.
 
 **Pick the model that LoRA-trains best, not the model that classifies best now.** Round 2 calibration data shifted the LoRA target recommendation to Granite 4.1 3B. Round 2 results: Granite 4.1 3B base scored 58% partial accuracy — tying Qwen 3.5 9B instruct — with 73% Pass 1 quadrant accuracy (highest of any model tested across both rounds). At 3B dense, it's the most LoRA-trainable substrate that performs at production-model quality, with Apache 2.0 licensing and IBM's documented QLoRA methodology. OLMo 3 remains a secondary candidate / fallback for the model-flow capabilities (full training transparency, OlmoTrace) if Granite training doesn't yield expected results, but Granite 4.1 3B is the primary path. The model we LoRA-train doesn't have to be the model we use in v0.1; we can switch substrate when we switch versions.
+
+## What actually shipped in v0.1.0
+
+The reframe became historical fact on 2026-06-06. Phase 2 close-out:
+
+- Production substrate: Granite 4.1 3B instruct (Unsloth GGUF, Q4_K_M)
+- Calibration: 65% partial-credit accuracy (53% strict)
+- Backfill: 745 records classified, 0 parse failures, 28.3 minutes total
+- Perfect determinism: temp=0.0, same chunk → same SKU on re-run
+- Gate criterion documented as substrate-for-LoRA, not raw accuracy
+
+The 745 labeled records become the v0.2 LoRA training corpus. The substrate-for-LoRA argument is no longer a planning hypothesis; it's the working architecture.
+
+One discovery worth noting: the production model is the **instruct** variant of Granite 4.1 3B, not the base. IBM's HuggingFace naming convention has `granite-4.1-3b` as the instruct model and `granite-4.1-3b-base` as the base. For v0.2 LoRA training, the base variant is the cleaner target.
 
 ## The honest framing
 

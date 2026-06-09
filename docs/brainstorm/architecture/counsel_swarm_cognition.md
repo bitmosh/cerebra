@@ -167,17 +167,17 @@ The two ideas multiply rather than add.
 
 The multi-model calibration runs (Round 1 + Round 2) produced data that directly supports the counsel approach. Specifically: **different models miss different fixtures**, with limited overlap in failure modes.
 
-For example, Qwen 3.5 9B and Granite 4.1 3B both score 58% partial accuracy on the calibration set, but their miss lists are substantially different:
+For example, Qwen 3.5 9B and Granite 4.1 3B both scored 58% partial accuracy at baseline, but their miss lists were substantially different:
 
-- Qwen 9B uniquely misses: clear_12, clear_13, hard_09, hard_12
-- Granite 4.1 3B uniquely misses: clear_04, clear_08, clear_15, hard_14
-- Both miss: clear_07, clear_10, clear_11, hard_01, hard_02, hard_03, hard_04, hard_05, hard_07, hard_11
+- Both models miss: clear_07, clear_11, hard_01, hard_02, hard_03, hard_04, hard_05, hard_07, hard_11
+- Qwen 9B uniquely misses fixtures Granite 3B gets right
+- Granite 3B uniquely misses fixtures Qwen 9B gets right
 
-The blind spots don't overlap completely. A counsel including both models would correctly classify fixtures that either alone misses, simply by virtue of the other model getting it right.
+A counsel including both models would correctly classify fixtures that either alone misses — by virtue of the other model getting it right. The Round 1 + Round 2 data (13 models × 30 fixtures × 3 runs each = 1170 individual classifications with perfect determinism) provides the substrate for selecting counsel members in v0.2+ based on failure-mode diversity, not just on individual accuracy.
 
-This is the empirical validation of counsel cognition's central claim: **disagreement among diverse models is signal, not noise**. The 13-model calibration data is the foundation for selecting counsel members in v0.2+. Models with maximally different failure patterns make the best counsel partners.
+The original observation from Round 1 also held in Round 2: **5 fixtures had 0 of 13 models classify correctly.** The fixture audit (`docs/agent/fixture_audit_round2.md`) determined that these were label issues, not model failures — when 13 architecturally diverse models converge on a different answer than the label, the label is more suspect than the models. This is the inverse of the usual ML failure analysis (where consensus failure is treated as a hard problem); for counsel cognition, consensus failure is diagnostic about the test data, not the test takers.
 
-When v0.2 counsel mode comes online, the candidate selection should weight by failure-mode diversity, not just by individual model accuracy. Two 60%-accurate models with disjoint failure modes are more useful than two 70%-accurate models with overlapping failure modes.
+When v0.2 counsel mode comes online, the candidate selection should weight by failure-mode diversity. Two 60%-accurate models with disjoint failure modes are more useful than two 70%-accurate models with overlapping failure modes. The 1170-classification dataset is the empirical foundation for this selection.
 
 ## Open questions
 
