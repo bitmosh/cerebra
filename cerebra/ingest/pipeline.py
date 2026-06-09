@@ -1,7 +1,7 @@
 """
 Ingest pipeline — orchestrates source discovery → registration →
 detection → parsing → normalization → chunking → record building →
-batch storage → inspector event emission.
+batch storage → graph wiring → index updates → inspector event emission.
 
 All inspector events for a file are emitted here, not in sub-components,
 so the event log accurately reflects the full per-file lifecycle.
@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -26,6 +27,10 @@ from cerebra.memory.records import build_records_for_document
 from cerebra.sources.detector import detect_type
 from cerebra.sources.discovery import DEFAULT_EXCLUDE_PATTERNS, discover_files
 from cerebra.sources.registry import RegistrationOutcome, register_source
+from cerebra.storage.artifact_store import write_artifact as write_text_artifact
+from cerebra.storage.embeddings import queue_for_embedding
+from cerebra.storage.graph_store import make_edge_id, make_node_id, upsert_edge, upsert_node
+from cerebra.storage.lexical import update_fts_index
 from cerebra.storage.migrations import run_migrations
 from cerebra.storage.sqlite_store import SQLiteStore
 
@@ -36,6 +41,9 @@ _PARSER_VERSION_MAP = {
     "markdown": MD_PARSER_VERSION,
     "text": TXT_PARSER_VERSION,
 }
+
+# Type alias for the emit helper passed to _ingest_file.
+_EmitFn = Callable[..., str]
 
 
 @dataclass
@@ -103,10 +111,11 @@ def ingest_path(
         summary: str,
         data: dict[str, object],
         subject_id: str | None = None,
-    ) -> None:
+    ) -> str:
         e = make_event(evt_type, actor, summary, data, subject_id=subject_id)
         event_log.write(e)
         ndjson.write(e)
+        return e.event_id
 
     report = IngestReport()
 
@@ -145,6 +154,8 @@ def ingest_path(
                 event_log=event_log,
                 ndjson=ndjson,
                 artifacts_dir=artifacts_dir,
+                vault_path=vault_path,
+                db_path=db_path,
                 opts=opts,
                 report=report,
                 emit=emit,
@@ -168,14 +179,15 @@ def _ingest_file(
     event_log: SQLiteEventLog,
     ndjson: object,
     artifacts_dir: Path,
+    vault_path: Path,
+    db_path: Path,
     opts: ChunkOptions,
     report: IngestReport,
-    emit: object,
+    emit: _EmitFn,
 ) -> None:
     from cerebra.inspector.ndjson_log import NDJSONEventLog
 
     assert isinstance(ndjson, NDJSONEventLog)
-    assert callable(emit)
 
     detection = detect_type(file_path)
     parser_version = _PARSER_VERSION_MAP.get(detection.detected_type)
@@ -198,7 +210,42 @@ def _ingest_file(
     else:
         report.sources_changed += 1
 
-    # Select adapter
+    now = int(time.time())
+
+    # ── Source graph node ────────────────────────────────────────────────────
+    source_node_id = upsert_node(
+        db_path,
+        {
+            "node_id": make_node_id(f"sources:{source.source_id}"),
+            "node_type": "Source",
+            "label": source.canonical_path,
+            "entity_id": source.source_id,
+            "entity_table": "sources",
+            "lifecycle_state": "active",
+            "origin_event_id": None,
+            "payload_json": json.dumps({
+                "canonical_path": source.canonical_path,
+                "detected_type": detection.detected_type,
+                "size_bytes": source.size_bytes,
+            }),
+            "created_at": now,
+            "updated_at": now,
+        },
+    )
+    emit(
+        "GraphNodeCreated",
+        "graph_store",
+        f"Source node: {source.source_id}",
+        {
+            "node_id": source_node_id,
+            "node_type": "Source",
+            "entity_id": source.source_id,
+            "entity_table": "sources",
+        },
+        subject_id=source_node_id,
+    )
+
+    # ── Select adapter ───────────────────────────────────────────────────────
     adapter = _MARKDOWN_ADAPTER if detection.detected_type == "markdown" else _TEXT_ADAPTER
 
     parse_result = adapter.parse(source.source_id, file_path)
@@ -216,9 +263,8 @@ def _ingest_file(
         return
 
     doc = parse_result.document
-    now = int(time.time())
 
-    # Emit parse warnings as DocumentParseWarning events AND store on document row
+    # Emit parse warnings
     for warning in parse_result.warnings:
         emit(
             "DocumentParseWarning",
@@ -228,10 +274,16 @@ def _ingest_file(
             subject_id=source.source_id,
         )
 
-    # Write artifact (write-then-rename)
+    # ── Artifacts ────────────────────────────────────────────────────────────
+    # JSON structured artifact (write-then-rename, for downstream processing)
     artifact_path = write_artifact(doc, artifacts_dir)
 
-    emit(
+    # Plain-text artifact (for retrieval layer)
+    write_text_artifact(
+        vault_path, doc.document_id, doc.raw_content, event_log=event_log
+    )
+
+    doc_evt_id = emit(
         "DocumentNormalized",
         "ingest_pipeline",
         f"Document normalized: {file_path.name}",
@@ -244,7 +296,7 @@ def _ingest_file(
         subject_id=doc.document_id,
     )
 
-    # Persist document row
+    # ── Persist document row ─────────────────────────────────────────────────
     store.insert_document(
         {
             "document_id": doc.document_id,
@@ -262,7 +314,72 @@ def _ingest_file(
         }
     )
 
-    # Chunk and batch-insert
+    # ── Document graph node + Source→Document edge ───────────────────────────
+    doc_node_id = upsert_node(
+        db_path,
+        {
+            "node_id": make_node_id(f"documents:{doc.document_id}"),
+            "node_type": "Document",
+            "label": doc.title or doc.document_id,
+            "entity_id": doc.document_id,
+            "entity_table": "documents",
+            "lifecycle_state": "active",
+            "origin_event_id": doc_evt_id,
+            "payload_json": json.dumps({
+                "document_type": doc.document_type,
+                "title": doc.title,
+                "artifact_path": str(artifact_path),
+            }),
+            "created_at": now,
+            "updated_at": now,
+        },
+    )
+    emit(
+        "GraphNodeCreated",
+        "graph_store",
+        f"Document node: {doc.document_id}",
+        {
+            "node_id": doc_node_id,
+            "node_type": "Document",
+            "entity_id": doc.document_id,
+            "entity_table": "documents",
+        },
+        subject_id=doc_node_id,
+    )
+    src_contains_doc = upsert_edge(
+        db_path,
+        {
+            "edge_id": make_edge_id(),
+            "edge_type": "CONTAINS",
+            "source_node_id": source_node_id,
+            "target_node_id": doc_node_id,
+            "confidence": 1.0,
+            "weight": 1.0,
+            "evidence": "ingest: source contains document",
+            "created_by": "ingest_pipeline",
+            "origin_event_id": doc_evt_id,
+            "lifecycle_state": "active",
+            "payload_json": "{}",
+            "created_at": now,
+            "updated_at": now,
+        },
+    )
+    emit(
+        "GraphEdgeCreated",
+        "graph_store",
+        f"Edge: Source CONTAINS Document",
+        {
+            "edge_id": src_contains_doc,
+            "edge_type": "CONTAINS",
+            "source_node_id": source_node_id,
+            "target_node_id": doc_node_id,
+            "confidence": 1.0,
+            "weight": 1.0,
+        },
+        subject_id=src_contains_doc,
+    )
+
+    # ── Chunk and batch-insert ───────────────────────────────────────────────
     chunks = chunk_document(doc, opts)
     chunk_dicts = []
     for c in chunks:
@@ -272,8 +389,9 @@ def _ingest_file(
 
     store.insert_chunks_batch(chunk_dicts)
 
+    chunk_node_ids: dict[str, str] = {}
     for c in chunks:
-        emit(
+        chunk_evt_id = emit(
             "ChunkCreated",
             "ingest_pipeline",
             f"Chunk {c.chunk_index} ({c.chunk_strategy.value}): {c.heading_path or '/'}",
@@ -287,14 +405,112 @@ def _ingest_file(
             },
             subject_id=c.chunk_id,
         )
+        chunk_node_id = upsert_node(
+            db_path,
+            {
+                "node_id": make_node_id(f"chunks:{c.chunk_id}"),
+                "node_type": "Chunk",
+                "label": f"{c.heading_path or '/'} (chunk {c.chunk_index})",
+                "entity_id": c.chunk_id,
+                "entity_table": "chunks",
+                "lifecycle_state": "active",
+                "origin_event_id": chunk_evt_id,
+                "payload_json": json.dumps({
+                    "chunk_index": c.chunk_index,
+                    "heading_path": c.heading_path,
+                    "depth": c.depth,
+                    "token_estimate": c.token_estimate,
+                }),
+                "created_at": now,
+                "updated_at": now,
+            },
+        )
+        chunk_node_ids[c.chunk_id] = chunk_node_id
+        emit(
+            "GraphNodeCreated",
+            "graph_store",
+            f"Chunk node: {c.chunk_id}",
+            {
+                "node_id": chunk_node_id,
+                "node_type": "Chunk",
+                "entity_id": c.chunk_id,
+                "entity_table": "chunks",
+            },
+            subject_id=chunk_node_id,
+        )
+        doc_contains_chunk = upsert_edge(
+            db_path,
+            {
+                "edge_id": make_edge_id(),
+                "edge_type": "CONTAINS",
+                "source_node_id": doc_node_id,
+                "target_node_id": chunk_node_id,
+                "confidence": 1.0,
+                "weight": 1.0,
+                "evidence": f"ingest: document contains chunk {c.chunk_index}",
+                "created_by": "ingest_pipeline",
+                "origin_event_id": chunk_evt_id,
+                "lifecycle_state": "active",
+                "payload_json": "{}",
+                "created_at": now,
+                "updated_at": now,
+            },
+        )
+        emit(
+            "GraphEdgeCreated",
+            "graph_store",
+            f"Edge: Document CONTAINS Chunk",
+            {
+                "edge_id": doc_contains_chunk,
+                "edge_type": "CONTAINS",
+                "source_node_id": doc_node_id,
+                "target_node_id": chunk_node_id,
+                "confidence": 1.0,
+                "weight": 1.0,
+            },
+            subject_id=doc_contains_chunk,
+        )
+        chunk_part_of_doc = upsert_edge(
+            db_path,
+            {
+                "edge_id": make_edge_id(),
+                "edge_type": "PART_OF",
+                "source_node_id": chunk_node_id,
+                "target_node_id": doc_node_id,
+                "confidence": 1.0,
+                "weight": 1.0,
+                "evidence": f"ingest: chunk {c.chunk_index} is part of document",
+                "created_by": "ingest_pipeline",
+                "origin_event_id": chunk_evt_id,
+                "lifecycle_state": "active",
+                "payload_json": "{}",
+                "created_at": now,
+                "updated_at": now,
+            },
+        )
+        emit(
+            "GraphEdgeCreated",
+            "graph_store",
+            f"Edge: Chunk PART_OF Document",
+            {
+                "edge_id": chunk_part_of_doc,
+                "edge_type": "PART_OF",
+                "source_node_id": chunk_node_id,
+                "target_node_id": doc_node_id,
+                "confidence": 1.0,
+                "weight": 1.0,
+            },
+            subject_id=chunk_part_of_doc,
+        )
 
-    # Build and batch-insert memory records
+    # ── Build and batch-insert memory records ────────────────────────────────
     records = build_records_for_document(chunks, source)
     record_dicts = [r.as_dict() for r in records]
     store.insert_records_batch(record_dicts)
 
+    record_ids: list[str] = []
     for r in records:
-        emit(
+        rec_evt_id = emit(
             "MemoryRecordCreated",
             "ingest_pipeline",
             f"MemoryRecord created for chunk {r.chunk_id}",
@@ -306,8 +522,89 @@ def _ingest_file(
             },
             subject_id=r.record_id,
         )
+        record_ids.append(r.record_id)
+        rec_node_id = upsert_node(
+            db_path,
+            {
+                "node_id": make_node_id(f"memory_records:{r.record_id}"),
+                "node_type": "MemoryRecord",
+                "label": r.record_id,
+                "entity_id": r.record_id,
+                "entity_table": "memory_records",
+                "lifecycle_state": "active",
+                "origin_event_id": rec_evt_id,
+                "payload_json": json.dumps({"token_estimate": r.token_estimate}),
+                "created_at": now,
+                "updated_at": now,
+            },
+        )
+        emit(
+            "GraphNodeCreated",
+            "graph_store",
+            f"MemoryRecord node: {r.record_id}",
+            {
+                "node_id": rec_node_id,
+                "node_type": "MemoryRecord",
+                "entity_id": r.record_id,
+                "entity_table": "memory_records",
+            },
+            subject_id=rec_node_id,
+        )
+        chunk_node_id_or_none: str | None = chunk_node_ids.get(r.chunk_id)
+        if chunk_node_id_or_none is not None:
+            chunk_node_id = chunk_node_id_or_none
+            chunk_for_record = next(
+                (c for c in chunks if c.chunk_id == r.chunk_id), None
+            )
+            derived_from = upsert_edge(
+                db_path,
+                {
+                    "edge_id": make_edge_id(),
+                    "edge_type": "DERIVED_FROM",
+                    "source_node_id": rec_node_id,
+                    "target_node_id": chunk_node_id,
+                    "confidence": 1.0,
+                    "weight": 1.0,
+                    "evidence": (
+                        f"ingest: record derived from chunk_index="
+                        f"{chunk_for_record.chunk_index if chunk_for_record else '?'}"
+                    ),
+                    "created_by": "ingest_pipeline",
+                    "origin_event_id": rec_evt_id,
+                    "lifecycle_state": "active",
+                    "payload_json": json.dumps(
+                        {
+                            "chunk_index": chunk_for_record.chunk_index,
+                            "heading_path": chunk_for_record.heading_path,
+                        }
+                        if chunk_for_record is not None
+                        else {}
+                    ),
+                    "created_at": now,
+                    "updated_at": now,
+                },
+            )
+            emit(
+                "GraphEdgeCreated",
+                "graph_store",
+                f"Edge: MemoryRecord DERIVED_FROM Chunk",
+                {
+                    "edge_id": derived_from,
+                    "edge_type": "DERIVED_FROM",
+                    "source_node_id": rec_node_id,
+                    "target_node_id": chunk_node_id,
+                    "confidence": 1.0,
+                    "weight": 1.0,
+                },
+                subject_id=derived_from,
+            )
 
-    # Update source as ingested
+    # ── Index updates ────────────────────────────────────────────────────────
+    if record_ids:
+        update_fts_index(db_path, record_ids, event_log=event_log)
+        queue_for_embedding(db_path, record_ids)
+
+    # ── Update source as ingested ────────────────────────────────────────────
     source_update = source.as_dict()
     source_update["parser_status"] = "parsed"
     source_update["ingested_at"] = now
