@@ -106,6 +106,54 @@ class TestIngestHappyPath:
         assert source_events >= 3
         assert chunk_events > 0
 
+    def test_graph_node_events_emitted(self, vault: Path, docs_dir: Path) -> None:
+        ingest_path(vault, docs_dir)
+        with _db(vault) as conn:
+            node_events = conn.execute(
+                "SELECT COUNT(*) FROM inspector_events WHERE event_type = 'GraphNodeCreated'"
+            ).fetchone()[0]
+            edge_events = conn.execute(
+                "SELECT COUNT(*) FROM inspector_events WHERE event_type = 'GraphEdgeCreated'"
+            ).fetchone()[0]
+        assert node_events > 0
+        assert edge_events > 0
+
+    def test_graph_tables_populated(self, vault: Path, docs_dir: Path) -> None:
+        ingest_path(vault, docs_dir)
+        with _db(vault) as conn:
+            node_count = conn.execute(
+                "SELECT COUNT(*) FROM graph_nodes"
+            ).fetchone()[0]
+            edge_count = conn.execute(
+                "SELECT COUNT(*) FROM graph_edges"
+            ).fetchone()[0]
+        assert node_count > 0
+        assert edge_count > 0
+
+    def test_document_artifact_events_emitted(self, vault: Path, docs_dir: Path) -> None:
+        ingest_path(vault, docs_dir)
+        with _db(vault) as conn:
+            artifact_events = conn.execute(
+                "SELECT COUNT(*) FROM inspector_events WHERE event_type = 'DocumentArtifactWritten'"
+            ).fetchone()[0]
+        assert artifact_events == 3  # one per source file
+
+    def test_lexical_index_event_emitted(self, vault: Path, docs_dir: Path) -> None:
+        ingest_path(vault, docs_dir)
+        with _db(vault) as conn:
+            lexical_events = conn.execute(
+                "SELECT COUNT(*) FROM inspector_events WHERE event_type = 'LexicalIndexUpdated'"
+            ).fetchone()[0]
+        assert lexical_events > 0
+
+    def test_embeddings_queued(self, vault: Path, docs_dir: Path) -> None:
+        ingest_path(vault, docs_dir)
+        with _db(vault) as conn:
+            pending = conn.execute(
+                "SELECT COUNT(*) FROM pending_embeddings"
+            ).fetchone()[0]
+        assert pending > 0
+
     def test_artifacts_written(self, vault: Path, docs_dir: Path) -> None:
         ingest_path(vault, docs_dir)
         artifacts = list((vault / "artifacts").glob("*.json"))

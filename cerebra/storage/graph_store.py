@@ -31,6 +31,8 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+from cerebra.inspector.event import make_event
+from cerebra.inspector.sqlite_log import SQLiteEventLog
 from cerebra.storage.db import connect
 
 # Valid lifecycle states for nodes and edges.
@@ -127,14 +129,30 @@ def get_node_for_entity(
 
 
 def set_node_lifecycle(
-    db_path: Path, node_id: str, lifecycle_state: str
+    db_path: Path,
+    node_id: str,
+    lifecycle_state: str,
+    event_log: SQLiteEventLog | None = None,
 ) -> None:
-    """Transition a node's lifecycle_state. Also stamps updated_at."""
+    """Transition a node's lifecycle_state. Also stamps updated_at.
+
+    Emits GraphNodeLifecycleChanged if event_log is provided.
+    """
     now = int(time.time())
     with connect(db_path) as conn:
         conn.execute(
             "UPDATE graph_nodes SET lifecycle_state = ?, updated_at = ? WHERE node_id = ?",
             (lifecycle_state, now, node_id),
+        )
+    if event_log is not None:
+        event_log.write(
+            make_event(
+                event_type="GraphNodeLifecycleChanged",
+                actor="graph_store",
+                summary=f"Node {node_id} lifecycle → {lifecycle_state}",
+                data={"node_id": node_id, "new_state": lifecycle_state},
+                subject_id=node_id,
+            )
         )
 
 
@@ -195,14 +213,30 @@ def get_edge(db_path: Path, edge_id: str) -> dict[str, Any] | None:
 
 
 def set_edge_lifecycle(
-    db_path: Path, edge_id: str, lifecycle_state: str
+    db_path: Path,
+    edge_id: str,
+    lifecycle_state: str,
+    event_log: SQLiteEventLog | None = None,
 ) -> None:
-    """Transition an edge's lifecycle_state. Also stamps updated_at."""
+    """Transition an edge's lifecycle_state. Also stamps updated_at.
+
+    Emits GraphEdgeLifecycleChanged if event_log is provided.
+    """
     now = int(time.time())
     with connect(db_path) as conn:
         conn.execute(
             "UPDATE graph_edges SET lifecycle_state = ?, updated_at = ? WHERE edge_id = ?",
             (lifecycle_state, now, edge_id),
+        )
+    if event_log is not None:
+        event_log.write(
+            make_event(
+                event_type="GraphEdgeLifecycleChanged",
+                actor="graph_store",
+                summary=f"Edge {edge_id} lifecycle → {lifecycle_state}",
+                data={"edge_id": edge_id, "new_state": lifecycle_state},
+                subject_id=edge_id,
+            )
         )
 
 

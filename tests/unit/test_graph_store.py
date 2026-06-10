@@ -7,6 +7,9 @@ from pathlib import Path
 
 import pytest
 
+import json
+
+from cerebra.inspector.sqlite_log import SQLiteEventLog
 from cerebra.storage.graph_store import (
     get_1hop,
     get_edge,
@@ -172,6 +175,23 @@ class TestNodeCrud:
         assert node["lifecycle_state"] == "tombstoned"
         assert node["updated_at"] > 1000  # updated_at was stamped
 
+    def test_set_node_lifecycle_emits_event(self, db: Path) -> None:
+        log = SQLiteEventLog(db)
+        upsert_node(db, _node("gn_001", lifecycle_state="active"))
+        set_node_lifecycle(db, "gn_001", "archived", event_log=log)
+        events = log.query_by_type("GraphNodeLifecycleChanged")
+        assert len(events) == 1
+        data = json.loads(events[0]["data_json"])
+        assert data["node_id"] == "gn_001"
+        assert data["new_state"] == "archived"
+
+    def test_set_node_lifecycle_no_event_without_log(self, db: Path) -> None:
+        upsert_node(db, _node("gn_001", lifecycle_state="active"))
+        set_node_lifecycle(db, "gn_001", "tombstoned")  # no event_log — should not raise
+        node = get_node(db, "gn_001")
+        assert node is not None
+        assert node["lifecycle_state"] == "tombstoned"
+
 
 # ── Edge CRUD ─────────────────────────────────────────────────────────────────
 
@@ -228,6 +248,25 @@ class TestEdgeCrud:
         assert edge is not None
         assert edge["lifecycle_state"] == "archived"
         assert edge["updated_at"] > 1000
+
+    def test_set_edge_lifecycle_emits_event(self, db: Path) -> None:
+        log = SQLiteEventLog(db)
+        src, tgt = self._make_two_nodes(db)
+        upsert_edge(db, _edge("ge_001", src, tgt))
+        set_edge_lifecycle(db, "ge_001", "tombstoned", event_log=log)
+        events = log.query_by_type("GraphEdgeLifecycleChanged")
+        assert len(events) == 1
+        data = json.loads(events[0]["data_json"])
+        assert data["edge_id"] == "ge_001"
+        assert data["new_state"] == "tombstoned"
+
+    def test_set_edge_lifecycle_no_event_without_log(self, db: Path) -> None:
+        src, tgt = self._make_two_nodes(db)
+        upsert_edge(db, _edge("ge_001", src, tgt))
+        set_edge_lifecycle(db, "ge_001", "archived")  # no event_log — should not raise
+        edge = get_edge(db, "ge_001")
+        assert edge is not None
+        assert edge["lifecycle_state"] == "archived"
 
     def test_edge_requires_existing_source_node(self, db: Path) -> None:
         upsert_node(db, _node("gn_doc", node_type="Document"))
