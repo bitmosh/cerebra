@@ -301,6 +301,127 @@ class TestMigration007:
 
 
 @pytest.mark.unit
+class TestMigration008:
+    """Migration008 creates the three Phase 4 retrieval trace tables."""
+
+    def _fresh_db(self) -> Path:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+            return Path(f.name)
+
+    def test_migration008_creates_retrieval_tables(self) -> None:
+        db = self._fresh_db()
+        try:
+            run_migrations(db)
+            conn = sqlite3.connect(db)
+            tables = {
+                row[0]
+                for row in conn.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table'"
+                ).fetchall()
+            }
+            assert "retrieval_traces" in tables
+            assert "retrieval_steps" in tables
+            assert "retrieval_candidates" in tables
+            conn.close()
+        finally:
+            db.unlink(missing_ok=True)
+
+    def test_migration008_is_idempotent(self) -> None:
+        db = self._fresh_db()
+        try:
+            run_migrations(db)
+            second = run_migrations(db)
+            assert 8 not in second, "Migration008 should not re-apply on second run"
+        finally:
+            db.unlink(missing_ok=True)
+
+    def test_migration008_retrieval_steps_fk_to_traces(self) -> None:
+        """retrieval_steps must REJECT inserts with unknown trace_id."""
+        db = self._fresh_db()
+        try:
+            run_migrations(db)
+            conn = sqlite3.connect(db)
+            conn.execute("PRAGMA foreign_keys=ON")
+            with pytest.raises(sqlite3.IntegrityError):
+                conn.execute(
+                    "INSERT INTO retrieval_steps "
+                    "(step_id, trace_id, step_number, step_name, duration_ms) "
+                    "VALUES ('s1', 'nonexistent_trace', 1, 'exact_sku', 5)"
+                )
+            conn.close()
+        finally:
+            db.unlink(missing_ok=True)
+
+    def test_migration008_retrieval_candidates_fk_to_traces(self) -> None:
+        """retrieval_candidates must REJECT inserts with unknown trace_id."""
+        db = self._fresh_db()
+        try:
+            run_migrations(db)
+            conn = sqlite3.connect(db)
+            conn.execute("PRAGMA foreign_keys=ON")
+            with pytest.raises(sqlite3.IntegrityError):
+                conn.execute(
+                    "INSERT INTO retrieval_candidates "
+                    "(candidate_id, trace_id, record_id, step_surfaced, "
+                    " retrieval_path, salience_score) "
+                    "VALUES ('c1', 'nonexistent_trace', 'rec_001', "
+                    "'exact_sku', 'exact_sku:D1=0x5', 0.73)"
+                )
+            conn.close()
+        finally:
+            db.unlink(missing_ok=True)
+
+    def test_migration008_full_trace_roundtrip(self) -> None:
+        """A trace + step + candidate can be inserted and queried."""
+        db = self._fresh_db()
+        try:
+            run_migrations(db)
+            conn = sqlite3.connect(db)
+            conn.execute("PRAGMA foreign_keys=ON")
+
+            # Insert a trace
+            conn.execute(
+                "INSERT INTO retrieval_traces "
+                "(trace_id, query, mode, started_at, finished_at, duration_ms) "
+                "VALUES ('tr_001', 'test query', 'hybrid', 1720000000, 1720000001, 50)"
+            )
+            # Insert a step
+            conn.execute(
+                "INSERT INTO retrieval_steps "
+                "(step_id, trace_id, step_number, step_name, "
+                " candidate_count, new_candidates, duration_ms) "
+                "VALUES ('st_001', 'tr_001', 2, 'exact_sku', 3, 3, 4)"
+            )
+            # Insert a candidate
+            conn.execute(
+                "INSERT INTO retrieval_candidates "
+                "(candidate_id, trace_id, record_id, step_surfaced, "
+                " retrieval_path, salience_score, selected, rank) "
+                "VALUES ('cd_001', 'tr_001', 'rec_001', 'exact_sku', "
+                "'exact_sku:D1=0x5', 0.83, 1, 1)"
+            )
+            conn.commit()
+
+            row = conn.execute(
+                "SELECT candidate_count FROM retrieval_traces WHERE trace_id='tr_001'"
+            ).fetchone()
+            assert row is not None
+            step = conn.execute(
+                "SELECT step_name FROM retrieval_steps WHERE trace_id='tr_001'"
+            ).fetchone()
+            assert step[0] == "exact_sku"
+            cand = conn.execute(
+                "SELECT salience_score, selected FROM retrieval_candidates "
+                "WHERE trace_id='tr_001'"
+            ).fetchone()
+            assert cand[0] == pytest.approx(0.83)
+            assert cand[1] == 1
+            conn.close()
+        finally:
+            db.unlink(missing_ok=True)
+
+
+@pytest.mark.unit
 class TestIndexState:
     def _migrated_db(self) -> Path:
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:

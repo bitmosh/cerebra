@@ -71,3 +71,24 @@ class SQLiteEventLog:
                 (session_id,),
             ).fetchall()
         return [dict(row) for row in rows]
+
+    def query_by_subject(
+        self,
+        subject_id: str,
+        event_type: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Return events for a subject_id, optionally filtered by event_type."""
+        with self._connect() as conn:
+            if event_type is not None:
+                rows = conn.execute(
+                    "SELECT * FROM inspector_events "
+                    "WHERE subject_id = ? AND event_type = ? ORDER BY timestamp ASC",
+                    (subject_id, event_type),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM inspector_events "
+                    "WHERE subject_id = ? ORDER BY timestamp ASC",
+                    (subject_id,),
+                ).fetchall()
+        return [dict(row) for row in rows]

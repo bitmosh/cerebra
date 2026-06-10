@@ -33,6 +33,12 @@ This repo is in pre-v0.1 setup. The implementing agent reads from `docs/refined-
 
 For documentation: `docs/refined-runtime-model/CEREBRA_DOC_INDEX.md`
 
+## Setup
+
+```
+uv sync --extra dev   # not plain `uv sync` — pytest/numpy land outside the venv otherwise
+```
+
 ## License
 
 MIT (see LICENSE)

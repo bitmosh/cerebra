@@ -310,3 +310,386 @@ def classify(
     click.echo(f"  Failed:         {report.failed}")
     click.echo(f"  Low confidence: {report.low_confidence}")
     click.echo(f"  Elapsed:        {report.elapsed_ms}ms")
+
+
+# ── search ────────────────────────────────────────────────────────────────────
+
+
+def _d1_label(query_d1: int | None) -> str:
+    """Return a human-readable D1 label, e.g. 'DESIGN (0x5)' or 'none'."""
+    if query_d1 is None:
+        return "none"
+    try:
+        from cerebra.cognition.sku_categories import D1Category
+        return f"{D1Category(query_d1).name} (0x{query_d1:x})"
+    except (ValueError, ImportError):
+        return f"0x{query_d1:x}"
+
+
+def _truncate(s: str, n: int) -> str:
+    return s[:n] + "…" if len(s) > n else s
+
+
+def _render_text(
+    scored: list,
+    plan,
+    above_floor: int,
+    duration_ms: int,
+    limit: int,
+    explain: bool,
+    floor: float,
+) -> None:
+    """Render plain-text search output matching §12 design."""
+    visible = scored[:limit]
+
+    click.echo(
+        f'\nQuery: "{plan.raw_query}"  '
+        f"Mode: {plan.mode}  "
+        f"D1: {_d1_label(plan.query_d1)}"
+    )
+    click.echo(
+        f"Candidates: {len(scored)}  "
+        f"Above floor ({floor}): {above_floor}  "
+        f"Duration: {duration_ms}ms"
+    )
+
+    if plan.staleness_warnings:
+        for w in plan.staleness_warnings:
+            click.echo(f"  [stale] {w}", err=True)
+
+    if not visible:
+        click.echo(
+            f"\nNo results above salience floor {floor}. "
+            "Try a broader query or lower --floor.",
+            err=True,
+        )
+        return
+
+    # Table header
+    click.echo(f"\n{'Rank':>4}  {'Score':>6}  {'Source':<45}  Excerpt")
+    click.echo(f"{'----':>4}  {'------':>6}  {'-' * 45}  -------")
+
+    for c in visible:
+        src = _truncate(c.source_path, 45)
+        excerpt = _truncate(c.content_excerpt.replace("\n", " "), 60)
+        click.echo(f"{c.rank:>4}  {c.score.composite:>6.2f}  {src:<45}  {excerpt}")
+
+    # Retrieval paths
+    click.echo("\nRetrieval paths:")
+    for c in visible:
+        click.echo(f"  #{c.rank}: {c.retrieval_path}")
+
+    # Per-component breakdown (--explain)
+    if explain:
+        click.echo("\nScore breakdown:")
+        for c in visible:
+            parts = "  ".join(
+                f"{row['component']}={row['value']:.3f}×{row['weight']:.2f}={row['contribution']:.3f}"
+                for row in c.score.explain()
+            )
+            click.echo(f"  #{c.rank}: {parts}")
+
+
+def _render_json(scored: list, limit: int, explain: bool) -> None:
+    """Render JSON (ndjson) output — one candidate per line."""
+    for c in scored[:limit]:
+        obj: dict = {
+            "rank": c.rank,
+            "score": round(c.score.composite, 6),
+            "record_id": c.record_id,
+            "source_path": c.source_path,
+            "retrieval_path": c.retrieval_path,
+            "sku_address": c.sku_address,
+            "created_at": c.created_at,
+            "content_excerpt": c.content_excerpt,
+            "components": {k: round(v, 6) for k, v in c.score.components.items()},
+        }
+        if explain:
+            obj["explain"] = c.score.explain()
+        click.echo(json.dumps(obj))
+
+
+@cli.command()
+@click.argument("query")
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option(
+    "--limit", default=10, show_default=True,
+    help="Maximum results to show (1–200).",
+)
+@click.option(
+    "--floor", "relevance_floor", default=0.35, show_default=True,
+    help="Minimum salience score to include in results.",
+)
+@click.option(
+    "--format", "output_format",
+    type=click.Choice(["text", "json"]), default="text", show_default=True,
+    help="Output format.",
+)
+@click.option("--explain", is_flag=True, default=False, help="Show per-component score breakdown.")
+def search(
+    query: str,
+    vault: str | None,
+    limit: int,
+    relevance_floor: float,
+    output_format: str,
+    explain: bool,
+) -> None:
+    """Search the vault for memory records matching QUERY."""
+    import sys
+    import time
+
+    from cerebra.inspector.sqlite_log import SQLiteEventLog
+    from cerebra.retrieval.planner import query_plan
+    from cerebra.retrieval.scorer import score_candidates
+    from cerebra.retrieval.trace import TraceData, write_trace
+    from cerebra.retrieval.traversal import run_traversal
+    from cerebra.storage.migrations import run_migrations
+
+    limit = max(1, min(limit, 200))
+
+    try:
+        vault_path = _get_vault(vault)
+    except Exception as e:
+        msg = e.format_message() if isinstance(e, click.ClickException) else str(e)
+        click.echo(f"Error: {msg}", err=True)
+        sys.exit(2)
+
+    db_path = vault_path / "data" / "cerebra.db"
+    if not db_path.exists():
+        click.echo(f"Error: vault database not found at {db_path}", err=True)
+        sys.exit(2)
+
+    try:
+        run_migrations(db_path)
+    except Exception as e:
+        click.echo(f"Error: migration failed: {e}", err=True)
+        sys.exit(2)
+
+    try:
+        t_start = time.monotonic_ns()
+        started_at = int(time.time())
+        event_log = SQLiteEventLog(db_path)
+        plan = query_plan(query, db_path, max_candidates=200, event_log=event_log)
+        raw = run_traversal(plan, db_path, event_log=event_log)
+        scored_all = score_candidates(raw, plan, db_path, event_log=event_log)
+        finished_at = int(time.time())
+        duration_ms = max(0, (time.monotonic_ns() - t_start) // 1_000_000)
+    except Exception as e:
+        click.echo(f"Error: retrieval failed: {e}", err=True)
+        sys.exit(2)
+
+    # ── Write retrieval trace ─────────────────────────────────────────────────
+    try:
+        step_events = [
+            json.loads(e["data_json"])
+            for e in event_log.query_by_subject(plan.trace_id, "TraversalStepCompleted")
+        ]
+        trace_data = TraceData(
+            plan=plan,
+            scored_all=scored_all,
+            floor=relevance_floor,
+            started_at=started_at,
+            finished_at=finished_at,
+            duration_ms=duration_ms,
+            step_events=step_events,
+        )
+        write_trace(trace_data, db_path, event_log=event_log)
+    except Exception as e:
+        click.echo(f"Error: trace write failed: {e}", err=True)
+        sys.exit(2)
+
+    above_floor = [c for c in scored_all if c.score.composite >= relevance_floor]
+    above_count = len(above_floor)
+
+    if output_format == "json":
+        _render_json(above_floor, limit, explain)
+        if not above_floor:
+            sys.exit(1)
+        return
+
+    _render_text(above_floor, plan, above_count, duration_ms, limit, explain, relevance_floor)
+    if not above_floor:
+        sys.exit(1)
+
+
+# ── reindex ───────────────────────────────────────────────────────────────────
+
+
+@cli.command()
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option("--lexical", "do_lexical", is_flag=True, default=False, help="Rebuild the FTS5 lexical index.")
+@click.option("--vector", "do_vector", is_flag=True, default=False, help="Rebuild the vector (embedding) index.")
+@click.pass_context
+def reindex(ctx: click.Context, vault: str | None, do_lexical: bool, do_vector: bool) -> None:
+    """Rebuild search indexes for the vault.
+
+    \b
+    --lexical   Rebuild the FTS5 full-text index from all active records.
+    --vector    Not yet implemented (use `cerebra reembed` when available).
+
+    Run without flags to see this help.
+    """
+    import sys
+    import time
+
+    from cerebra.storage.lexical import build_fts_index
+    from cerebra.storage.migrations import run_migrations
+
+    if not do_lexical and not do_vector:
+        click.echo(ctx.get_help())
+        return
+
+    if do_vector:
+        click.echo(
+            "Vector reindexing is not yet implemented. "
+            "Use `cerebra reembed` when available (Phase 5).",
+            err=True,
+        )
+        if not do_lexical:
+            sys.exit(2)
+
+    if do_lexical:
+        vault_path = _get_vault(vault)
+        db_path = vault_path / "data" / "cerebra.db"
+        if not db_path.exists():
+            click.echo(f"Error: vault database not found at {db_path}", err=True)
+            sys.exit(2)
+
+        try:
+            run_migrations(db_path)
+
+            from cerebra.storage.db import connect
+            with connect(db_path) as conn:
+                total = conn.execute(
+                    "SELECT COUNT(*) FROM memory_records WHERE lifecycle_state = 'active'"
+                ).fetchone()[0]
+
+            click.echo(f"Rebuilding FTS5 lexical index for {total} active records...")
+            t0 = time.monotonic()
+            count = build_fts_index(db_path)
+            elapsed_ms = int((time.monotonic() - t0) * 1000)
+            click.echo(f"Done. {count} records indexed in {elapsed_ms}ms.")
+        except Exception as e:
+            click.echo(f"Error: lexical reindex failed: {e}", err=True)
+            sys.exit(2)
+
+
+# ── context ───────────────────────────────────────────────────────────────────
+
+
+@cli.command()
+@click.argument("query")
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option(
+    "--limit", default=10, show_default=True,
+    help="Maximum records in selected_memory (1–200).",
+)
+@click.option(
+    "--floor", "relevance_floor", default=0.35, show_default=True,
+    help="Minimum salience score to include in selected_memory.",
+)
+@click.option(
+    "--format", "output_format",
+    type=click.Choice(["text", "json"]), default="text", show_default=True,
+    help="Output format.",
+)
+@click.option(
+    "--out", "out_file", default=None,
+    help="Write JSON packet to FILE instead of stdout (implies --format json).",
+)
+def context(
+    query: str,
+    vault: str | None,
+    limit: int,
+    relevance_floor: float,
+    output_format: str,
+    out_file: str | None,
+) -> None:
+    """Produce a ContextPacket for QUERY and render it for downstream use."""
+    import sys
+    import time
+
+    from cerebra.inspector.sqlite_log import SQLiteEventLog
+    from cerebra.retrieval.context_packet import build_context_packet, render_text
+    from cerebra.retrieval.planner import query_plan
+    from cerebra.retrieval.scorer import score_candidates
+    from cerebra.retrieval.trace import TraceData, write_trace
+    from cerebra.retrieval.traversal import run_traversal
+    from cerebra.storage.migrations import run_migrations
+
+    limit = max(1, min(limit, 200))
+    use_json = output_format == "json" or out_file is not None
+
+    try:
+        vault_path = _get_vault(vault)
+    except Exception as e:
+        msg = e.format_message() if isinstance(e, click.ClickException) else str(e)
+        click.echo(f"Error: {msg}", err=True)
+        sys.exit(2)
+
+    db_path = vault_path / "data" / "cerebra.db"
+    if not db_path.exists():
+        click.echo(f"Error: vault database not found at {db_path}", err=True)
+        sys.exit(2)
+
+    try:
+        run_migrations(db_path)
+    except Exception as e:
+        click.echo(f"Error: migration failed: {e}", err=True)
+        sys.exit(2)
+
+    try:
+        t_start = time.monotonic_ns()
+        started_at = int(time.time())
+        event_log = SQLiteEventLog(db_path)
+        plan = query_plan(query, db_path, max_candidates=200, event_log=event_log)
+        raw = run_traversal(plan, db_path, event_log=event_log)
+        scored_all = score_candidates(raw, plan, db_path, event_log=event_log)
+        finished_at = int(time.time())
+        duration_ms = max(0, (time.monotonic_ns() - t_start) // 1_000_000)
+    except Exception as e:
+        click.echo(f"Error: retrieval failed: {e}", err=True)
+        sys.exit(2)
+
+    try:
+        step_events = [
+            json.loads(e["data_json"])
+            for e in event_log.query_by_subject(plan.trace_id, "TraversalStepCompleted")
+        ]
+        trace_data = TraceData(
+            plan=plan,
+            scored_all=scored_all,
+            floor=relevance_floor,
+            started_at=started_at,
+            finished_at=finished_at,
+            duration_ms=duration_ms,
+            step_events=step_events,
+        )
+        write_trace(trace_data, db_path, event_log=event_log)
+    except Exception as e:
+        click.echo(f"Error: trace write failed: {e}", err=True)
+        sys.exit(2)
+
+    try:
+        above_floor = [c for c in scored_all if c.score.composite >= relevance_floor]
+        packet = build_context_packet(
+            trace_data, above_floor, db_path, limit=limit, event_log=event_log
+        )
+    except Exception as e:
+        click.echo(f"Error: context packet build failed: {e}", err=True)
+        sys.exit(2)
+
+    if out_file is not None:
+        try:
+            out_path = Path(out_file)
+            out_path.write_text(json.dumps(packet.to_dict(), indent=2))
+            click.echo(f"Packet written to {out_path}")
+        except Exception as e:
+            click.echo(f"Error: could not write output file: {e}", err=True)
+            sys.exit(2)
+        return
+
+    if use_json:
+        click.echo(json.dumps(packet.to_dict(), indent=2))
+    else:
+        click.echo(render_text(packet, limit=limit))

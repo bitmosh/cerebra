@@ -1,0 +1,25 @@
+# D1 keyword vocabulary for query-time classification.
+# Keys are hex strings matching the 16 D1 cognitive categories (0x0–0xf).
+# Edit this file to recalibrate classification; no code change needed.
+# See docs/agent/plans/v01_phase4_design.md §2 and §13 Q1.
+#
+# Matching is case-insensitive. Multi-word phrases (containing spaces) are
+# matched as substrings. Single-word entries are matched as whole tokens.
+
+[d1]
+"0x0" = ["data", "observed", "measured", "logged", "recorded", "event", "sample", "metric", "measurement", "reading", "trace"]
+"0x1" = ["pattern", "recurrence", "trend", "regularity", "consistent", "frequency", "common", "recurring", "statistical"]
+"0x2" = ["mechanism", "how it works", "causes", "causal", "flow", "engine", "pipeline", "process", "works", "operates", "execution"]
+"0x3" = ["what is", "entity", "concept", "named", "definition", "defines", "refers to", "meaning", "term", "taxonomy"]
+"0x4" = ["how to", "method", "procedure", "approach", "technique", "strategy", "way to", "steps", "workflow", "recipe"]
+"0x5" = ["architecture", "design", "structure", "plan", "spec", "decision", "schema", "layout", "blueprint", "roadmap"]
+"0x6" = ["artifact", "output", "built", "produced", "created", "written", "generated", "file", "document", "report"]
+"0x7" = ["tool", "library", "framework", "cli", "command", "sdk", "api", "package", "module", "utility", "plugin"]
+"0x8" = ["should", "must", "rule", "doctrine", "principle", "policy", "always", "never", "discipline", "invariant", "requirement"]
+"0x9" = ["review", "evaluate", "assess", "compare", "critique", "quality", "good", "bad", "score", "rating", "judgment"]
+"0xa" = ["goal", "want", "target", "objective", "aim", "intention", "trying to", "need to", "purpose", "mission"]
+"0xb" = ["cannot", "blocked", "limitation", "constraint", "forbidden", "restricted", "limit", "prevent", "barrier", "gap"]
+"0xc" = ["happened", "when", "during", "session", "meeting", "incident", "history", "past", "timeline", "sequence"]
+"0xd" = ["who", "ryan", "anthropic", "system", "agent", "team", "person", "author", "developer", "user"]
+"0xe" = ["project", "scope", "environment", "setting", "context", "workspace", "vault", "cerebra", "lumaweave"]
+"0xf" = ["relationship", "between", "depends", "connects", "links", "related", "connection", "dependency", "interface"]

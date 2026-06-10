@@ -422,6 +422,97 @@ class Migration007_SeedIndexStateAndQueue(Migration):
         )
 
 
+class Migration008_RetrievalTraces(Migration):
+    """Phase 4: retrieval trace tables for inspectable query audit trails.
+
+    Three tables per docs/agent/plans/v01_phase4_design.md §6:
+
+      retrieval_traces      — one row per query attempt; links to the resulting
+                              ContextPacket (or null on abstention).
+
+      retrieval_steps       — one row per traversal step (steps 1–6); tracks
+                              candidate counts, timing, and skip reasons.
+                              step_name values: query_sku_construction,
+                              exact_sku, partial_sku, sibling_traversal,
+                              vector_fallback, trace_annotation.
+
+      retrieval_candidates  — one row per candidate surfaced; records which
+                              step found it, the full CompositeScore JSON,
+                              whether it was selected, and the exclusion
+                              reason if not. Enables "why was this retrieved"
+                              and "why was this excluded" inspector queries.
+
+    Retention: indefinite in v0.1.x. Pruning command deferred to Phase 5+.
+    """
+
+    version = 8
+    description = "Phase 4: retrieval_traces, retrieval_steps, retrieval_candidates"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS retrieval_traces (
+                trace_id          TEXT    PRIMARY KEY,
+                query             TEXT    NOT NULL,
+                mode              TEXT    NOT NULL,
+                query_sku_d1      INTEGER,
+                query_sku_pattern TEXT,
+                plan_json         TEXT    NOT NULL DEFAULT '{}',
+                started_at        INTEGER NOT NULL,
+                finished_at       INTEGER NOT NULL,
+                duration_ms       INTEGER NOT NULL,
+                candidate_count   INTEGER NOT NULL DEFAULT 0,
+                selected_count    INTEGER NOT NULL DEFAULT 0,
+                abstained         INTEGER NOT NULL DEFAULT 0,
+                context_packet_id TEXT,
+                schema_version    INTEGER NOT NULL DEFAULT 1
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_trace_started
+                ON retrieval_traces(started_at);
+            CREATE INDEX IF NOT EXISTS idx_trace_mode
+                ON retrieval_traces(mode);
+            CREATE INDEX IF NOT EXISTS idx_trace_abstained
+                ON retrieval_traces(abstained);
+
+            CREATE TABLE IF NOT EXISTS retrieval_steps (
+                step_id          TEXT    PRIMARY KEY,
+                trace_id         TEXT    NOT NULL
+                    REFERENCES retrieval_traces(trace_id),
+                step_number      INTEGER NOT NULL,
+                step_name        TEXT    NOT NULL,
+                candidate_count  INTEGER NOT NULL DEFAULT 0,
+                new_candidates   INTEGER NOT NULL DEFAULT 0,
+                duration_ms      INTEGER NOT NULL DEFAULT 0,
+                skipped          INTEGER NOT NULL DEFAULT 0,
+                skip_reason      TEXT,
+                schema_version   INTEGER NOT NULL DEFAULT 1
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_step_trace
+                ON retrieval_steps(trace_id, step_number);
+
+            CREATE TABLE IF NOT EXISTS retrieval_candidates (
+                candidate_id     TEXT    PRIMARY KEY,
+                trace_id         TEXT    NOT NULL
+                    REFERENCES retrieval_traces(trace_id),
+                record_id        TEXT    NOT NULL,
+                step_surfaced    TEXT    NOT NULL,
+                retrieval_path   TEXT    NOT NULL,
+                salience_score   REAL    NOT NULL,
+                score_json       TEXT    NOT NULL DEFAULT '{}',
+                selected         INTEGER NOT NULL DEFAULT 0,
+                rank             INTEGER,
+                exclusion_reason TEXT,
+                schema_version   INTEGER NOT NULL DEFAULT 1
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_cand_trace
+                ON retrieval_candidates(trace_id, selected);
+            CREATE INDEX IF NOT EXISTS idx_cand_record
+                ON retrieval_candidates(record_id);
+        """)
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -431,6 +522,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration005_AddPassCount(),
     Migration006_Phase3Schema(),
     Migration007_SeedIndexStateAndQueue(),
+    Migration008_RetrievalTraces(),
 ]
 
 
