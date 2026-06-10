@@ -132,6 +132,175 @@ class TestMigrations:
 
 
 @pytest.mark.unit
+class TestMigration007:
+    """Migration007 seeds index_state and queues active memory_records for embedding."""
+
+    def _fresh_db(self) -> Path:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
+            return Path(f.name)
+
+    def _insert_record(self, conn: sqlite3.Connection, record_id: str) -> None:
+        """Insert a minimal active memory_record chain for testing."""
+        src_id = f"src_{record_id}"
+        doc_id = f"doc_{record_id}"
+        chk_id = f"chk_{record_id}"
+        conn.execute(
+            "INSERT INTO sources (source_id, canonical_path, content_hash, size_bytes,"
+            " detected_type, detection_confidence, lifecycle_state, created_at, schema_version)"
+            " VALUES (?,?,?,?,?,?,?,?,?)",
+            (src_id, f"/fake/{record_id}.md", "h", 1, "markdown", 1.0, "active", 1, 1),
+        )
+        conn.execute(
+            "INSERT INTO documents (document_id, source_id, document_type,"
+            " normalization_confidence, lifecycle_state, created_at, schema_version)"
+            " VALUES (?,?,?,?,?,?,?)",
+            (doc_id, src_id, "markdown", 1.0, "active", 1, 1),
+        )
+        conn.execute(
+            "INSERT INTO chunks (chunk_id, document_id, source_id, heading_path,"
+            " chunk_index, depth, content, content_hash, token_estimate,"
+            " chunk_strategy, lifecycle_state, created_at, schema_version)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (chk_id, doc_id, src_id, "", 0, 0, "text", "h", 1, "fixed", "active", 1, 1),
+        )
+        conn.execute(
+            "INSERT INTO memory_records (record_id, record_type, source_id, document_id,"
+            " chunk_id, content, content_hash, token_estimate, lifecycle_state,"
+            " created_at, schema_version)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            (record_id, "source_chunk", src_id, doc_id, chk_id, "text", "h", 1, "active", 1, 1),
+        )
+
+    def test_migration007_seeds_index_state_on_fresh_vault(self) -> None:
+        db = self._fresh_db()
+        try:
+            run_migrations(db)
+            conn = sqlite3.connect(db)
+            rows = conn.execute(
+                "SELECT index_name, last_updated_at FROM index_state ORDER BY index_name"
+            ).fetchall()
+            conn.close()
+            names = {r[0] for r in rows}
+            assert names == {"graph", "lexical", "vector"}
+            assert all(r[1] == 0 for r in rows), "seed rows should have last_updated_at=0"
+        finally:
+            db.unlink(missing_ok=True)
+
+    def test_migration007_queues_active_records_on_fresh_vault(self) -> None:
+        db = self._fresh_db()
+        try:
+            # Apply migrations up to 006 only, then insert records, then apply 007
+            from cerebra.storage.migrations import (
+                ALL_MIGRATIONS,
+                Migration001_InitSchema,
+                Migration006_Phase3Schema,
+            )
+            import sqlite3 as _sq3
+            conn = _sq3.connect(db)
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS applied_migrations"
+                " (version INTEGER PRIMARY KEY, description TEXT NOT NULL, applied_at INTEGER NOT NULL)"
+            )
+            conn.commit()
+            applied = set()
+            for m in ALL_MIGRATIONS:
+                if m.version > 6:
+                    break
+                m.up(conn)
+                conn.execute(
+                    "INSERT INTO applied_migrations VALUES (?,?,?)",
+                    (m.version, m.description, 1),
+                )
+                conn.commit()
+                applied.add(m.version)
+
+            # Insert two active records before Migration007
+            self._insert_record(conn, "rec_a")
+            self._insert_record(conn, "rec_b")
+            conn.commit()
+            conn.close()
+
+            # Now apply 007
+            run_migrations(db)
+
+            conn = _sq3.connect(db)
+            pending = {r[0] for r in conn.execute("SELECT record_id FROM pending_embeddings").fetchall()}
+            conn.close()
+            assert "rec_a" in pending
+            assert "rec_b" in pending
+        finally:
+            db.unlink(missing_ok=True)
+
+    def test_migration007_is_idempotent_when_already_backfilled(self) -> None:
+        """Running Migration007 twice (or after a manual backfill) must not duplicate rows."""
+        db = self._fresh_db()
+        try:
+            run_migrations(db)
+            conn = sqlite3.connect(db)
+            self._insert_record(conn, "rec_x")
+            conn.commit()
+            # Manually queue rec_x before any re-run
+            conn.execute(
+                "INSERT OR IGNORE INTO pending_embeddings (record_id, queued_at, attempt)"
+                " VALUES ('rec_x', 1, 0)"
+            )
+            conn.commit()
+            conn.close()
+
+            # Running migrations again must be a no-op (007 already applied)
+            run_migrations(db)
+
+            conn = sqlite3.connect(db)
+            count = conn.execute(
+                "SELECT COUNT(*) FROM pending_embeddings WHERE record_id='rec_x'"
+            ).fetchone()[0]
+            conn.close()
+            assert count == 1, "duplicate row after re-run"
+        finally:
+            db.unlink(missing_ok=True)
+
+    def test_migration007_skips_inactive_records(self) -> None:
+        """archived / tombstoned records must not be queued by Migration007."""
+        db = self._fresh_db()
+        try:
+            from cerebra.storage.migrations import ALL_MIGRATIONS
+            import sqlite3 as _sq3
+            conn = _sq3.connect(db)
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS applied_migrations"
+                " (version INTEGER PRIMARY KEY, description TEXT NOT NULL, applied_at INTEGER NOT NULL)"
+            )
+            conn.commit()
+            for m in ALL_MIGRATIONS:
+                if m.version > 6:
+                    break
+                m.up(conn)
+                conn.execute(
+                    "INSERT INTO applied_migrations VALUES (?,?,?)",
+                    (m.version, m.description, 1),
+                )
+                conn.commit()
+
+            self._insert_record(conn, "rec_active")
+            self._insert_record(conn, "rec_archived")
+            conn.execute(
+                "UPDATE memory_records SET lifecycle_state='archived' WHERE record_id='rec_archived'"
+            )
+            conn.commit()
+            conn.close()
+
+            run_migrations(db)
+
+            conn = _sq3.connect(db)
+            pending = {r[0] for r in conn.execute("SELECT record_id FROM pending_embeddings").fetchall()}
+            conn.close()
+            assert "rec_active" in pending
+            assert "rec_archived" not in pending
+        finally:
+            db.unlink(missing_ok=True)
+
+
+@pytest.mark.unit
 class TestIndexState:
     def _migrated_db(self) -> Path:
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:

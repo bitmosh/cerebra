@@ -743,6 +743,9 @@ The `entity_table` column names the source table as a string (`'memory_records'`
 **Q6: `origin_event_id` referential integrity**  
 `graph_nodes.origin_event_id` and `graph_edges.origin_event_id` reference `inspector_events.event_id` but this is NOT declared as a foreign key. Reason: inspector events can be compacted/deleted per retention policy (CEREBRA_INSPECTOR.md §6.3). A foreign key would prevent event compaction from working. The `origin_event_id` is a soft reference — useful for debugging, but not enforced. Risk: low. Document the soft-reference intent in the migration comment.
 
+**Q7: Dual staleness semantics**  
+Two functions with similar names check "stale": `index_state.is_stale(name)` returns True only when `last_updated_at = 0` (never built), while `lexical.is_lexical_stale()` returns True when `MAX(record.created_at) > index.last_updated_at` (drift detected). Phase 4 will exercise the staleness API enough to clarify which semantics retrieval needs. Proposal: unify so `index_state.is_stale(name)` delegates to the index-specific drift detector when one exists, or rename one of the two so the contract is unambiguous. Don't fix in Phase 3 — surface in Phase 4 as the retrieval planner queries staleness for real.
+
 ---
 
 ## §8. Phase 3 Task Ordering

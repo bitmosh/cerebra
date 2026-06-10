@@ -396,6 +396,32 @@ class Migration006_Phase3Schema(Migration):
         """)
 
 
+class Migration007_SeedIndexStateAndQueue(Migration):
+    """Backfill migration for vaults that had Migration006 applied before seeding was added.
+
+    Migration006 created the schema but did not seed index_state or queue existing
+    memory_records into pending_embeddings. This migration does both idempotently so
+    that fresh vaults and already-partially-backfilled vaults converge to the same state.
+    """
+
+    version = 7
+    description = "Phase 3 backfill: seed index_state, queue active records for embedding"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        # Seed the three named indexes. INSERT OR IGNORE is idempotent.
+        conn.executemany(
+            "INSERT OR IGNORE INTO index_state (index_name, last_updated_at) VALUES (?, 0)",
+            [("lexical",), ("vector",), ("graph",)],
+        )
+        # Queue all currently active memory_records for their first embedding pass.
+        # INSERT OR IGNORE skips records already in the queue (e.g. from a prior manual backfill).
+        conn.execute(
+            "INSERT OR IGNORE INTO pending_embeddings (record_id, queued_at, attempt)"
+            " SELECT record_id, CAST(strftime('%s','now') AS INTEGER), 0"
+            " FROM memory_records WHERE lifecycle_state = 'active'"
+        )
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -404,6 +430,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration004_SKUAssignments(),
     Migration005_AddPassCount(),
     Migration006_Phase3Schema(),
+    Migration007_SeedIndexStateAndQueue(),
 ]
 
 
