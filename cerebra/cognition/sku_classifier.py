@@ -198,6 +198,246 @@ class SKUClassifier:
 
         return assignment
 
+    def classify_record_lattice(
+        self,
+        record_id: str,
+        content: str,
+        detected_type: str,
+        threshold: float | None = None,
+    ) -> list[str]:
+        """
+        Classify one record with interpretive lattice multi-commit support.
+
+        If ≥2 categories clear the threshold the primary record is committed
+        normally, sibling records are inserted for each additional category,
+        and ONE LatticeCommit event is emitted listing all record_ids.
+
+        Returns a list of all record_ids committed (primary first, then
+        siblings in descending confidence order). Returns [record_id] on
+        single-commit, [] on classification failure.
+
+        The existing classify_record() path is untouched — this method does
+        its own write path so the LLM is called exactly once regardless of
+        how many siblings are produced.
+        """
+        from cerebra.cognition._constants import LATTICE_COMMIT_THRESHOLD
+        from cerebra.cognition.lattice import (
+            LatticeDecision,
+            build_sibling_record_id,
+            evaluate_lattice,
+            new_lineage_id,
+        )
+        from cerebra.storage.embeddings import queue_for_embedding
+
+        if threshold is None:
+            threshold = LATTICE_COMMIT_THRESHOLD
+
+        # Idempotency check — skip if already classified with current versions
+        existing = self._store.get_sku_assignment_for_record(record_id)
+        is_reclassification = existing is not None
+        if existing and self._is_current(existing):
+            return [record_id]
+
+        # One LLM call reused for both primary write and lattice decision
+        try:
+            result = self._classify_with_retry(content)
+        except ClassificationError as e:
+            self._emit(
+                "ClassificationFailed",
+                "sku_classifier",
+                f"Classification failed for {record_id}: {e}",
+                {"record_id": record_id, "error": str(e)[:400]},
+                subject_id=record_id,
+            )
+            return []
+
+        decision: LatticeDecision = evaluate_lattice(result.scores, threshold)
+
+        # Nothing cleared the threshold — treat as unclassifiable
+        if not decision.candidates:
+            self._emit(
+                "ClassificationLowConfidence",
+                "sku_classifier",
+                f"No category cleared lattice threshold ({threshold}) for {record_id}",
+                {
+                    "record_id": record_id,
+                    "threshold": threshold,
+                    "max_score": max(result.scores.values()),
+                },
+                subject_id=record_id,
+            )
+            return []
+
+        # ── Write primary record ──────────────────────────────────────────────
+        now = int(time.time())
+        primary_category = D1Category[decision.top_1_category]
+        primary_confidence = decision.top_1_confidence
+        d9 = d9_from_detected_type(detected_type)
+
+        entry_byte = self._store.count_sku_location_occupancy(
+            primary_category.value, 0, 0, 0, 0, 0, d9.value, D10Provenance.OBSERVED.value
+        )
+        entry_byte = min(entry_byte, 0xFF)
+        primary_sku = SKUAddress(
+            d1=primary_category.value,
+            d9=d9.value,
+            d10=D10Provenance.OBSERVED.value,
+            d7=(entry_byte >> 4) & 0xF,
+            d8=entry_byte & 0xF,
+        )
+
+        primary_assignment = SKUAssignment(
+            assignment_id=f"asgn_{uuid.uuid4().hex[:12]}",
+            record_id=record_id,
+            sku_address=primary_sku,
+            raw_scores=result.scores,
+            d1_confidence=primary_confidence,
+            classifier_version=CLASSIFIER_VERSION,
+            prompt_version=PROMPT_VERSION,
+            subcategory_strategy_version=SUBCATEGORY_STRATEGY_VERSION,
+            model_string=result.model_string,
+            latency_ms=result.latency_ms,
+            input_tokens=result.input_tokens,
+            output_tokens=result.output_tokens,
+            created_at=now,
+            pass_count=2,
+            raw_scores_json_override=result.raw_scores_json_override,
+        )
+
+        if is_reclassification:
+            self._store.delete_sku_assignment_for_record(record_id)
+
+        self._store.insert_sku_assignment(primary_assignment.as_dict())
+        self._store.update_record_sku(record_id, primary_sku.to_hex_string(), now)
+
+        event_type = "SKUReclassified" if is_reclassification else "SKUAssigned"
+        extra: dict[str, object] = (
+            {"old_sku_address": existing["sku_address"]} if existing else {}
+        )
+        self._emit(
+            event_type,
+            "sku_classifier",
+            f"{event_type}: {record_id} → {primary_sku.to_hex_string()} (D1={primary_category.name})",
+            {
+                "record_id": record_id,
+                "sku_address": primary_sku.to_hex_string(),
+                "d1_category": primary_category.name,
+                "d1_score": result.scores.get(primary_category.name, 0.0),
+                "d1_confidence": result.confidence,
+                "prompt_version": PROMPT_VERSION,
+                "classifier_version": CLASSIFIER_VERSION,
+                "subcategory_strategy_version": SUBCATEGORY_STRATEGY_VERSION,
+                "model_string": result.model_string,
+                "latency_ms": result.latency_ms,
+                "input_tokens": result.input_tokens,
+                "output_tokens": result.output_tokens,
+                **extra,
+            },
+            subject_id=record_id,
+        )
+
+        # Single-commit path — no lattice work needed
+        if not decision.should_multi_commit:
+            return [record_id]
+
+        # ── Multi-commit: build siblings ──────────────────────────────────────
+        primary_rec = self._store.get_record(record_id)
+        if primary_rec is None:
+            return [record_id]
+
+        lineage_id = new_lineage_id()
+        self._store.update_record_lattice_membership(record_id, lineage_id, primary_confidence)
+
+        all_record_ids: list[str] = [record_id]
+        new_sibling_ids: list[str] = []
+
+        for category_name, confidence in decision.candidates[1:]:
+            sibling_id = build_sibling_record_id(record_id, category_name)
+
+            # Idempotent: skip if sibling already exists
+            if self._store.get_record(sibling_id) is not None:
+                all_record_ids.append(sibling_id)
+                continue
+
+            d1_sibling = D1Category[category_name]
+            entry_s = self._store.count_sku_location_occupancy(
+                d1_sibling.value, 0, 0, 0, 0, 0, d9.value, D10Provenance.OBSERVED.value
+            )
+            entry_s = min(entry_s, 0xFF)
+            sibling_sku = SKUAddress(
+                d1=d1_sibling.value,
+                d9=d9.value,
+                d10=D10Provenance.OBSERVED.value,
+                d7=(entry_s >> 4) & 0xF,
+                d8=entry_s & 0xF,
+            )
+
+            self._store.insert_lattice_record(
+                {
+                    "record_id": sibling_id,
+                    "record_type": primary_rec["record_type"],
+                    "source_id": primary_rec["source_id"],
+                    "document_id": primary_rec["document_id"],
+                    "chunk_id": primary_rec["chunk_id"],
+                    "content": primary_rec["content"],
+                    "content_hash": primary_rec["content_hash"],
+                    "token_estimate": primary_rec["token_estimate"],
+                    "sku_address": sibling_sku.to_hex_string(),
+                    "sku_assigned_at": now,
+                    "lifecycle_state": "active",
+                    "created_at": now,
+                    "schema_version": 1,
+                    "lattice_lineage_id": lineage_id,
+                    "is_lattice_member": 1,
+                    "lattice_confidence": confidence,
+                }
+            )
+
+            sibling_assignment = SKUAssignment(
+                assignment_id=f"asgn_{uuid.uuid4().hex[:12]}",
+                record_id=sibling_id,
+                sku_address=sibling_sku,
+                raw_scores=result.scores,
+                d1_confidence=confidence,
+                classifier_version=CLASSIFIER_VERSION,
+                prompt_version=PROMPT_VERSION,
+                subcategory_strategy_version=SUBCATEGORY_STRATEGY_VERSION,
+                model_string=result.model_string,
+                latency_ms=result.latency_ms,
+                input_tokens=result.input_tokens,
+                output_tokens=result.output_tokens,
+                created_at=now,
+                pass_count=2,
+                raw_scores_json_override=result.raw_scores_json_override,
+            )
+            self._store.insert_sku_assignment(sibling_assignment.as_dict())
+
+            all_record_ids.append(sibling_id)
+            new_sibling_ids.append(sibling_id)
+
+        # Queue new siblings for embedding
+        if new_sibling_ids:
+            queue_for_embedding(self._store._db_path, new_sibling_ids)
+
+        # ONE LatticeCommit event per chunk
+        primary_rec_chunk_id = str(primary_rec["chunk_id"])
+        self._emit(
+            "LatticeCommit",
+            "sku_classifier",
+            f"LatticeCommit: {record_id} multi-committed to {len(all_record_ids)} positions",
+            {
+                "chunk_id": primary_rec_chunk_id,
+                "sibling_record_ids": all_record_ids,
+                "sibling_count": len(all_record_ids),
+                "confidence_distribution": result.scores,
+                "threshold_used": threshold,
+                "classifier_top_1": decision.top_1_category,
+            },
+            subject_id=primary_rec_chunk_id,
+        )
+
+        return all_record_ids
+
     def backfill_null_records(
         self,
         batch_size: int = 50,

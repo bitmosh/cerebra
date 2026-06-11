@@ -609,6 +609,42 @@ class Migration009_Phase5Schema(Migration):
         """)
 
 
+class Migration010_LatticeColumns(Migration):
+    """Interpretive lattice Phase 1: sibling lineage columns on memory_records.
+
+    Three new columns (all nullable / defaulting to 0):
+
+      lattice_lineage_id TEXT    — shared ID linking sibling records from the same chunk.
+                                   NULL for single-commit records.
+      is_lattice_member  INTEGER — 0 for normal records, 1 for any lattice sibling
+                                   (including the primary when multi-committed).
+      lattice_confidence REAL    — per-sibling classifier confidence for its category.
+                                   NULL for non-lattice records.
+
+    SQLite ALTER TABLE supports ADD COLUMN without a full table rebuild; the
+    DEFAULT value is applied immediately to all existing rows at the storage
+    layer without a table scan (SQLite evaluates the default on read when the
+    column is absent from the stored row).
+
+    Existing 745+ records are unaffected — they keep is_lattice_member = 0
+    and NULL for the other two columns.
+    """
+
+    version = 10
+    description = "Interpretive lattice Phase 1: lattice_lineage_id, is_lattice_member, lattice_confidence"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            ALTER TABLE memory_records ADD COLUMN lattice_lineage_id TEXT;
+            ALTER TABLE memory_records ADD COLUMN is_lattice_member INTEGER NOT NULL DEFAULT 0;
+            ALTER TABLE memory_records ADD COLUMN lattice_confidence REAL;
+
+            CREATE INDEX IF NOT EXISTS idx_records_lattice_lineage
+                ON memory_records(lattice_lineage_id)
+                WHERE lattice_lineage_id IS NOT NULL;
+        """)
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -620,6 +656,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration007_SeedIndexStateAndQueue(),
     Migration008_RetrievalTraces(),
     Migration009_Phase5Schema(),
+    Migration010_LatticeColumns(),
 ]
 
 

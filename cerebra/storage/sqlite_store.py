@@ -267,6 +267,43 @@ class SQLiteStore:
             ).fetchone()
         return row[0] if row else 0
 
+    def insert_lattice_record(self, record: dict[str, Any]) -> None:
+        """Insert a single lattice sibling record (includes lattice columns)."""
+        with self._conn() as conn:
+            conn.execute(
+                """
+                INSERT INTO memory_records (
+                    record_id, record_type, source_id, document_id,
+                    chunk_id, content, content_hash, token_estimate,
+                    sku_address, sku_assigned_at, lifecycle_state,
+                    created_at, schema_version,
+                    lattice_lineage_id, is_lattice_member, lattice_confidence
+                ) VALUES (
+                    :record_id, :record_type, :source_id, :document_id,
+                    :chunk_id, :content, :content_hash, :token_estimate,
+                    :sku_address, :sku_assigned_at, :lifecycle_state,
+                    :created_at, :schema_version,
+                    :lattice_lineage_id, :is_lattice_member, :lattice_confidence
+                )
+                """,
+                record,
+            )
+
+    def update_record_lattice_membership(
+        self,
+        record_id: str,
+        lineage_id: str,
+        confidence: float,
+    ) -> None:
+        """Mark an existing record as a lattice member and link it to its lineage group."""
+        with self._conn() as conn:
+            conn.execute(
+                "UPDATE memory_records "
+                "SET is_lattice_member = 1, lattice_lineage_id = ?, lattice_confidence = ? "
+                "WHERE record_id = ?",
+                (lineage_id, confidence, record_id),
+            )
+
     def get_records_needing_classification(
         self, classifier_version: str, prompt_version: str
     ) -> list[dict[str, Any]]:

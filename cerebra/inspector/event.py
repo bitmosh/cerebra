@@ -51,7 +51,13 @@ PHASE_5_EVENT_TYPES: frozenset[str] = frozenset(
     }
 )
 
-ALL_KNOWN_EVENT_TYPES: frozenset[str] = PHASE_0_EVENT_TYPES | PHASE_5_EVENT_TYPES
+LATTICE_EVENT_TYPES: frozenset[str] = frozenset(
+    {
+        "LatticeCommit",  # emitted once per chunk when ≥2 categories clear threshold
+    }
+)
+
+ALL_KNOWN_EVENT_TYPES: frozenset[str] = PHASE_0_EVENT_TYPES | PHASE_5_EVENT_TYPES | LATTICE_EVENT_TYPES
 
 
 @dataclass
