@@ -15,7 +15,7 @@ from typing import Any
 
 # Controlled vocabulary from CEREBRA_INSPECTOR.md §5.
 # Phase 0 uses only the system/governance subset; full vocabulary added per phase.
-PHASE_0_EVENT_TYPES = frozenset(
+PHASE_0_EVENT_TYPES: frozenset[str] = frozenset(
     {
         # System / vault lifecycle
         "SystemInitialized",
@@ -27,6 +27,31 @@ PHASE_0_EVENT_TYPES = frozenset(
         "ConstitutionalBlock",
     }
 )
+
+PHASE_5_EVENT_TYPES: frozenset[str] = frozenset(
+    {
+        # Working memory lifecycle
+        "WorkingMemoryCreated",
+        "AttentionItemProposed",
+        "AttentionItemPromoted",
+        "AttentionItemEvicted",
+        "AttentionItemDeferred",
+        "InterruptCandidateCreated",
+        "WorkingMemoryRendered",
+        "WorkingMemoryCleared",
+        # Truth tower lifecycle
+        "TowerInitialized",
+        "TowerItemPromoted",
+        "TowerItemEvicted",
+        "TowerCrossReferenceAdded",
+        "TowerItemStaled",
+        "TowerTierRebuilt",   # Phase 6+ — defined here, never emitted in Phase 5
+        "TowerCollapsed",     # Phase 6+ — defined here, never emitted in Phase 5
+        "TowerRendered",
+    }
+)
+
+ALL_KNOWN_EVENT_TYPES: frozenset[str] = PHASE_0_EVENT_TYPES | PHASE_5_EVENT_TYPES
 
 
 @dataclass

@@ -513,6 +513,102 @@ class Migration008_RetrievalTraces(Migration):
         """)
 
 
+class Migration009_Phase5Schema(Migration):
+    """Phase 5: session management, working memory, and truth tower tables.
+
+    Three new tables: sessions, working_memory_items, truth_tower_items.
+    All FK constraints use ON DELETE RESTRICT — cleanup is lifecycle-state-driven
+    (evicted_at, status='closed'), never hard-delete.
+
+    Forward-only invariant: if a later issue surfaces with this schema,
+    Migration010 addresses it; do not edit Migration009 in place after it
+    applies anywhere.
+    """
+
+    version = 9
+    description = "Phase 5 working memory and truth tower: sessions, working_memory_items, truth_tower_items"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS sessions (
+                session_id       TEXT    PRIMARY KEY,
+                vault_path       TEXT    NOT NULL,
+                status           TEXT    NOT NULL DEFAULT 'active'
+                                         CHECK (status IN ('active', 'closed')),
+                started_at       INTEGER NOT NULL,
+                last_active_at   INTEGER NOT NULL,
+                schema_version   INTEGER NOT NULL DEFAULT 1
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_sessions_vault_status
+                ON sessions(vault_path, status);
+
+            CREATE TABLE IF NOT EXISTS working_memory_items (
+                item_id             TEXT    PRIMARY KEY,
+                session_id          TEXT    NOT NULL
+                                            REFERENCES sessions(session_id)
+                                                ON DELETE RESTRICT,
+                slot_type           TEXT    NOT NULL
+                                            CHECK (slot_type IN (
+                                                'goal', 'constraint', 'context', 'hypothesis',
+                                                'evidence', 'contradiction', 'recent_output',
+                                                'question', 'procedure', 'interrupt'
+                                            )),
+                record_id           TEXT    REFERENCES memory_records(record_id)
+                                                ON DELETE RESTRICT,
+                content_summary     TEXT    NOT NULL,
+                salience_score      REAL    NOT NULL DEFAULT 0.0,
+                is_pinned           INTEGER NOT NULL DEFAULT 0,
+                promoted_at         INTEGER NOT NULL,
+                evicted_at          INTEGER,
+                schema_version      INTEGER NOT NULL DEFAULT 1,
+                interpretive_lens   TEXT,
+                frame_metadata_json TEXT
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_wmi_session_slot
+                ON working_memory_items(session_id, slot_type)
+                WHERE evicted_at IS NULL;
+
+            CREATE INDEX IF NOT EXISTS idx_wmi_session_active
+                ON working_memory_items(session_id)
+                WHERE evicted_at IS NULL;
+
+            CREATE TABLE IF NOT EXISTS truth_tower_items (
+                tower_item_id       TEXT    PRIMARY KEY,
+                session_id          TEXT    NOT NULL
+                                            REFERENCES sessions(session_id)
+                                                ON DELETE RESTRICT,
+                tier                INTEGER NOT NULL CHECK (tier IN (1, 2)),
+                wm_item_id          TEXT    REFERENCES working_memory_items(item_id)
+                                                ON DELETE RESTRICT,
+                record_id           TEXT    REFERENCES memory_records(record_id)
+                                                ON DELETE RESTRICT,
+                retrieval_trace_id  TEXT    REFERENCES retrieval_traces(trace_id)
+                                                ON DELETE RESTRICT,
+                content_summary     TEXT    NOT NULL,
+                salience_score      REAL    NOT NULL,
+                sku_address         TEXT,
+                t1_citation_id      TEXT    REFERENCES truth_tower_items(tower_item_id)
+                                                ON DELETE RESTRICT,
+                is_pinned           INTEGER NOT NULL DEFAULT 0,
+                is_stale            INTEGER NOT NULL DEFAULT 0,
+                promoted_at         INTEGER NOT NULL,
+                evicted_at          INTEGER,
+                schema_version      INTEGER NOT NULL DEFAULT 1,
+                CHECK ((tier = 1 AND t1_citation_id IS NULL) OR (tier = 2 AND t1_citation_id IS NOT NULL))
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_tti_session_tier
+                ON truth_tower_items(session_id, tier)
+                WHERE evicted_at IS NULL;
+
+            CREATE INDEX IF NOT EXISTS idx_tti_t1_citation
+                ON truth_tower_items(t1_citation_id)
+                WHERE evicted_at IS NULL;
+        """)
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -523,6 +619,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration006_Phase3Schema(),
     Migration007_SeedIndexStateAndQueue(),
     Migration008_RetrievalTraces(),
+    Migration009_Phase5Schema(),
 ]
 
 

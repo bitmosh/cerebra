@@ -217,7 +217,7 @@ class TestSearchAbstentionMessage:
     def test_message_mentions_floor_and_best_score(self) -> None:
         scored = [_make_scored(composite=0.30)]
         with _patched_search(scored):
-            result = CliRunner(capture="fd").invoke(
+            result = CliRunner(mix_stderr=False).invoke(
                 cli, ["search", "test", "--floor", "0.45"]
             )
         assert result.exit_code == 1
@@ -228,7 +228,7 @@ class TestSearchAbstentionMessage:
     def test_message_goes_to_stderr_not_stdout(self) -> None:
         scored = [_make_scored(composite=0.30)]
         with _patched_search(scored):
-            result = CliRunner(capture="fd").invoke(
+            result = CliRunner(mix_stderr=False).invoke(
                 cli, ["search", "test", "--floor", "0.45"]
             )
         assert result.stdout == ""
@@ -237,7 +237,7 @@ class TestSearchAbstentionMessage:
         """--format json doesn't change the abstention path — still stderr + exit 1."""
         scored = [_make_scored(composite=0.30)]
         with _patched_search(scored):
-            result = CliRunner(capture="fd").invoke(
+            result = CliRunner(mix_stderr=False).invoke(
                 cli, ["search", "test", "--floor", "0.45", "--format", "json"]
             )
         assert result.exit_code == 1

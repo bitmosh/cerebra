@@ -60,11 +60,11 @@ cerebra/
   cli/           main.py  ← all commands live here
 ```
 
-No `cerebra/memory/` or `cerebra/working_memory/` or `cerebra/truth_tower/` modules exist.
+No `cerebra/cognition/working_memory.py` or `cerebra/cognition/truth_tower.py` modules exist. The `cerebra/cognition/` package already exists (`sku_classifier.py` lives there).
 
 ### Test baseline
 
-639 unit tests collected. 10 integration tests. Coverage 82.84% (unit + integration). Abstention path fully covered by Step 10.
+751 tests collected (639 unit + 112 integration). Coverage 88.51%. Abstention path fully covered by Step 10. Phase 4 complete at v0.2.0.
 
 ---
 
@@ -76,10 +76,10 @@ Source: `CEREBRA_DEV_ROADMAP_v8.1.md` §Phase 5, cross-referenced against `CEREB
 
 | Module | Description |
 |--------|-------------|
-| `cerebra/memory/working_memory.py` | Named slots, slot capacity caps, promotion/eviction logic |
-| `cerebra/memory/truth_tower.py` | T1 + T2 only; PROMOTE, manual EVICT, chronological render |
+| `cerebra/cognition/working_memory.py` | Named slots, slot capacity caps, promotion/eviction logic |
+| `cerebra/cognition/truth_tower.py` | T1 + T2 only; PROMOTE, manual EVICT, chronological render |
 
-The roadmap names these explicitly. The `cerebra/memory/` directory does not exist — it needs to be created with `__init__.py`.
+The roadmap names these explicitly (Phase 5 tasks 1 and 5). `cerebra/cognition/` already exists — no new package setup needed.
 
 ### Functional deliverables
 
@@ -128,7 +128,7 @@ The roadmap names these explicitly. The `cerebra/memory/` directory does not exi
 
 ### Area 2 — Attention State
 
-**What exists:** `inspector_events` has `session_id`, `cycle_id`, `step_id` columns — all currently null. No `AttentionState` data structure exists in code.
+**What exists:** `inspector_events` has `session_id`, `cycle_id`, `step_id` columns — all currently null. `SQLiteEventLog.query_by_session()` is already implemented and indexed on `session_id` — once Phase 5 starts populating `session_id` on events, session-scoped queries work immediately with no new code. No `AttentionState` data structure exists in code.
 
 **What Phase 5 needs:** An in-code `AttentionState` or `WorkingMemory` class that holds the current slot contents. At minimum: a dict mapping slot_type → list[AttentionItem], with capacity caps enforced.
 
@@ -142,6 +142,8 @@ The roadmap names these explicitly. The `cerebra/memory/` directory does not exi
 - goal=1, constraint=4, context=7, hypothesis=3, evidence=5, contradiction=2, recent_output=2, question=3, procedure=4, interrupt=3 — TOTAL=34
 
 These constants are not in code anywhere.
+
+**Doc debt:** `DRIFT_FIXES_v8.1.md §1` is a patch document — it says "Target: `CEREBRA_WORKING_MEMORY_AND_ATTENTION.md §4`, add this subsection after the slot enumeration." That patch was never applied. The live `§4` still only says "Slots can have capacity limits." Phase 5 should apply the patch (adding the `4.1 Default Slot Capacities` subsection) so the authoritative doc and the patch doc are in sync.
 
 **What Phase 5 needs:**
 - A constants file or config for slot capacities
@@ -222,6 +224,12 @@ The roadmap explicitly mentions "PROMOTE op" and "manual EVICT" as Phase 5 deliv
 
 ### Area 9 — Carried-Forward Issues
 
+**Phase 3 Q7 — Dual staleness semantics:** Resolved in Phase 4 `§7 D6`. `is_stale()` was extended with `check_drift=True` and a per-index drift detector registry (`lexical` and `vector` registered; `graph` deferred — no drift detector, Phase 4 explicitly noted). No open action for Phase 5.
+
+**Phase 4 cold-load latency (~10s first query):** Observed during Step 6 verification: mxbai-embed-large-v1 loads fresh each `cerebra` invocation (no process-level cache). First query ~10s; subsequent queries in the same process are fast. Flagged in the Step 6 STOP gate as "a warm-cache invocation strategy or model pre-warming is a Phase 5 concern." No fix exists yet. If Phase 5 adds working memory CLI commands that also trigger retrieval, they'll hit the same cold-load.
+
+**Lexical component 0.0 for most queries:** FTS5 AND semantics mean every term must appear in a document — colloquial queries ("how memories age", "weather forecast") produce 0.0 lexical scores even when the index is healthy. Confirmed during the reindex sidequest: `cerebra reindex --lexical` built 745 rows correctly, but scores stayed 0.0 for natural-language queries. The fix (OR/prefix FTS operators or query rewriting) is Phase 5+ calibration territory, not Phase 4.
+
 **From Phase 4 §13 (Open Questions and Risks):**
 
 | Issue | Status | Phase 5 relevance |
@@ -277,9 +285,9 @@ The roadmap explicitly mentions "PROMOTE op" and "manual EVICT" as Phase 5 deliv
 
 These are open issues from prior phases that Phase 5 must not silently close or that may complicate Phase 5 implementation.
 
-**C1 — Session/cycle identity.** `inspector_events` has `session_id` and `cycle_id` columns, always null. Working memory items must belong to a session. Phase 5 needs to either (a) introduce a session concept (at minimum a session_id generation at `cerebra memory` command invocation) or (b) operate session-less (working memory is singleton, not per-session). If session-less, `session_id` on working memory items is always null — which creates a design inconsistency.
+**C1 — Session/cycle identity.** `inspector_events` has `session_id` and `cycle_id` columns, always null. `SQLiteEventLog.query_by_session()` already exists in code and is indexed — if Phase 5 starts populating `session_id` on events, this query method works immediately with no new code. The open question is what generates the session_id and when: `CEREBRA_COGNITIVE_RUNTIME.md §6` defines a `RuntimeSession` schema with a `working_memory_id` field, confirming working memory needs a stable referenceable ID. Phase 5 needs either (a) a session concept (session_id generated at `cerebra memory` command invocation) or (b) session-less singleton working memory (always null session_id — design inconsistency with the runtime spec).
 
-**C2 — In-process vs persistent working memory.** The MVP scope says "working memory record" (implies persistence) but working memory is also described as a cycle-duration construct (implies in-process). If Phase 5 persists working memory to disk, it accumulates across runs — which may not be the intended behavior. If it's in-process only, the `cerebra memory promote` command needs a running daemon or the working memory is always empty at command invocation. This needs a decision.
+**C2 — In-process vs persistent working memory.** The MVP scope says "working memory record" (implies persistence) but working memory is also described as a cycle-duration construct (implies in-process). `CEREBRA_COGNITIVE_RUNTIME.md §5` execution flow shows `initialize working memory` as step 2 of every cycle — the runtime expects to initialize it at cycle start, not find it already populated. This implies in-process initialization is the intended model, but the CLI command path (`cerebra memory promote`) has no running cycle to initialize. If it's in-process only, the working memory is always empty at CLI invocation. This needs a decision.
 
 **C3 — ContextPacket version.** Adding a `truth_tower` field to ContextPacket changes the schema. Integration tests assert on specific required fields. If the new field is optional and absent from abstained packets, existing tests pass without change. If it's always present (empty or null when no tower), that's a different contract. Current `packet_version=1` — bump or not?
 
@@ -304,12 +312,8 @@ Documents that define Phase 5 scope, in order of authority for implementation de
 | `CEREBRA_MEMORY_LAYERS.md` | M4 (working memory) position in layer hierarchy |
 
 Documents that are context but not Phase 5 implementation sources:
-- `CEREBRA_COGNITIVE_RUNTIME.md` — cycle runtime; Phase 5 doesn't build this, but working memory must be compatible with it
+- `CEREBRA_COGNITIVE_RUNTIME.md` — cycle runtime; Phase 5 doesn't build this, but working memory must be compatible with it. Key findings from this doc: (1) `RuntimeSession` schema includes `working_memory_id` field — working memory needs a stable ID; (2) execution flow shows `initialize working memory` as step 2 — working memory API must be initializable by a future cycle runner; (3) MVP runtime scope includes "runtime session records" and "ContextPacket use" but not full working memory management.
 - `CEREBRA_CONTEXT_PACKET_PROTOCOL.md` — original protocol spec; Phase 4 design doc overrides this for implemented fields
-
-Documents not yet read for this assessment (may be relevant):
-- `CEREBRA_WORKING_MEMORY_AND_ATTENTION.md` — partially covered by summary; full content not read
-- `CEREBRA_COGNITIVE_RUNTIME.md` — not read; defines what calls working memory in full runtime
 
 ---
 

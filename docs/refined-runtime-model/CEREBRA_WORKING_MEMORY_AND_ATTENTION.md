@@ -72,6 +72,37 @@ interrupt_slot
 
 Slots can have capacity limits.
 
+### 4.1 Default Slot Capacities
+
+Initial capacity defaults. These are arbitrary starting points; adjust based on real cycle behavior.
+
+```text
+Slot                  Capacity   Rationale
+goal_slot             1          One active goal at a time. Multiple goals fragment focus.
+constraint_slot       4          Active constraints rarely exceed four; more should be hierarchical.
+context_slot          7          Miller's classic working-memory limit; tunable per cycle.
+hypothesis_slot       3          Tracks multiple competing hypotheses without combinatorial blowup.
+evidence_slot         5          Enough to triangulate, not enough to drown.
+contradiction_slot    2          Surfaces real tensions without distracting from primary task.
+recent_output_slot    2          Last two outputs for self-comparison and revision.
+question_slot         3          Open questions the cycle is actively pursuing.
+procedure_slot        4          Active procedural knowledge — how the work is being done.
+interrupt_slot        3          Salience-monitor interrupt candidates pending review.
+
+TOTAL: 34 maximum attention items
+```
+
+Per-cycle configs may override defaults. The Bons.ai ideation cycle might want hypothesis_slot=5 (more divergent ideas competing); a planning cycle might want constraint_slot=8 (more constraints to track).
+
+**Eviction policy when capacity is reached:**
+
+```text
+1. user-pinned items: non-evictable
+2. items cited by truth tower: eviction-resistant (penalty applied)
+3. lowest-salience non-pinned item evicted first
+4. tie: oldest item evicted
+```
+
 ---
 
 ## 5. Attention Items
