@@ -660,19 +660,6 @@ class TestConcurrentQueriesIsolated:
         assert exit_codes[1] == 0, f"Thread 1 exited {exit_codes[1]}"
 
 
-# ── Test 10 — Vault lockfile (not yet implemented) ────────────────────────────
-
-
-@pytest.mark.integration
-class TestVaultLockfile:
-    def test_vault_lockfile_respected(self, vault_root: Path) -> None:  # noqa: ARG002
-        """cerebra search should fail cleanly when .cerebra.lock exists.
-
-        SKIPPED: The lockfile mechanism (Phase 3 §7 Q2) was documented in the
-        design but not implemented in cerebra/cli/main.py. Implement the lock
-        acquire/release in search and context before enabling this test.
-        """
-        pytest.skip(
-            "Lockfile mechanism not implemented — Phase 3 §7 Q2 gap. "
-            "Add lock acquire/release in search and context commands first."
-        )
+# ── Test 10 — Vault lockfile ──────────────────────────────────────────────────
+# Full lockfile contention test is in tests/integration/test_vault_lockfile.py
+# (does not require numpy so it runs even when the embedding pipeline is absent).

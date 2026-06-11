@@ -745,3 +745,138 @@ def context(
 
     if is_abstained:
         sys.exit(1)
+
+
+# ── session ───────────────────────────────────────────────────────────────────
+
+
+@cli.group()
+def session() -> None:
+    """Manage the active working memory session for a vault."""
+
+
+@session.command("show")
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option(
+    "--format", "output_format",
+    type=click.Choice(["text", "json"]), default="text", show_default=True,
+    help="Output format.",
+)
+def session_show(vault: str | None, output_format: str) -> None:
+    """Display the current session and working memory state."""
+    import sys
+    import time
+
+    from cerebra.cognition.working_memory import (
+        count_tower_items,
+        count_wm_items,
+        get_active_session,
+        get_session_row,
+    )
+    from cerebra.storage.migrations import run_migrations
+
+    try:
+        vault_path = _get_vault(vault)
+    except Exception as e:
+        msg = e.format_message() if isinstance(e, click.ClickException) else str(e)
+        click.echo(f"Error: {msg}", err=True)
+        sys.exit(2)
+
+    db_path = vault_path / "data" / "cerebra.db"
+    if not db_path.exists():
+        click.echo(f"Error: vault database not found at {db_path}", err=True)
+        sys.exit(2)
+
+    try:
+        run_migrations(db_path)
+    except Exception as e:
+        click.echo(f"Error: migration failed: {e}", err=True)
+        sys.exit(2)
+
+    session_id = get_active_session(db_path, str(vault_path))
+    if session_id is None:
+        if output_format == "json":
+            click.echo(json.dumps({"active_session": None}))
+        else:
+            click.echo("No active session for this vault.")
+        return
+
+    row = get_session_row(db_path, session_id)
+    if row is None:
+        click.echo("Error: session record missing.", err=True)
+        sys.exit(2)
+
+    wm_counts = count_wm_items(db_path, session_id)
+    tower_counts = count_tower_items(db_path, session_id)
+    wm_total = sum(wm_counts.values())
+    t1 = tower_counts.get(1, 0)
+    t2 = tower_counts.get(2, 0)
+
+    if output_format == "json":
+        click.echo(json.dumps({
+            "session_id": session_id,
+            "vault_path": row["vault_path"],
+            "status": row["status"],
+            "started_at": row["started_at"],
+            "last_active_at": row["last_active_at"],
+            "wm_item_count": wm_total,
+            "wm_by_slot": wm_counts,
+            "t1_item_count": t1,
+            "t2_item_count": t2,
+        }, indent=2))
+        return
+
+    started = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(row["started_at"]))
+    last_active = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(row["last_active_at"]))
+    slot_detail = ", ".join(f"{k}: {v}" for k, v in sorted(wm_counts.items())) if wm_counts else "empty"
+
+    click.echo(f"Session:      {session_id}")
+    click.echo(f"Vault:        {row['vault_path']}")
+    click.echo(f"Status:       {row['status']}")
+    click.echo(f"Started:      {started}")
+    click.echo(f"Last active:  {last_active}")
+    click.echo(f"Working memory: {wm_total} items ({slot_detail})")
+    click.echo(f"Tower:        T1: {t1}, T2: {t2}")
+
+
+@session.command("reset")
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+def session_reset(vault: str | None) -> None:
+    """Close the current session and start a new one."""
+    import sys
+
+    from cerebra.cli.lockfile import vault_lock
+    from cerebra.cognition.working_memory import (
+        get_active_session,
+        new_session,
+    )
+    from cerebra.inspector.sqlite_log import SQLiteEventLog
+    from cerebra.storage.migrations import run_migrations
+
+    try:
+        vault_path = _get_vault(vault)
+    except Exception as e:
+        msg = e.format_message() if isinstance(e, click.ClickException) else str(e)
+        click.echo(f"Error: {msg}", err=True)
+        sys.exit(2)
+
+    db_path = vault_path / "data" / "cerebra.db"
+    if not db_path.exists():
+        click.echo(f"Error: vault database not found at {db_path}", err=True)
+        sys.exit(2)
+
+    try:
+        run_migrations(db_path)
+    except Exception as e:
+        click.echo(f"Error: migration failed: {e}", err=True)
+        sys.exit(2)
+
+    with vault_lock(vault_path):
+        event_log = SQLiteEventLog(db_path)
+        old_id = get_active_session(db_path, str(vault_path))
+        new_id = new_session(db_path, str(vault_path), event_log)
+
+    if old_id:
+        click.echo(f"Session {old_id} closed. New session: {new_id}")
+    else:
+        click.echo(f"No previous session. New session: {new_id}")
