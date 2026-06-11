@@ -94,6 +94,7 @@ class ContextPacket:
     uncertainties: list[str]
     excluded_candidate_count: int
     best_score_seen: float | None = None  # abstained packets only
+    truth_tower: dict | None = None       # populated post-retrieval by T1 auto-promotion
 
     def to_dict(self) -> dict:
         d: dict = {
@@ -116,6 +117,8 @@ class ContextPacket:
         }
         if self.best_score_seen is not None:
             d["best_score_seen"] = self.best_score_seen
+        if self.truth_tower is not None:
+            d["truth_tower"] = self.truth_tower
         return d
 
 
@@ -341,6 +344,40 @@ def build_abstained_packet(
 # ── Plain-text renderer ────────────────────────────────────────────────────────
 
 
+def _render_tower_lines(truth_tower: dict) -> list[str]:
+    """Render a truth_tower dict (from to_tower_field()) as text lines."""
+    t1_items: list[dict] = truth_tower.get("t1_items", [])
+    t2_items: list[dict] = truth_tower.get("t2_items", [])
+    if not t1_items and not t2_items:
+        return []
+
+    t2_by_t1: dict[str, list[dict]] = {}
+    for t2 in t2_items:
+        t2_by_t1.setdefault(t2["t1_citation_id"], []).append(t2)
+
+    lines: list[str] = []
+    lines.append(
+        f"\nTruth Tower  ({truth_tower.get('t1_count', 0)} T1"
+        f", {truth_tower.get('t2_count', 0)} T2"
+        f", {truth_tower.get('stale_count', 0)} stale):\n"
+    )
+    for idx, t1 in enumerate(t1_items, start=1):
+        trace = t1.get("retrieval_trace_id") or "n/a"
+        lines.append(
+            f"  T1 [{idx}]  score: {t1['salience_score']:.2f}  |  trace: {trace}"
+        )
+        lines.append(f"       {t1['content_summary'][:120]}")
+        for t2_idx, t2 in enumerate(
+            t2_by_t1.get(t1["tower_item_id"], []), start=1
+        ):
+            stale = " [stale]" if t2["is_stale"] else ""
+            lines.append(
+                f"    T2 [{t2_idx}] ^T1[{idx}]  score: {t2['salience_score']:.2f}{stale}"
+            )
+            lines.append(f"         {t2['content_summary'][:120]}")
+    return lines
+
+
 def render_text(packet: ContextPacket, limit: int = 10) -> str:
     """Render a ContextPacket as plain text matching the §12 design.
 
@@ -359,6 +396,8 @@ def render_text(packet: ContextPacket, limit: int = 10) -> str:
 
     if packet.is_abstained:
         lines.append(f"\nAbstained: {packet.abstention_rationale}")
+        if packet.truth_tower:
+            lines.extend(_render_tower_lines(packet.truth_tower))
         if packet.uncertainties:
             lines.append("\nUncertainties:")
             for u in packet.uncertainties:
@@ -377,6 +416,10 @@ def render_text(packet: ContextPacket, limit: int = 10) -> str:
             excerpt = excerpt[:79] + "…"
         lines.append(f"[{item.rank}] {item.source_path}  |  Score: {item.score:.2f}  |  {item.retrieval_path}")
         lines.append(f"    {excerpt}")
+        lines.append("")
+
+    if packet.truth_tower:
+        lines.extend(_render_tower_lines(packet.truth_tower))
         lines.append("")
 
     if packet.uncertainties:

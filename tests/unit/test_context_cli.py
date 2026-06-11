@@ -84,6 +84,11 @@ def _patched_runner(scored_list: list, plan: MagicMock | None = None, packet=Non
     _plan = plan or _make_plan()
     _packet = packet or _mock_packet()
 
+    # Stub tower — promote_to_t1 returns [], to_tower_field returns None
+    _tower_stub = MagicMock()
+    _tower_stub.promote_to_t1.return_value = []
+    _tower_stub.to_tower_field.return_value = None
+
     @contextlib.contextmanager
     def _cm():
         with (
@@ -96,6 +101,10 @@ def _patched_runner(scored_list: list, plan: MagicMock | None = None, packet=Non
             patch("cerebra.retrieval.scorer.score_candidates", return_value=scored_list),
             patch("cerebra.retrieval.trace.write_trace", return_value="trace_ctxtest001"),
             patch("cerebra.retrieval.context_packet.build_context_packet", return_value=_packet),
+            # Mock out T1 promotion path so the fake vault path causes no side-effects
+            patch("cerebra.cli.lockfile.vault_lock"),
+            patch("cerebra.cognition.working_memory.get_active_session", return_value="sess_fake"),
+            patch("cerebra.cognition.truth_tower.TruthTower", return_value=_tower_stub),
         ):
             yield
 

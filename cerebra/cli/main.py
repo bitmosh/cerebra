@@ -618,6 +618,10 @@ def reindex(ctx: click.Context, vault: str | None, do_lexical: bool, do_vector: 
     "--out", "out_file", default=None,
     help="Write JSON packet to FILE instead of stdout (implies --format json).",
 )
+@click.option(
+    "--no-promote", "no_promote", is_flag=True, default=False,
+    help="Skip T1 auto-promotion into working memory. Retrieval only.",
+)
 def context(
     query: str,
     vault: str | None,
@@ -625,6 +629,7 @@ def context(
     relevance_floor: float,
     output_format: str,
     out_file: str | None,
+    no_promote: bool,
 ) -> None:
     """Produce a ContextPacket for QUERY and render it for downstream use."""
     import sys
@@ -725,6 +730,43 @@ def context(
     except Exception as e:
         click.echo(f"Error: context packet build failed: {e}", err=True)
         sys.exit(2)
+
+    # T1 auto-promotion (§4 D3): promote selected_memory into truth tower.
+    # Lockfile is acquired only for the write phase, not the retrieval phase.
+    tower_field: dict | None = None
+    if not is_abstained and not no_promote and packet.selected_memory:
+        try:
+            from cerebra.cli.lockfile import vault_lock
+            from cerebra.cognition.truth_tower import TruthTower
+            from cerebra.cognition.working_memory import (
+                get_active_session,
+                new_session as _new_session,
+            )
+            with vault_lock(vault_path):
+                session_id = get_active_session(db_path, str(vault_path))
+                if session_id is None:
+                    session_id = _new_session(db_path, str(vault_path), event_log)
+                tower = TruthTower(db_path, session_id)
+                tower.promote_to_t1(
+                    packet.selected_memory,
+                    packet.retrieval_trace_id,
+                    event_log,
+                )
+                tower_field = tower.to_tower_field(event_log)
+        except Exception as e:
+            click.echo(f"Warning: T1 promotion failed: {e}", err=True)
+    else:
+        # Read-only: attach pre-existing tower state if a session is active.
+        try:
+            from cerebra.cognition.truth_tower import TruthTower
+            from cerebra.cognition.working_memory import get_active_session
+            session_id = get_active_session(db_path, str(vault_path))
+            if session_id:
+                tower_field = TruthTower(db_path, session_id).to_tower_field()
+        except Exception:
+            pass
+
+    packet.truth_tower = tower_field
 
     if out_file is not None:
         try:
