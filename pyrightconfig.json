@@ -1,0 +1,4 @@
+{
+  "pythonPath": "/usr/bin/python",
+  "include": ["cerebra", "tests"]
+}

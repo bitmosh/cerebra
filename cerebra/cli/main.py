@@ -880,3 +880,294 @@ def session_reset(vault: str | None) -> None:
         click.echo(f"Session {old_id} closed. New session: {new_id}")
     else:
         click.echo(f"No previous session. New session: {new_id}")
+
+
+# ── memory ────────────────────────────────────────────────────────────────────
+
+
+@cli.group()
+def memory() -> None:
+    """Inspect and modify the working memory for the active vault session."""
+
+
+def _memory_vault_db(vault_flag: str | None) -> tuple[Path, Path]:
+    """Resolve vault and return (vault_path, db_path); exits 2 on any error."""
+    import sys
+
+    from cerebra.storage.migrations import run_migrations
+
+    try:
+        vault_path = _get_vault(vault_flag)
+    except Exception as e:
+        msg = e.format_message() if isinstance(e, click.ClickException) else str(e)
+        click.echo(f"Error: {msg}", err=True)
+        sys.exit(2)
+
+    db_path = vault_path / "data" / "cerebra.db"
+    if not db_path.exists():
+        click.echo(f"Error: vault database not found at {db_path}", err=True)
+        sys.exit(2)
+
+    try:
+        run_migrations(db_path)
+    except Exception as e:
+        click.echo(f"Error: migration failed: {e}", err=True)
+        sys.exit(2)
+
+    return vault_path, db_path
+
+
+@memory.command("status")
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option(
+    "--format", "output_format",
+    type=click.Choice(["text", "json"]), default="text", show_default=True,
+    help="Output format.",
+)
+def memory_status(vault: str | None, output_format: str) -> None:
+    """Show the contents of the active working memory session."""
+    import sys
+
+    from cerebra.cognition._constants import SLOT_CAPACITIES
+    from cerebra.cognition.working_memory import (
+        WorkingMemory,
+        get_active_session,
+    )
+    from cerebra.inspector.event import make_event
+    from cerebra.inspector.sqlite_log import SQLiteEventLog
+    from cerebra.storage.db import connect
+
+    vault_path, db_path = _memory_vault_db(vault)
+    session_id = get_active_session(db_path, str(vault_path))
+
+    if session_id is None:
+        if output_format == "json":
+            click.echo(json.dumps({"active_session": None}))
+        else:
+            click.echo("No active session for this vault.")
+        return
+
+    wm = WorkingMemory(db_path, session_id)
+    event_log = SQLiteEventLog(db_path)
+
+    if output_format == "json":
+        d = wm.to_dict()
+        d["vault_path"] = str(vault_path)
+        click.echo(json.dumps(d, indent=2))
+        event_log.write(make_event(
+            "WorkingMemoryRendered",
+            actor="cli",
+            summary=f"status (json) session={session_id}",
+            data={"session_id": session_id, "format": "json",
+                  "total_items": d["total_item_count"]},
+            session_id=session_id,
+        ))
+        return
+
+    # Text mode: load items with tower-citation status in one query
+    conn = connect(db_path)
+    try:
+        rows = conn.execute(
+            "SELECT i.item_id, i.slot_type, i.content_summary, i.salience_score, "
+            "       i.is_pinned, i.promoted_at, "
+            "       CASE WHEN t.wm_item_id IS NOT NULL THEN 1 ELSE 0 END AS is_tower_cited "
+            "FROM working_memory_items i "
+            "LEFT JOIN (SELECT DISTINCT wm_item_id FROM truth_tower_items "
+            "           WHERE evicted_at IS NULL) t "
+            "  ON i.item_id = t.wm_item_id "
+            "WHERE i.session_id = ? AND i.evicted_at IS NULL "
+            "ORDER BY i.slot_type, i.promoted_at ASC",
+            (session_id,),
+        ).fetchall()
+    finally:
+        conn.close()
+
+    # Build per-slot dict
+    by_slot: dict[str, list[dict]] = {s: [] for s in SLOT_CAPACITIES}
+    for r in rows:
+        by_slot[r["slot_type"]].append({
+            "item_id": r["item_id"],
+            "content_summary": r["content_summary"],
+            "salience_score": r["salience_score"],
+            "is_pinned": bool(r["is_pinned"]),
+            "is_tower_cited": bool(r["is_tower_cited"]),
+        })
+
+    total = sum(len(v) for v in by_slot.values())
+    click.echo(f"Working Memory  session: {session_id}")
+    click.echo(f"Vault: {vault_path}")
+    click.echo(f"Total: {total} items")
+
+    for slot_type in sorted(SLOT_CAPACITIES):
+        items = by_slot[slot_type]
+        cap = SLOT_CAPACITIES[slot_type]
+        if not items:
+            click.echo(f"\n[{slot_type}]  0/{cap}")
+            continue
+        click.echo(f"\n[{slot_type}]  {len(items)}/{cap}")
+        for item in items:
+            markers = ""
+            if item["is_pinned"]:
+                markers += "  [pinned]"
+            if item["is_tower_cited"]:
+                markers += "  ^T1"
+            summary = item["content_summary"]
+            if len(summary) > 120:
+                summary = summary[:120] + "…"
+            click.echo(
+                f"  {item['item_id']}  score: {item['salience_score']:.4f}{markers}"
+            )
+            click.echo(f"    {summary}")
+
+    event_log.write(make_event(
+        "WorkingMemoryRendered",
+        actor="cli",
+        summary=f"status (text) session={session_id}",
+        data={"session_id": session_id, "format": "text", "total_items": total},
+        session_id=session_id,
+    ))
+
+
+@memory.command("promote")
+@click.argument("record_id", required=False)
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option("--slot", "slot_type", default=None, help="Slot to promote into.")
+@click.option("--text", "free_text", default=None, help="Synthetic item content (no record_id).")
+@click.option("--pin", is_flag=True, default=False, help="Pin item (non-evictable).")
+@click.option("--salience", "salience_score", type=float, default=None,
+              help="Salience override (0.0–1.0).")
+@click.option("--tier", type=click.Choice(["1", "2"]), default=None,
+              help="Tower tier (Step 7).")
+def memory_promote(
+    record_id: str | None,
+    vault: str | None,
+    slot_type: str | None,
+    free_text: str | None,
+    pin: bool,
+    salience_score: float | None,
+    tier: str | None,
+) -> None:
+    """Promote a record or synthetic item into working memory."""
+    import sys
+
+    from cerebra.cli.lockfile import vault_lock
+    from cerebra.cognition._constants import SLOT_CAPACITIES
+    from cerebra.cognition.working_memory import (
+        WorkingMemory,
+        get_active_session,
+        new_session,
+    )
+    from cerebra.inspector.sqlite_log import SQLiteEventLog
+    from cerebra.storage.db import connect
+
+    # --tier guard (tower promotion deferred to Step 7)
+    if tier is not None:
+        tier_msg = (
+            "T2 promotion lands in Step 7"
+            if tier == "2"
+            else "T1 tower promotion not yet implemented (Step 7)"
+        )
+        click.echo(f"Error: {tier_msg}", err=True)
+        sys.exit(2)
+
+    # Validate mutual exclusivity of record_id vs --text
+    if free_text is not None and record_id is not None:
+        click.echo("Error: --text and record_id are mutually exclusive.", err=True)
+        sys.exit(2)
+    if free_text is None and record_id is None:
+        click.echo("Error: provide either record_id or --text.", err=True)
+        sys.exit(2)
+
+    # --slot required for both paths
+    if slot_type is None:
+        click.echo("Error: --slot is required.", err=True)
+        sys.exit(2)
+    if slot_type not in SLOT_CAPACITIES:
+        click.echo(f"Error: unknown slot '{slot_type}'. "
+                   f"Valid: {', '.join(sorted(SLOT_CAPACITIES))}.", err=True)
+        sys.exit(2)
+
+    vault_path, db_path = _memory_vault_db(vault)
+
+    # Resolve content_summary and validate record_id
+    if free_text is not None:
+        content_summary = free_text
+        resolved_record_id: str | None = None
+    else:
+        # Look up content from memory_records
+        conn = connect(db_path)
+        try:
+            row = conn.execute(
+                "SELECT content FROM memory_records WHERE record_id = ?",
+                (record_id,),
+            ).fetchone()
+        finally:
+            conn.close()
+        if row is None:
+            click.echo(f"Error: record_id {record_id!r} not found in vault.", err=True)
+            sys.exit(2)
+        content_summary = row["content"][:200]
+        resolved_record_id = record_id
+
+    with vault_lock(vault_path):
+        event_log = SQLiteEventLog(db_path)
+
+        session_id = get_active_session(db_path, str(vault_path))
+        if session_id is None:
+            session_id = new_session(db_path, str(vault_path), event_log)
+
+        wm = WorkingMemory(db_path, session_id)
+        try:
+            item = wm.promote(
+                slot_type=slot_type,
+                record_id=resolved_record_id,
+                content_summary=content_summary,
+                salience_score=salience_score,
+                is_pinned=pin,
+                event_log=event_log,
+            )
+        except Exception as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(2)
+
+    pin_note = "  [pinned]" if item.is_pinned else ""
+    click.echo(
+        f"Promoted: {item.item_id}  slot={item.slot_type}  "
+        f"salience={item.salience_score:.4f}{pin_note}"
+    )
+    if item.record_id:
+        click.echo(f"  record_id: {item.record_id}")
+    click.echo(f"  session:   {item.session_id}")
+
+
+@memory.command("evict")
+@click.argument("item_id")
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+def memory_evict(item_id: str, vault: str | None) -> None:
+    """Evict an item from working memory by item_id."""
+    import sys
+
+    from cerebra.cli.lockfile import vault_lock
+    from cerebra.cognition.working_memory import (
+        WorkingMemory,
+        get_active_session,
+    )
+    from cerebra.inspector.sqlite_log import SQLiteEventLog
+
+    vault_path, db_path = _memory_vault_db(vault)
+
+    with vault_lock(vault_path):
+        session_id = get_active_session(db_path, str(vault_path))
+        if session_id is None:
+            click.echo("Error: no active session.", err=True)
+            sys.exit(2)
+
+        wm = WorkingMemory(db_path, session_id)
+        event_log = SQLiteEventLog(db_path)
+        try:
+            wm.evict(item_id, reason="cli_evict", event_log=event_log)
+        except ValueError as e:
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(2)
+
+    click.echo(f"Evicted: {item_id}")
