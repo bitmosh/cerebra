@@ -438,6 +438,7 @@ def search(
     import sys
     import time
 
+    from cerebra.inspector.event import make_event
     from cerebra.inspector.sqlite_log import SQLiteEventLog
     from cerebra.retrieval.planner import query_plan
     from cerebra.retrieval.scorer import score_candidates
@@ -498,18 +499,38 @@ def search(
         click.echo(f"Error: trace write failed: {e}", err=True)
         sys.exit(2)
 
+    best_score = max((c.score.composite for c in scored_all), default=0.0)
+    if best_score < relevance_floor:
+        event_log.write(make_event(
+            event_type="RetrievalAbstained",
+            actor="retrieval",
+            summary=f"Abstained: best score {best_score:.4f} < floor {relevance_floor}",
+            data={
+                "trace_id": plan.trace_id,
+                "query": plan.raw_query,
+                "mode": plan.mode,
+                "query_sku_d1": plan.query_d1,
+                "candidate_count": len(scored_all),
+                "best_score_seen": round(best_score, 6),
+                "floor": relevance_floor,
+            },
+            subject_id=plan.trace_id,
+        ))
+        click.echo(
+            f"No relevant results above floor {relevance_floor:.2f} "
+            f"(best score: {best_score:.2f})",
+            err=True,
+        )
+        sys.exit(1)
+
     above_floor = [c for c in scored_all if c.score.composite >= relevance_floor]
     above_count = len(above_floor)
 
     if output_format == "json":
         _render_json(above_floor, limit, explain)
-        if not above_floor:
-            sys.exit(1)
         return
 
     _render_text(above_floor, plan, above_count, duration_ms, limit, explain, relevance_floor)
-    if not above_floor:
-        sys.exit(1)
 
 
 # ── reindex ───────────────────────────────────────────────────────────────────
@@ -609,8 +630,13 @@ def context(
     import sys
     import time
 
+    from cerebra.inspector.event import make_event
     from cerebra.inspector.sqlite_log import SQLiteEventLog
-    from cerebra.retrieval.context_packet import build_context_packet, render_text
+    from cerebra.retrieval.context_packet import (
+        build_abstained_packet,
+        build_context_packet,
+        render_text,
+    )
     from cerebra.retrieval.planner import query_plan
     from cerebra.retrieval.scorer import score_candidates
     from cerebra.retrieval.trace import TraceData, write_trace
@@ -670,11 +696,32 @@ def context(
         click.echo(f"Error: trace write failed: {e}", err=True)
         sys.exit(2)
 
+    best_score = max((c.score.composite for c in scored_all), default=0.0)
+    is_abstained = best_score < relevance_floor
+
     try:
-        above_floor = [c for c in scored_all if c.score.composite >= relevance_floor]
-        packet = build_context_packet(
-            trace_data, above_floor, db_path, limit=limit, event_log=event_log
-        )
+        if is_abstained:
+            event_log.write(make_event(
+                event_type="RetrievalAbstained",
+                actor="retrieval",
+                summary=f"Abstained: best score {best_score:.4f} < floor {relevance_floor}",
+                data={
+                    "trace_id": plan.trace_id,
+                    "query": plan.raw_query,
+                    "mode": plan.mode,
+                    "query_sku_d1": plan.query_d1,
+                    "candidate_count": len(scored_all),
+                    "best_score_seen": round(best_score, 6),
+                    "floor": relevance_floor,
+                },
+                subject_id=plan.trace_id,
+            ))
+            packet = build_abstained_packet(trace_data, best_score, event_log=event_log)
+        else:
+            above_floor = [c for c in scored_all if c.score.composite >= relevance_floor]
+            packet = build_context_packet(
+                trace_data, above_floor, db_path, limit=limit, event_log=event_log
+            )
     except Exception as e:
         click.echo(f"Error: context packet build failed: {e}", err=True)
         sys.exit(2)
@@ -687,9 +734,14 @@ def context(
         except Exception as e:
             click.echo(f"Error: could not write output file: {e}", err=True)
             sys.exit(2)
+        if is_abstained:
+            sys.exit(1)
         return
 
     if use_json:
         click.echo(json.dumps(packet.to_dict(), indent=2))
     else:
         click.echo(render_text(packet, limit=limit))
+
+    if is_abstained:
+        sys.exit(1)

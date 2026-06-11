@@ -143,22 +143,12 @@ class TestContextExitCodes:
             result = runner.invoke(cli, ["context", "test query"])
         assert result.exit_code == 0, result.output
 
-    def test_empty_selected_memory_exits_zero(self) -> None:
-        """Step 9: empty selected_memory still exits 0 (abstention is Step 10)."""
-        from cerebra.retrieval.context_packet import ContextPacket
-        empty_packet = ContextPacket(
-            context_packet_id="ctxpkt_empty001",
-            packet_version=1, schema_version=1, created_at=1_720_000_000,
-            query="test", mode="hybrid", is_abstained=False,
-            abstention_rationale=None, best_score_seen=None,
-            retrieval_trace_id="trace_ctxtest001", origin_event_ids=[],
-            selected_memory=[], token_estimate=0, selected_count=0,
-            candidate_count=5, uncertainties=[], excluded_candidate_count=5,
-        )
+    def test_no_candidates_abstains_and_exits_one(self) -> None:
+        """Step 10: zero candidates → abstention path → exit 1."""
         runner = CliRunner()
-        with _patched_runner([], packet=empty_packet):
+        with _patched_runner([]):
             result = runner.invoke(cli, ["context", "test query"])
-        assert result.exit_code == 0, result.output
+        assert result.exit_code == 1
 
     def test_vault_not_found_exits_two(self) -> None:
         runner = CliRunner()
@@ -187,7 +177,7 @@ class TestContextExitCodes:
             patch("cerebra.inspector.sqlite_log.SQLiteEventLog"),
             patch("cerebra.retrieval.planner.query_plan", return_value=_make_plan()),
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
-            patch("cerebra.retrieval.scorer.score_candidates", return_value=[]),
+            patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
             patch("cerebra.retrieval.context_packet.build_context_packet",
                   side_effect=RuntimeError("packet failure")),
@@ -353,7 +343,7 @@ class TestContextLimit:
             patch("cerebra.inspector.sqlite_log.SQLiteEventLog"),
             patch("cerebra.retrieval.planner.query_plan", return_value=_make_plan()),
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
-            patch("cerebra.retrieval.scorer.score_candidates", return_value=[]),
+            patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
             patch("cerebra.retrieval.context_packet.build_context_packet",
                   return_value=_mock_packet()) as mock_build,
@@ -372,7 +362,7 @@ class TestContextLimit:
             patch("cerebra.inspector.sqlite_log.SQLiteEventLog"),
             patch("cerebra.retrieval.planner.query_plan", return_value=_make_plan()),
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
-            patch("cerebra.retrieval.scorer.score_candidates", return_value=[]),
+            patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
             patch("cerebra.retrieval.context_packet.build_context_packet",
                   return_value=_mock_packet()) as mock_build,
@@ -390,7 +380,7 @@ class TestContextLimit:
             patch("cerebra.inspector.sqlite_log.SQLiteEventLog"),
             patch("cerebra.retrieval.planner.query_plan", return_value=_make_plan()),
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
-            patch("cerebra.retrieval.scorer.score_candidates", return_value=[]),
+            patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
             patch("cerebra.retrieval.context_packet.build_context_packet",
                   return_value=_mock_packet()) as mock_build,
