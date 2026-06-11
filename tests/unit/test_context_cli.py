@@ -105,6 +105,8 @@ def _patched_runner(scored_list: list, plan: MagicMock | None = None, packet=Non
             patch("cerebra.cli.lockfile.vault_lock"),
             patch("cerebra.cognition.working_memory.get_active_session", return_value="sess_fake"),
             patch("cerebra.cognition.truth_tower.TruthTower", return_value=_tower_stub),
+            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
+                  side_effect=lambda scored, *a, **kw: scored),
         ):
             yield
 
@@ -188,6 +190,8 @@ class TestContextExitCodes:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
+            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
+                  side_effect=lambda scored, *a, **kw: scored),
             patch("cerebra.retrieval.context_packet.build_context_packet",
                   side_effect=RuntimeError("packet failure")),
         ):
@@ -354,6 +358,8 @@ class TestContextLimit:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
+            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
+                  side_effect=lambda s, *a, **kw: s),
             patch("cerebra.retrieval.context_packet.build_context_packet",
                   return_value=_mock_packet()) as mock_build,
         ):
@@ -373,6 +379,8 @@ class TestContextLimit:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
+            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
+                  side_effect=lambda s, *a, **kw: s),
             patch("cerebra.retrieval.context_packet.build_context_packet",
                   return_value=_mock_packet()) as mock_build,
         ):
@@ -391,6 +399,8 @@ class TestContextLimit:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
+            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
+                  side_effect=lambda s, *a, **kw: s),
             patch("cerebra.retrieval.context_packet.build_context_packet",
                   return_value=_mock_packet()) as mock_build,
         ):

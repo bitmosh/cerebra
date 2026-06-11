@@ -499,6 +499,10 @@ def search(
         click.echo(f"Error: trace write failed: {e}", err=True)
         sys.exit(2)
 
+    # Lattice sibling dedup: collapse sibling groups to winner (after trace write)
+    from cerebra.retrieval.lattice_dedup import dedup_siblings
+    scored_all = dedup_siblings(scored_all, plan.query_d1, db_path, plan.trace_id, event_log)
+
     best_score = max((c.score.composite for c in scored_all), default=0.0)
     if best_score < relevance_floor:
         event_log.write(make_event(
@@ -700,6 +704,10 @@ def context(
     except Exception as e:
         click.echo(f"Error: trace write failed: {e}", err=True)
         sys.exit(2)
+
+    # Lattice sibling dedup: collapse sibling groups to winner (after trace write)
+    from cerebra.retrieval.lattice_dedup import dedup_siblings
+    scored_all = dedup_siblings(scored_all, plan.query_d1, db_path, plan.trace_id, event_log)
 
     best_score = max((c.score.composite for c in scored_all), default=0.0)
     is_abstained = best_score < relevance_floor

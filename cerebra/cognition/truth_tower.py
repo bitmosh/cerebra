@@ -196,15 +196,21 @@ class TruthTower:
         Idempotent by (session_id, record_id, tier=1, evicted_at IS NULL) — re-running
         cerebra context with the same query does not duplicate T1 items.
 
-        Lattice sibling dedup: when multiple MemoryItems share the same chunk_id
-        (same underlying chunk committed to multiple SKU positions), only the first
-        one encountered is promoted; the rest are skipped. Lattice Step 2 will add
-        "which sibling wins" decision logic; for now, order-of-encounter decides.
+        Lattice sibling dedup: lineage-tagged records (is_lattice_member=1) are first
+        collapsed to the highest-scoring sibling per lineage group via
+        dedup_memory_items(). A chunk_id check follows as a safety net for non-tagged
+        records that share a chunk (same chunk surfaced by multiple traversal steps).
 
         Emits TowerInitialized once (only on very first T1 in this session),
         TowerItemEvicted per capacity eviction, TowerItemStaled per T2 staled by
         a T1 eviction, TowerItemPromoted per new item.
         """
+        if not memory_items:
+            return []
+
+        from cerebra.retrieval.lattice_dedup import dedup_memory_items
+        memory_items = dedup_memory_items(memory_items, self.db_path)
+
         if not memory_items:
             return []
 
@@ -228,7 +234,8 @@ class TruthTower:
                     seen_chunk_ids.add(mi.chunk_id)  # still mark chunk as occupied
                     continue
 
-                # Lattice sibling dedup: first sibling per chunk_id wins
+                # Safety net: skip if another record already occupies this chunk
+                # (handles non-lattice records sharing a chunk_id)
                 if mi.chunk_id in seen_chunk_ids:
                     continue
 

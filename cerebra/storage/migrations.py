@@ -645,6 +645,38 @@ class Migration010_LatticeColumns(Migration):
         """)
 
 
+class Migration011_LatticeRetrieval(Migration):
+    """Lattice Step 2: lattice dedup columns on retrieval_candidates.
+
+    Three new columns (all nullable):
+      lattice_sibling_count   INTEGER DEFAULT 0  — total siblings in the lineage group
+                                                   (0 = not a lattice candidate)
+      lattice_winner_record_id TEXT              — record_id of the winning sibling
+                                                   NULL for non-lattice candidates
+      lattice_routing_basis   TEXT               — how the winner was chosen:
+                                                   sku_match | sku_match_multi |
+                                                   composite_score | earliest_promotion
+                                                   NULL for non-lattice candidates
+
+    A partial index on lattice_winner_record_id speeds up post-dedup lookups
+    on groups that were actually resolved (sibling_count > 0).
+    """
+
+    version = 11
+    description = "Lattice Step 2: lattice_sibling_count, lattice_winner_record_id, lattice_routing_basis on retrieval_candidates"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            ALTER TABLE retrieval_candidates ADD COLUMN lattice_sibling_count INTEGER NOT NULL DEFAULT 0;
+            ALTER TABLE retrieval_candidates ADD COLUMN lattice_winner_record_id TEXT;
+            ALTER TABLE retrieval_candidates ADD COLUMN lattice_routing_basis TEXT;
+
+            CREATE INDEX IF NOT EXISTS idx_rc_lattice_winner
+                ON retrieval_candidates(lattice_winner_record_id)
+                WHERE lattice_sibling_count > 0;
+        """)
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -657,6 +689,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration008_RetrievalTraces(),
     Migration009_Phase5Schema(),
     Migration010_LatticeColumns(),
+    Migration011_LatticeRetrieval(),
 ]
 
 

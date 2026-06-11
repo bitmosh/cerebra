@@ -77,6 +77,8 @@ def _patched_search(scored_list: list, plan=None):
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=scored_list),
             patch("cerebra.retrieval.trace.write_trace", return_value="trace_abs001"),
+            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
+                  side_effect=lambda scored, *a, **kw: scored),
         ):
             yield
 
@@ -99,6 +101,8 @@ def _patched_context(scored_list: list, plan=None):
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=scored_list),
             patch("cerebra.retrieval.trace.write_trace", return_value="trace_abs001"),
+            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
+                  side_effect=lambda scored, *a, **kw: scored),
         ):
             yield
 
@@ -343,6 +347,8 @@ class TestRetrievalAbstainedEvent:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=scored_list),
             patch("cerebra.retrieval.trace.write_trace", return_value="trace_abs001"),
+            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
+                  side_effect=lambda scored, *a, **kw: scored),
         ):
             result = CliRunner().invoke(
                 cli, ["context", "test", "--floor", str(floor), "--format", "json"]
@@ -396,6 +402,8 @@ class TestRetrievalAbstainedEvent:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=scored),
             patch("cerebra.retrieval.trace.write_trace", return_value="trace_abs001"),
+            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
+                  side_effect=lambda s, *a, **kw: s),
             patch(
                 "cerebra.retrieval.context_packet.build_context_packet",
                 return_value=_make_normal_packet(),
@@ -424,6 +432,8 @@ class TestRetrievalAbstainedEvent:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=scored),
             patch("cerebra.retrieval.trace.write_trace", return_value="trace_abs001"),
+            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
+                  side_effect=lambda s, *a, **kw: s),
         ):
             result = CliRunner().invoke(
                 cli, ["search", "weather", "--floor", "0.45"]

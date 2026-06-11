@@ -53,7 +53,8 @@ PHASE_5_EVENT_TYPES: frozenset[str] = frozenset(
 
 LATTICE_EVENT_TYPES: frozenset[str] = frozenset(
     {
-        "LatticeCommit",  # emitted once per chunk when ≥2 categories clear threshold
+        "LatticeCommit",          # emitted once per chunk when ≥2 categories clear threshold
+        "LatticeSiblingResolved", # emitted once per lineage group when siblings are deduped
     }
 )
 

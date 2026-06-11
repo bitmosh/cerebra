@@ -88,6 +88,8 @@ def _patched_runner(scored_list: list, plan: MagicMock | None = None):
                 ),
                 patch("cerebra.retrieval.trace.write_trace", return_value="trace_testtest001"),
                 patch("pathlib.Path.exists", return_value=True),
+                patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
+                      side_effect=lambda scored, *a, **kw: scored),
             ):
                 yield
 
