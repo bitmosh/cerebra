@@ -971,6 +971,7 @@ def memory_status(vault: str | None, output_format: str) -> None:
     import sys
 
     from cerebra.cognition._constants import SLOT_CAPACITIES
+    from cerebra.cognition.truth_tower import TruthTower
     from cerebra.cognition.working_memory import (
         WorkingMemory,
         get_active_session,
@@ -990,11 +991,17 @@ def memory_status(vault: str | None, output_format: str) -> None:
         return
 
     wm = WorkingMemory(db_path, session_id)
+    tower = TruthTower(db_path, session_id)
     event_log = SQLiteEventLog(db_path)
 
     if output_format == "json":
         d = wm.to_dict()
         d["vault_path"] = str(vault_path)
+        tower_field = tower.to_tower_field()
+        d["truth_tower"] = tower_field if tower_field is not None else {
+            "t1_items": [], "t2_items": [],
+            "t1_count": 0, "t2_count": 0, "stale_count": 0,
+        }
         click.echo(json.dumps(d, indent=2))
         event_log.write(make_event(
             "WorkingMemoryRendered",
@@ -1060,6 +1067,58 @@ def memory_status(vault: str | None, output_format: str) -> None:
                 f"  {item['item_id']}  score: {item['salience_score']:.4f}{markers}"
             )
             click.echo(f"    {summary}")
+
+    # Tower section
+    t1_items = tower.load_tier(1)
+    t2_items = tower.load_tier(2)
+    if not t1_items and not t2_items:
+        click.echo("\nTruth Tower: empty")
+    else:
+        stale_count = sum(1 for i in t2_items if i.is_stale)
+        click.echo(
+            f"\nTruth Tower  ({len(t1_items)} T1, {len(t2_items)} T2, {stale_count} stale):\n"
+        )
+        t2_by_t1: dict[str, list] = {}
+        for t2 in t2_items:
+            if t2.t1_citation_id:
+                t2_by_t1.setdefault(t2.t1_citation_id, []).append(t2)
+
+        active_t1_ids: set[str] = set()
+        for idx, t1 in enumerate(t1_items, start=1):
+            active_t1_ids.add(t1.tower_item_id)
+            pin_mark = "  [pinned]" if t1.is_pinned else ""
+            summary = t1.content_summary
+            if len(summary) > 100:
+                summary = summary[:100] + "…"
+            click.echo(
+                f"  T1 [{idx}]  {t1.tower_item_id}  score: {t1.salience_score:.4f}{pin_mark}"
+            )
+            click.echo(f"    {summary}")
+            for t2_idx, t2 in enumerate(t2_by_t1.get(t1.tower_item_id, []), start=1):
+                stale_mark = "[stale] " if t2.is_stale else ""
+                pin_mark_t2 = "  [pinned]" if t2.is_pinned else ""
+                t2_summary = t2.content_summary
+                if len(t2_summary) > 100:
+                    t2_summary = t2_summary[:100] + "…"
+                click.echo(
+                    f"    T2 [{t2_idx}] ^T1[{idx}]{pin_mark_t2}  {stale_mark}score: {t2.salience_score:.4f}"
+                )
+                click.echo(f"      {t2_summary}")
+
+        # Show stale T2 items whose T1 anchor has been evicted
+        orphaned_t2 = [t2 for t2 in t2_items if t2.t1_citation_id not in active_t1_ids]
+        if orphaned_t2:
+            click.echo("  [stale, T1 evicted]:")
+            for t2_idx, t2 in enumerate(orphaned_t2, start=1):
+                stale_mark = "[stale] " if t2.is_stale else ""
+                pin_mark_t2 = "  [pinned]" if t2.is_pinned else ""
+                t2_summary = t2.content_summary
+                if len(t2_summary) > 100:
+                    t2_summary = t2_summary[:100] + "…"
+                click.echo(
+                    f"    T2 [{t2_idx}]{pin_mark_t2}  {stale_mark}score: {t2.salience_score:.4f}"
+                )
+                click.echo(f"      {t2_summary}")
 
     event_log.write(make_event(
         "WorkingMemoryRendered",
