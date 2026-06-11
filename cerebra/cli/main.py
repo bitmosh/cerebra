@@ -1079,7 +1079,9 @@ def memory_status(vault: str | None, output_format: str) -> None:
 @click.option("--salience", "salience_score", type=float, default=None,
               help="Salience override (0.0–1.0).")
 @click.option("--tier", type=click.Choice(["1", "2"]), default=None,
-              help="Tower tier (Step 7).")
+              help="Tower tier for truth tower promotion (2 = T2, requires --cite).")
+@click.option("--cite", "cite_id", default=None,
+              help="T1 tower_item_id to cite (required with --tier 2).")
 def memory_promote(
     record_id: str | None,
     vault: str | None,
@@ -1088,6 +1090,7 @@ def memory_promote(
     pin: bool,
     salience_score: float | None,
     tier: str | None,
+    cite_id: str | None,
 ) -> None:
     """Promote a record or synthetic item into working memory."""
     import sys
@@ -1096,21 +1099,111 @@ def memory_promote(
     from cerebra.cognition._constants import SLOT_CAPACITIES
     from cerebra.cognition.working_memory import (
         WorkingMemory,
+        WorkingMemoryItem,
         get_active_session,
         new_session,
     )
     from cerebra.inspector.sqlite_log import SQLiteEventLog
     from cerebra.storage.db import connect
 
-    # --tier guard (tower promotion deferred to Step 7)
-    if tier is not None:
-        tier_msg = (
-            "T2 promotion lands in Step 7"
-            if tier == "2"
-            else "T1 tower promotion not yet implemented (Step 7)"
-        )
-        click.echo(f"Error: {tier_msg}", err=True)
+    if tier == "1":
+        click.echo("Error: T1 tower promotion not yet implemented.", err=True)
         sys.exit(2)
+
+    # ── T2 promotion path ─────────────────────────────────────────────────────
+    if tier == "2":
+        if cite_id is None:
+            click.echo("Error: --cite is required with --tier 2.", err=True)
+            sys.exit(2)
+        if record_id is None:
+            click.echo("Error: provide record_id or wm_item_id for --tier 2.", err=True)
+            sys.exit(2)
+        positional = record_id
+        if not (positional.startswith("wmi_") or positional.startswith("rec_")):
+            click.echo(
+                f"Error: expected 'rec_<id>' or 'wmi_<id>'; got {positional!r}.",
+                err=True,
+            )
+            sys.exit(2)
+
+        vault_path, db_path = _memory_vault_db(vault)
+
+        # Resolve session and WM item (read-only, pre-validation before acquiring lock)
+        session_id = get_active_session(db_path, str(vault_path))
+        if session_id is None:
+            click.echo(
+                f"Error: Working memory item {positional!r} not found in current session "
+                "(no active session).",
+                err=True,
+            )
+            sys.exit(2)
+
+        conn = connect(db_path)
+        try:
+            _wm_select = (
+                "SELECT item_id, session_id, slot_type, record_id, content_summary, "
+                "       salience_score, is_pinned, promoted_at, evicted_at "
+                "FROM working_memory_items "
+            )
+            if positional.startswith("wmi_"):
+                wm_row = conn.execute(
+                    _wm_select + "WHERE item_id = ? AND session_id = ?",
+                    (positional, session_id),
+                ).fetchone()
+            else:
+                wm_row = conn.execute(
+                    _wm_select + "WHERE record_id = ? AND session_id = ?",
+                    (positional, session_id),
+                ).fetchone()
+        finally:
+            conn.close()
+
+        if wm_row is None:
+            click.echo(
+                f"Error: Working memory item {positional!r} not found in current session.",
+                err=True,
+            )
+            sys.exit(2)
+        if wm_row["evicted_at"] is not None:
+            click.echo(
+                f"Error: Working memory item {wm_row['item_id']!r} has been evicted.",
+                err=True,
+            )
+            sys.exit(2)
+
+        wm_item = WorkingMemoryItem(
+            item_id=wm_row["item_id"],
+            session_id=wm_row["session_id"],
+            slot_type=wm_row["slot_type"],
+            record_id=wm_row["record_id"],
+            content_summary=wm_row["content_summary"],
+            salience_score=wm_row["salience_score"],
+            is_pinned=bool(wm_row["is_pinned"]),
+            promoted_at=wm_row["promoted_at"],
+            evicted_at=wm_row["evicted_at"],
+        )
+
+        from cerebra.cognition.truth_tower import TowerPromotionError, TruthTower
+
+        with vault_lock(vault_path):
+            event_log = SQLiteEventLog(db_path)
+            tower = TruthTower(db_path, session_id)
+            try:
+                t2_item = tower.promote_to_t2(
+                    wm_item, cite_id, is_pinned=pin, event_log=event_log
+                )
+            except TowerPromotionError as e:
+                click.echo(f"Error: {e}", err=True)
+                sys.exit(2)
+
+        pin_note = "yes" if t2_item.is_pinned else "no"
+        click.echo(f"Promoted to T2: {t2_item.tower_item_id}")
+        click.echo(f"  Citing T1: {cite_id}")
+        click.echo(f"  Session:   {session_id}")
+        click.echo(f"  Pinned:    {pin_note}")
+        return
+
+    # ── Working memory promote path (tier=None) ───────────────────────────────
 
     # Validate mutual exclusivity of record_id vs --text
     if free_text is not None and record_id is not None:

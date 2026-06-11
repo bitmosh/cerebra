@@ -297,19 +297,18 @@ class TestMemoryPromote:
         assert result.exit_code == 2
         assert "not found" in (result.output + (result.stderr or "")).lower()
 
-    def test_promote_tier_2_exits_2_with_message(self) -> None:
+    def test_promote_tier_2_requires_cite(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
         result = _invoke([
             "memory", "promote",
             "--vault", str(vault),
-            "--text", "will fail",
-            "--slot", "goal",
             "--tier", "2",
+            "wmi_someid",
         ])
         assert result.exit_code == 2
         combined = result.output + (result.stderr or "")
-        assert "Step 7" in combined
+        assert "--cite is required" in combined
 
     def test_promote_tier_1_exits_2(self) -> None:
         vault, db = _make_vault()
