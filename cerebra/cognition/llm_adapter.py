@@ -34,7 +34,7 @@ import urllib.error
 import urllib.request
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 # Cold model load observed at ~164s; 300s gives safe margin for load + inference.
 # Subsequent warm calls are ~1-3s. Calibration/backfill ETA should account for
@@ -62,7 +62,18 @@ class ClassificationResult:
 
 
 class LLMAdapter(ABC):
-    """Abstract LLM adapter. Every implementation exposes classify_d1()."""
+    """Abstract LLM adapter."""
+
+    def complete(self, prompt: str, max_tokens: int = 1024) -> str:
+        """Synchronous completion call. Returns model output text."""
+        raise NotImplementedError("complete() not implemented by this adapter")
+
+    def complete_structured(self, prompt: str, schema: dict[str, Any]) -> dict[str, Any]:
+        """Synchronous structured completion. Returns parsed JSON matching schema.
+
+        Raises ClassificationError on parse failure or non-200 response.
+        """
+        raise NotImplementedError("complete_structured() not implemented by this adapter")
 
     @abstractmethod
     def classify_d1(self, content: str) -> ClassificationResult:
@@ -112,6 +123,28 @@ class ProxyLLMAdapter(LLMAdapter):
         # Pass a shorter value for calibration tests on a warm model.
         self._timeout = timeout if timeout is not None else TIMEOUT_SECONDS
         self._model = model or os.environ.get("CEREBRA_LLM_MODEL", "cerebra-classifier")
+
+    def complete(self, prompt: str, max_tokens: int = 1024) -> str:
+        raw = self._call_chat_completions(prompt)
+        return str(raw["choices"][0]["message"]["content"])
+
+    def complete_structured(self, prompt: str, schema: dict[str, Any]) -> dict[str, Any]:
+        content = self.complete(prompt)
+        # Strip markdown fences the proxy may add
+        text = content.strip()
+        if text.startswith("```"):
+            lines = text.splitlines()
+            end = len(lines) - 1
+            while end > 0 and not lines[end].startswith("```"):
+                end -= 1
+            text = "\n".join(lines[1:end]) if end > 0 else "\n".join(lines[1:])
+            text = text.strip()
+        try:
+            return cast(dict[str, Any], json.loads(text))
+        except json.JSONDecodeError as e:
+            raise ClassificationError(
+                f"complete_structured: JSON parse failed: {content[:400]}"
+            ) from e
 
     def health_check(self) -> bool:
         """
@@ -236,6 +269,20 @@ class OllamaDirectAdapter(LLMAdapter):
         self._timeout = timeout if timeout is not None else TIMEOUT_SECONDS
         self._temperature = temperature
 
+    def complete(self, prompt: str, max_tokens: int = 1024) -> str:
+        raw = self._call_ollama_chat(prompt, json_mode=False)
+        return str(raw["message"]["content"])
+
+    def complete_structured(self, prompt: str, schema: dict[str, Any]) -> dict[str, Any]:
+        raw = self._call_ollama_chat(prompt, json_mode=True)
+        content = str(raw["message"]["content"])
+        try:
+            return cast(dict[str, Any], json.loads(content))
+        except json.JSONDecodeError as e:
+            raise ClassificationError(
+                f"complete_structured: JSON parse failed: {content[:400]}"
+            ) from e
+
     def health_check(self) -> bool:
         """
         Return True if Ollama is reachable and the model responds.
@@ -313,19 +360,19 @@ class OllamaDirectAdapter(LLMAdapter):
         result.model_string = model_string
         return result
 
-    def _call_ollama_chat(self, prompt: str) -> Any:
-        body = json.dumps(
-            {
-                "model": self._model,
-                "messages": [{"role": "user", "content": prompt}],
-                "stream": False,
-                "think": False,
-                "format": "json",
-                "options": {
-                    "temperature": self._temperature,
-                },
-            }
-        ).encode("utf-8")
+    def _call_ollama_chat(self, prompt: str, json_mode: bool = True) -> Any:
+        body_dict: dict[str, Any] = {
+            "model": self._model,
+            "messages": [{"role": "user", "content": prompt}],
+            "stream": False,
+            "think": False,
+            "options": {
+                "temperature": self._temperature,
+            },
+        }
+        if json_mode:
+            body_dict["format"] = "json"
+        body = json.dumps(body_dict).encode("utf-8")
 
         req = urllib.request.Request(
             f"{self._base_url}/api/chat",

@@ -677,6 +677,36 @@ class Migration011_LatticeRetrieval(Migration):
         """)
 
 
+class Migration012_Evaluations(Migration):
+    """Phase 6 Step 2: evaluations table for composed signal evaluation packets.
+
+    Predictions and outcomes tables land in Migration013 (Phase 6 Step 3).
+    """
+
+    version = 12
+    description = "Phase 6 Step 2: evaluations table"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS evaluations (
+                evaluation_id           TEXT    PRIMARY KEY,
+                session_id              TEXT    NOT NULL,
+                cycle_id                TEXT    NOT NULL,
+                step_id                 TEXT    NOT NULL,
+                composite_score         REAL    NOT NULL,
+                per_signal_scores       TEXT    NOT NULL,
+                weights_used            TEXT    NOT NULL,
+                composite_floor_violated INTEGER NOT NULL,
+                confidence              REAL,
+                composed_at             INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_evaluations_session
+                ON evaluations(session_id);
+            CREATE INDEX IF NOT EXISTS idx_evaluations_cycle
+                ON evaluations(cycle_id);
+        """)
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -690,6 +720,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration009_Phase5Schema(),
     Migration010_LatticeColumns(),
     Migration011_LatticeRetrieval(),
+    Migration012_Evaluations(),
 ]
 
 
