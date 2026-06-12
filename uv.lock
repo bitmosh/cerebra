@@ -111,10 +111,11 @@ wheels = [
 
 [[package]]
 name = "cerebra"
-version = "0.2.2"
+version = "0.2.8"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
+    { name = "fossic" },
     { name = "numpy" },
     { name = "pydantic" },
     { name = "pyyaml" },
@@ -136,6 +137,7 @@ dev = [
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=24.4" },
     { name = "click", specifier = ">=8.1" },
+    { name = "fossic", directory = "/home/boop/Projects/fossic/fossic-py" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.10" },
     { name = "numpy", specifier = ">=2.0,<3.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.7" },
@@ -355,6 +357,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/91/f5/3557bf28e0f1943e4
 wheels = [
     { url = "https://files.pythonhosted.org/packages/81/8f/b61d427c4f49a8bdadc93f4e7e74df8a6df6f77ee6e26bf0df53d3925363/filelock-3.29.3-py3-none-any.whl", hash = "sha256:e58333029cc9b925f39aad59b1d8f0a1ad836af4e60d7217f4a4dba87461261d", size = 42324, upload-time = "2026-06-10T17:37:10.37Z" },
 ]
+
+[[package]]
+name = "fossic"
+version = "0.1.0"
+source = { directory = "/home/boop/Projects/fossic/fossic-py" }
 
 [[package]]
 name = "fsspec"

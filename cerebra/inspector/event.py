@@ -58,7 +58,47 @@ LATTICE_EVENT_TYPES: frozenset[str] = frozenset(
     }
 )
 
-ALL_KNOWN_EVENT_TYPES: frozenset[str] = PHASE_0_EVENT_TYPES | PHASE_5_EVENT_TYPES | LATTICE_EVENT_TYPES
+# Phase 6 block — cycle runtime events (defined here for type-check coverage;
+# not yet emitted until Phase 6 Step 2+).
+PHASE_6_EVENT_TYPES: frozenset[str] = frozenset(
+    {
+        # Session + cycle lifecycle
+        "SessionOpened",
+        "CycleStarted",
+        "CycleCompleted",
+        # Step execution
+        "StepStarted",
+        "ContextPacketBuilt",
+        "StepExecuted",
+        # Prediction + evaluation
+        "PredictionMade",
+        "SignalEvaluated",
+        "EvaluationComposed",
+        "OutcomeRecorded",
+        "PredictionSevereMiss",
+        # Control decisions
+        "ClutchDecisionMade",
+        "CatalystInvoked",
+        "CatalystArmSelected",
+        # Safety gate
+        "LeewayGrantApplied",
+        # Re-injection
+        "ContinuationBundleCreated",
+        "ReinjectionTriggered",
+        # Working memory + session end
+        "MemoryWriteFromCycle",
+        "SessionFlushed",
+        # Consolidation (Phase 10)
+        "ConsolidationStarted",
+        "ConsolidationCompleted",
+        # Graph export (Phase 11)
+        "GraphExported",
+    }
+)
+
+ALL_KNOWN_EVENT_TYPES: frozenset[str] = (
+    PHASE_0_EVENT_TYPES | PHASE_5_EVENT_TYPES | LATTICE_EVENT_TYPES | PHASE_6_EVENT_TYPES
+)
 
 
 @dataclass

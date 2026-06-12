@@ -13,6 +13,7 @@ dependencies = [
     "click>=8.1",
     "numpy>=2.0,<3.0",
     "sentence-transformers>=3.0",
+    "fossic @ file:///home/boop/Projects/fossic/fossic-py",
 ]
 
 [project.optional-dependencies]
@@ -64,6 +65,10 @@ disallow_untyped_defs = false
 
 [[tool.mypy.overrides]]
 module = ["sentence_transformers", "sentence_transformers.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["fossic", "fossic.*"]
 ignore_missing_imports = true
 
 # ── pytest ────────────────────────────────────────────────────────────────────

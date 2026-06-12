@@ -21,6 +21,7 @@ from cerebra.inspector.event import (
     LATTICE_EVENT_TYPES,
     PHASE_0_EVENT_TYPES,
     PHASE_5_EVENT_TYPES,
+    PHASE_6_EVENT_TYPES,
 )
 from cerebra.storage.migrations import ALL_MIGRATIONS, run_migrations
 
@@ -90,7 +91,9 @@ class TestPhase5EventTypes:
         assert len(PHASE_5_EVENT_TYPES) == 16
 
     def test_all_known_is_union(self) -> None:
-        assert ALL_KNOWN_EVENT_TYPES == PHASE_0_EVENT_TYPES | PHASE_5_EVENT_TYPES | LATTICE_EVENT_TYPES
+        assert ALL_KNOWN_EVENT_TYPES == (
+            PHASE_0_EVENT_TYPES | PHASE_5_EVENT_TYPES | LATTICE_EVENT_TYPES | PHASE_6_EVENT_TYPES
+        )
 
     def test_wm_events_present(self) -> None:
         for name in (
