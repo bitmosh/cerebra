@@ -31,7 +31,12 @@ from fossic import (
 
 
 class FossicStore:
-    """Cerebra-friendly wrapper around fossic.Store."""
+    """Cerebra-friendly wrapper around fossic.Store.
+
+    DEV-005 (CCE dedup): Identical events (same event_type + payload +
+    causation_id) collapse to the same ID via fossic CCE. Cerebra emission
+    paths must ensure causation_id varies for semantically-distinct events.
+    """
 
     def __init__(self, vault_path: Path) -> None:
         db_dir = vault_path / ".fossic"
