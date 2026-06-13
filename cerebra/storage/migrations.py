@@ -760,6 +760,50 @@ class Migration013_PredictionsOutcomes(Migration):
         """)
 
 
+class Migration014_Sessions(Migration):
+    """Phase 8 Step 1: runtime_sessions table for RuntimeSession persistence.
+
+    Tracks cognitive runtime sessions: their goal, config, lifecycle state,
+    and parent-child re-injection chains (parent_session_id self-FK).
+
+    Table is named runtime_sessions (not sessions) to avoid collision with
+    the Phase 5 sessions table (working_memory session tracking).
+
+    NOTE: Design doc §6.4 originally specified Migration013 for sessions, but
+    Phase 6 Step 3 consumed 013 for predictions/outcomes (DEV-007). Phase 8
+    uses 014.
+    """
+
+    version = 14
+    description = "Phase 8 Step 1: runtime_sessions table"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS runtime_sessions (
+                session_id          TEXT    PRIMARY KEY,
+                cycle_config        TEXT    NOT NULL,
+                goal                TEXT    NOT NULL,
+                vault_path          TEXT    NOT NULL,
+                opened_at           INTEGER NOT NULL,
+                parent_session_id   TEXT,
+                recursion_depth     INTEGER NOT NULL DEFAULT 0,
+                max_recursion_depth INTEGER NOT NULL DEFAULT 5,
+                cycles_run          INTEGER NOT NULL DEFAULT 0,
+                steps_run           INTEGER NOT NULL DEFAULT 0,
+                state               TEXT    NOT NULL DEFAULT 'active',
+                flushed_at          INTEGER,
+                final_outcome       TEXT,
+                FOREIGN KEY (parent_session_id) REFERENCES runtime_sessions(session_id)
+            );
+            CREATE INDEX IF NOT EXISTS idx_runtime_sessions_parent
+                ON runtime_sessions(parent_session_id);
+            CREATE INDEX IF NOT EXISTS idx_runtime_sessions_state
+                ON runtime_sessions(state);
+            CREATE INDEX IF NOT EXISTS idx_runtime_sessions_vault
+                ON runtime_sessions(vault_path);
+        """)
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -775,6 +819,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration011_LatticeRetrieval(),
     Migration012_Evaluations(),
     Migration013_PredictionsOutcomes(),
+    Migration014_Sessions(),
 ]
 
 
