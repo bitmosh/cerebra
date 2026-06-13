@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cerebra"
-version = "0.3.5a"
+version = "0.3.6"
 description = "Local-first cognitive runtime"
 requires-python = ">=3.12"
 dependencies = [
