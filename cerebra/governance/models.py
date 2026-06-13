@@ -7,7 +7,10 @@ Faithfully implements the schemas in CEREBRA_LEEWAY_NETWORK.md §5 and §6.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
+
+if TYPE_CHECKING:
+    from cerebra.governance.types import ProposedAction
 
 # ── Leeway rules ─────────────────────────────────────────────────────────────
 
@@ -74,6 +77,17 @@ class LeewayRule:
         """Return True if any revocation condition fires."""
         return any(c.evaluate(signals) for c in self.revocation_conditions)
 
+    def grants(self, action: ProposedAction) -> bool:
+        """Return True if this rule grants permission for the proposed action.
+
+        v0.1: action-name + phase matching only. Signal-based conditions (is_granted)
+        are consulted in v0.2 once the signals dict is available at gate call time.
+        """
+        return (
+            self.capability == action.action_name
+            and self.phase in ("pre_action", "both")
+        )
+
 
 # ── Constitutional rules ──────────────────────────────────────────────────────
 
@@ -94,3 +108,12 @@ class ConstitutionalRule:
     applies_to: str  # "all_capabilities" or specific capability
     is_inviolable: bool = True
     created_at: int = 0
+
+    def forbids(self, _action: ProposedAction) -> bool:
+        """Return True if this constitutional rule pre-emptively forbids the action.
+
+        v0.1: always returns False — DEV-009. Existing constitutional rules are
+        post-action output analyzers, not pre-action capability blockers. A dedicated
+        pre-action rule shape is a v0.2 design task.
+        """
+        return False

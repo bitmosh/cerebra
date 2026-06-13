@@ -8,7 +8,10 @@ This module reads the YAML files written to the vault by `cerebra init`.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from cerebra.governance.pre_action_gate import LeewayPreActionGate
 
 import yaml
 
@@ -86,6 +89,20 @@ def load_constitutional_rules(constitutional_dir: Path) -> list[ConstitutionalRu
         elif isinstance(raw, dict):
             rules.append(_parse_constitutional_rule(raw))
     return rules
+
+
+def load_pre_action_gate(vault_path: Path) -> "LeewayPreActionGate":
+    """Construct a LeewayPreActionGate from rules in the vault.
+
+    Reads vault/leeway/*.yaml and vault/constitutional/*.yaml. If either
+    directory is empty, the corresponding rule list is empty (default-deny
+    for leeway; no constitutional blockers for constitutional).
+    """
+    from cerebra.governance.pre_action_gate import LeewayPreActionGate
+
+    leeway_rules = load_leeway_rules(vault_path / "leeway")
+    constitutional_rules = load_constitutional_rules(vault_path / "constitutional")
+    return LeewayPreActionGate(leeway_rules, constitutional_rules)
 
 
 def write_defaults_to_vault(vault_path: Path) -> None:
