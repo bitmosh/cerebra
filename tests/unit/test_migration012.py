@@ -120,20 +120,7 @@ class TestMigration012Schema:
         finally:
             db.unlink(missing_ok=True)
 
-    def test_predictions_table_not_created(self) -> None:
-        """Step 2 does NOT create predictions/outcomes — those come in Step 3."""
-        db = _fresh_db()
-        try:
-            run_migrations(db)
-            conn = sqlite3.connect(db)
-            tables = {
-                row[0]
-                for row in conn.execute(
-                    "SELECT name FROM sqlite_master WHERE type='table'"
-                ).fetchall()
-            }
-            assert "predictions" not in tables
-            assert "outcomes" not in tables
-            conn.close()
-        finally:
-            db.unlink(missing_ok=True)
+    def test_migration012_description_references_evaluations(self) -> None:
+        """Migration012 owns the evaluations table; predictions/outcomes are in 013."""
+        m012 = next(m for m in ALL_MIGRATIONS if m.version == 12)
+        assert "evaluations" in m012.description.lower()

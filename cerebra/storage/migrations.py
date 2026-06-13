@@ -707,6 +707,59 @@ class Migration012_Evaluations(Migration):
         """)
 
 
+class Migration013_PredictionsOutcomes(Migration):
+    """Phase 6 Step 3: predictions + outcomes tables.
+
+    predictions holds PredictionRecord before each cognitive step.
+    outcomes holds OutcomeRecord comparing actual vs expected composite.
+    Foreign key from outcomes.prediction_id → predictions.prediction_id
+    is enforced via PRAGMA foreign_keys=ON (set by db.connect()).
+
+    NOTE: The design doc (v01_phase6_design.md §6.4) reserved Migration013
+    for Phase 8 sessions+continuation_bundles. Since Step 3 consumes that
+    number for predictions+outcomes, Phase 8 will use Migration014+.
+    Logged as DEV-007 in docs/agent/deviations/v0.3.0.md.
+    """
+
+    version = 13
+    description = "Phase 6 Step 3: predictions + outcomes tables"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS predictions (
+                prediction_id           TEXT    PRIMARY KEY,
+                session_id              TEXT    NOT NULL,
+                cycle_id                TEXT    NOT NULL,
+                step_id                 TEXT    NOT NULL,
+                expected_composite_score REAL   NOT NULL,
+                expected_per_signal     TEXT    NOT NULL,
+                prediction_basis        TEXT    NOT NULL,
+                confidence              REAL    NOT NULL,
+                made_at                 INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_predictions_session
+                ON predictions(session_id);
+
+            CREATE TABLE IF NOT EXISTS outcomes (
+                outcome_id              TEXT    PRIMARY KEY,
+                prediction_id           TEXT    NOT NULL,
+                session_id              TEXT    NOT NULL,
+                cycle_id                TEXT    NOT NULL,
+                step_id                 TEXT    NOT NULL,
+                actual_composite_score  REAL    NOT NULL,
+                prediction_error        REAL    NOT NULL,
+                error_classification    TEXT    NOT NULL,
+                per_signal_error        TEXT    NOT NULL,
+                recorded_at             INTEGER NOT NULL,
+                FOREIGN KEY (prediction_id) REFERENCES predictions(prediction_id)
+            );
+            CREATE INDEX IF NOT EXISTS idx_outcomes_session
+                ON outcomes(session_id);
+            CREATE INDEX IF NOT EXISTS idx_outcomes_classification
+                ON outcomes(error_classification);
+        """)
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -721,6 +774,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration010_LatticeColumns(),
     Migration011_LatticeRetrieval(),
     Migration012_Evaluations(),
+    Migration013_PredictionsOutcomes(),
 ]
 
 
