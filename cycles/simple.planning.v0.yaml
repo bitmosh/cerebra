@@ -1,0 +1,177 @@
+name: simple.planning.v0
+version: 1
+description: |
+  A five-step planning cycle. Reads a goal, drafts a plan, critiques it,
+  refines based on critique, and produces a finalized output. Demonstrates
+  end-to-end cycle runtime for v0.1.
+
+max_steps: 8
+
+steps:
+  - name: understand_goal
+    description: Read the goal carefully and structure the understanding
+    prompt_template:
+      template: |
+        # Goal
+        {{ goal }}
+
+        # Context from memory
+        {{ retrieved_context }}
+
+        # Task
+        Read the goal carefully. Produce a structured understanding that covers:
+        1. What is being asked (the core deliverable)
+        2. What context from memory is relevant
+        3. What ambiguities or open questions exist
+        4. What success would look like
+
+        Be specific. Avoid vague generalities. If something is unclear, say so explicitly.
+      expected_output_format: free_form
+
+  - name: draft_plan
+    description: Generate an initial plan structure
+    prompt_template:
+      template: |
+        # Goal
+        {{ goal }}
+
+        # Understanding (prior step)
+        {{ prior_step_output }}
+
+        # Context from memory
+        {{ retrieved_context }}
+
+        # Task
+        Draft an initial plan that addresses the goal. Structure your plan with:
+        1. Major phases or work-streams
+        2. Key decisions that need to be made
+        3. Dependencies and ordering
+        4. Open questions that still need answering
+
+        This is a draft — don't try to make it perfect. Get the structure on paper.
+        Subsequent steps will critique and refine.
+      expected_output_format: free_form
+
+  - name: critique_plan
+    description: Critically examine the plan for gaps and weaknesses
+    prompt_template:
+      template: |
+        # Goal
+        {{ goal }}
+
+        # Plan to critique
+        {{ prior_step_output }}
+
+        # Task
+        Critique the plan above. Be specific and direct. Identify:
+        1. Hidden assumptions that should be made explicit
+        2. Missing considerations or stakeholders
+        3. Internal contradictions or tensions
+        4. Steps that may be harder than they appear
+        5. What success criteria are missing
+
+        Don't be polite — your job is to find real problems. The plan will be revised
+        based on this critique, so substantive criticism is more useful than mild
+        suggestions.
+      expected_output_format: free_form
+
+  - name: refine_plan
+    description: Address critique findings and produce a refined plan
+    prompt_template:
+      template: |
+        # Goal
+        {{ goal }}
+
+        # Original plan
+        {{ prior_steps[1] }}
+
+        # Critique
+        {{ prior_step_output }}
+
+        # Task
+        Revise the original plan to address the critique findings. For each major
+        critique point, explicitly show how the revision addresses it. Keep the
+        structure of the original plan but add, modify, or remove elements based on
+        what the critique surfaced.
+
+        Don't paper over critique points — if something genuinely can't be addressed,
+        say so and explain why.
+      expected_output_format: free_form
+
+  - name: finalize
+    description: Produce the polished final output
+    prompt_template:
+      template: |
+        # Goal
+        {{ goal }}
+
+        # Refined plan
+        {{ prior_step_output }}
+
+        # Task
+        Produce the final, polished output. This should be ready to share or act on.
+
+        - Reorganize for clarity if needed
+        - Acknowledge uncertainty where appropriate ("we estimate", "depends on", "if X then Y")
+        - State key assumptions explicitly at the top
+        - Make the structure scannable (headers, lists where appropriate)
+        - End with concrete next steps
+
+        This is the output the user will actually use. Make it useful.
+      expected_output_format: free_form
+
+stop_conditions:
+  - name: max_steps_hit
+    type: max_steps_reached
+    parameters: {}
+
+  - name: all_steps_done
+    type: all_steps_completed
+    parameters: {}
+
+  - name: catastrophic_floor
+    type: composite_floor_consecutive
+    parameters:
+      threshold: 0.30
+      consecutive_count: 2
+
+  - name: explicit_stop
+    type: explicit_clutch_stop
+    parameters: {}
+
+  - name: user_interrupt
+    type: user_interrupt
+    parameters: {}
+
+clutch_rules:
+  # Catastrophic first-step failure — bail out
+  - name: catastrophic_first_step
+    description: First step scored below 0.3 — likely the goal is malformed or model is failing
+    predicate_name: composite_below_threshold
+    action: stop
+    parameters:
+      threshold: 0.30
+      with_constraint: first_step
+
+  # Refine low-scoring steps
+  - name: refine_low_score
+    description: Step composite below 0.5 — repeat the step
+    predicate_name: composite_below_threshold
+    action: refine
+    parameters:
+      threshold: 0.50
+
+  # At final step with reasonable score — accept and end
+  - name: accept_final_step
+    description: At finalize step with composite >= 0.5 — accept (cycle terminates via all_steps_completed)
+    predicate_name: at_terminal_step
+    action: accept
+    parameters:
+      min_composite: 0.50
+
+  # Default: accept the step and move on
+  - name: default_accept
+    description: Composite is reasonable — move to next step
+    predicate_name: always
+    action: accept
+    parameters: {}

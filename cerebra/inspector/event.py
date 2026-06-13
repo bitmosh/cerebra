@@ -70,6 +70,7 @@ PHASE_6_EVENT_TYPES: frozenset[str] = frozenset(
         "StepStarted",
         "ContextPacketBuilt",
         "StepExecuted",
+        "StepExecutionFailed",
         # Prediction + evaluation
         "PredictionMade",
         "SignalEvaluated",

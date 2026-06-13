@@ -1,12 +1,12 @@
-"""Phase 8 Step 1 — RuntimeSession, SessionState, SessionManager, and persistence.
+"""Phase 8 — RuntimeSession, SessionState, SessionManager, and persistence.
 
 Stream pattern for session-level events (DEV-012):
   session_id IS the cycle_id segment → cerebra/agent-trace/<session_id>
   Per vocabulary spec: "session_id: str — UUID, also the stream's cycle_id segment"
 
-Step 1 known stubs (completed in Step 2):
-  - _load_cycle_config() returns empty dict; Step 2 implements CycleConfig + loader.
-  - SessionFlushed event emission is omitted; Step 2 supplies the most-recent cycle_id.
+SessionFlushed event is emitted by CycleRuntime (not SessionManager) because
+the causation chain runs through CycleCompleted on the cycle's event stream.
+flush_session() is a DB-only state transition.
 """
 
 from __future__ import annotations
@@ -314,9 +314,8 @@ class SessionManager:
     ) -> RuntimeSession:
         """Mark session as flushed, update SQLite, return updated session.
 
-        Step 1 stub: SessionFlushed event emission is omitted here.
-        Step 2 completes this — it supplies the most-recent cycle_id needed
-        for the event's causation chain to CycleCompleted.
+        DB-only: SessionFlushed fossic event is emitted by CycleRuntime
+        (it owns the causation chain via CycleCompleted).
         """
         session = read_session(self.db_path, session_id)
         if session is None:
@@ -354,9 +353,24 @@ class SessionManager:
             prior_step_per_signal=prior_per_signal,
         )
 
-    def _load_cycle_config(self, _name: str) -> dict[str, Any]:
-        """Step 1 stub — returns empty dict. Step 2 implements CycleConfig loader."""
-        return {}
+    def _load_cycle_config(self, name: str) -> dict[str, Any]:
+        """Load cycle config YAML and return as raw dict for SessionState.
+
+        Searches vault's cycles/ (db_path.parent.parent/cycles), then built-in.
+        Returns {} if config not found (graceful fallback; CycleRuntime uses
+        CycleConfigLoader directly for a typed CycleConfig object).
+        """
+        import dataclasses
+
+        from cerebra.cognition.cycle_config import CycleConfigLoader
+
+        vault_path = self.db_path.parent.parent
+        try:
+            loader = CycleConfigLoader()
+            config = loader.load(name, vault_path)
+            return dataclasses.asdict(config)
+        except (FileNotFoundError, Exception):
+            return {}
 
     def _load_prior_step_trajectory(
         self, session_id: str

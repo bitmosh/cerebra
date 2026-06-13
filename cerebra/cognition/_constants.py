@@ -107,6 +107,29 @@ CLUTCH_ACTIONS: frozenset[str] = frozenset(
     }
 )
 
+# ── Phase 8 — Stop condition types ───────────────────────────────────────────
+STOP_CONDITION_TYPES: frozenset[str] = frozenset(
+    {
+        "max_steps_reached",
+        "all_steps_completed",
+        "composite_floor_consecutive",
+        "explicit_clutch_stop",
+        "user_interrupt",
+    }
+)
+
+# ── Phase 8 — Built-in clutch predicate names (for CycleConfig validation) ───
+BUILTIN_PREDICATE_NAMES: frozenset[str] = frozenset(
+    {
+        "at_terminal_step",
+        "composite_below_threshold",
+        "composite_above_threshold",
+        "first_step",
+        "step_index_at",
+        "always",
+    }
+)
+
 # ── Phase 6+ — Event types ────────────────────────────────────────────────────
 # Mirrors PHASE_6_EVENT_TYPES in cerebra/inspector/event.py.
 # Defined here for use in cognition-layer code that must not import from inspector.
@@ -121,6 +144,7 @@ PHASE_6_EVENT_TYPES: frozenset[str] = frozenset(
         "StepStarted",
         "ContextPacketBuilt",
         "StepExecuted",
+        "StepExecutionFailed",
         # Prediction + evaluation
         "PredictionMade",
         "SignalEvaluated",
