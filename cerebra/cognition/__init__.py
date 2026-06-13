@@ -11,6 +11,9 @@ Phase 3+: working memory, signal pipeline, clutch, catalyst.
 
 # Lattica primitives
 from cerebra._primitives import (
+    ArmStats,
+    Bandit,
+    BanditSelection,
     Clutch,
     CompositeScore,
     Decision,
@@ -53,6 +56,9 @@ from cerebra.cognition.sku_relationships import D4Relationship
 
 __all__ = [
     # Lattica primitives
+    "ArmStats",
+    "Bandit",
+    "BanditSelection",
     "Clutch",
     "Decision",
     "Rule",
