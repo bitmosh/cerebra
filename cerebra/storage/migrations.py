@@ -848,6 +848,52 @@ class Migration015_ContinuationBundles(Migration):
         """)
 
 
+class Migration016_CycleEpisodeRecords(Migration):
+    """Phase 8 v0.3.5a — cycle_episode_records table for episode persistence.
+
+    Per Decision 1: separate table from memory_records to reflect different
+    ontology (cycle execution vs document ingestion). memory_records has NOT NULL
+    FKs to sources/documents/chunks that cycle episodes can't satisfy.
+
+    FK to runtime_sessions (Phase 8) is required.
+    FK to sessions (Phase 5 working memory) is nullable: episodes persist even
+    without an active working memory session.
+
+    Phase 10 consolidation will bridge selected episodes to memory_records.
+    """
+
+    version = 16
+    description = "Phase 8 v0.3.5a: cycle_episode_records table"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS cycle_episode_records (
+                record_id                   TEXT    PRIMARY KEY,
+                runtime_session_id          TEXT    NOT NULL
+                                                    REFERENCES runtime_sessions(session_id),
+                working_memory_session_id   TEXT
+                                                    REFERENCES sessions(session_id),
+                cycle_id                    TEXT    NOT NULL,
+                step_id                     TEXT    NOT NULL,
+                step_name                   TEXT    NOT NULL,
+                content                     TEXT    NOT NULL,
+                content_summary             TEXT,
+                metadata                    TEXT,
+                leeway_grant_event_id       BLOB,
+                cited_record_ids            TEXT,
+                created_at                  INTEGER NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_episodes_runtime_session
+                ON cycle_episode_records(runtime_session_id);
+            CREATE INDEX IF NOT EXISTS idx_episodes_working_memory
+                ON cycle_episode_records(working_memory_session_id);
+            CREATE INDEX IF NOT EXISTS idx_episodes_cycle
+                ON cycle_episode_records(cycle_id);
+            CREATE INDEX IF NOT EXISTS idx_episodes_created
+                ON cycle_episode_records(created_at);
+        """)
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -865,6 +911,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration013_PredictionsOutcomes(),
     Migration014_Sessions(),
     Migration015_ContinuationBundles(),
+    Migration016_CycleEpisodeRecords(),
 ]
 
 

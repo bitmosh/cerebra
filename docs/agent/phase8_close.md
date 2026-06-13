@@ -49,20 +49,51 @@ Key deviations:
 
 ---
 
+### Step 3a — D1 closure: cycle episode persistence (v0.3.5a)
+
+- `Migration016_CycleEpisodeRecords` — `cycle_episode_records` table with NOT NULL FK to `runtime_sessions`, nullable FK to `sessions` (Phase 5 WM), and 4 indexes
+- `EpisodeRecord` frozen dataclass + `EpisodeWriter` class (`write`, `read`, `list_for_runtime_session`) in `cerebra/cognition/`
+- `CycleRuntime._write_memory_with_gate()` now calls `EpisodeWriter.write()` on accept, closing the D2 stub
+- `_get_active_working_memory_session()`, `_extract_citations()`, `_boost_salience_for_cited()` helpers added to `CycleRuntime`
+- `ELEVATED_SALIENCE = 0.8` constant added to `_constants.py`
+- New unit tests: `test_episode_writer.py` (45), `test_cycle_d1_closure.py` (26) — 71 new tests
+- `TestCycleRuntimeRun` updated to use a proper DB-backed session fixture (FK constraint compatibility)
+- `docs/agent/deviations/v0.3.5a.md` — DEV-020 through DEV-024
+- Phase 8 D-series obligations (D1) now CLOSED
+
+---
+
+## Deviations from spec
+
+See `docs/agent/deviations/v0.3.4.md` (DEV-014 through DEV-018), `docs/agent/deviations/v0.3.5.md` (DEV-019), and `docs/agent/deviations/v0.3.5a.md` (DEV-020 through DEV-024).
+
+Key deviations:
+- **DEV-016**: `render_template()` uses custom regex, not Jinja2 (no dep approval for Jinja2)
+- **DEV-017**: Episode DB write stubbed in Step 2 — `memory_records` NOT NULL FKs incompatible with cycle episodes; closed in Step 3a (DEV-020: separate `cycle_episode_records` table)
+- **DEV-018**: `StepExecutionFailed` added to Phase 6 vocabulary (required for observability, omitted from original spec)
+- **DEV-019**: D3 cross-stream causation (SessionOpened → CycleStarted) not present in Step 2 output; resolved in Step 3
+- **DEV-020**: `cycle_episode_records` table instead of `memory_records` — NOT NULL FK incompatibility (see v0.3.5a.md)
+- **DEV-021**: `EpisodeWriter` in `cerebra/cognition/` not `cerebra/storage/` — cognitive artefact placement
+- **DEV-022**: `ELEVATED_SALIENCE` coincidentally equals `SYNTHETIC_ITEM_DEFAULT_SALIENCE` (both 0.8); distinct constants for distinct semantics
+- **DEV-023**: Citation extraction is best-effort regex only; no LLM citation list until Phase 10 wires retrieval context
+- **DEV-024**: `_boost_salience_for_cited` silently skips missing `memory_records` — best-effort operation
+
+---
+
 ## What Phase 9 must do
 
 - Wire `BundleDistiller` and `ContinuationBundle.to_prompt_prefix()` into the clutch continuation path
 - Replace v0.1 stub `_distill_*` helpers with LLM-driven summarization
-- Implement D1: episode DB write — recommended `cycle_episode_records` table (Option B, posted to #brainstorm)
 - Implement `--continue SESSION_ID` in `cerebra run-cycle` (currently a logged stub)
 - T2 auto-staleness on continuation (recursion depth increment → stale tower items)
+- Phase 10: bridge `cycle_episode_records` → `memory_records` for retrieval visibility (DEV-020 deferred work)
 
 ---
 
-## Suite state at phase close
+## Suite state at phase close (v0.3.5a — Phase 8 CLOSED)
 
 | Passing | Failing (pre-existing) | Skipped |
 |---------|----------------------|---------|
-| 1543    | 42 (all pre-existing) | 4       |
+| 1590    | 40 (all pre-existing) | 4       |
 
-Pre-existing failures: `test_memory_cli.py` (29, CliRunner API mismatch), `test_abstention.py` (3), `test_phase5_e2e.py::TestLockfileEnforcement` (1), plus 9 others. None introduced by Phase 8.
+Pre-existing failures: `test_memory_cli.py` (CliRunner API mismatch), `test_abstention.py`, `test_lattice_against_vault.py`, `test_memory_cli_against_vault.py`. None introduced by Phase 8 or v0.3.5a.

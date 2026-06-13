@@ -87,6 +87,11 @@ PREDICTION_ERROR_CLASSIFIERS: dict[str, float] = {
 # Hard cap on steps per cycle; per-cycle configs may set a lower limit.
 CYCLE_MAX_STEPS: int = 20
 
+# Salience score assigned when promoting cited memory_records into working memory
+# after an accepted cycle step (Decision 3 — v0.3.5a). Higher than the retrieval
+# floor (0.35) but below pinned-equivalent (1.0) so the item remains evictable.
+ELEVATED_SALIENCE: float = 0.8
+
 # Maximum continuation chains per session (re-injection depth cap).
 RECURSION_DEPTH_DEFAULT: int = 5
 

@@ -21,7 +21,7 @@ from cerebra.cognition.cycle_config import (
 )
 from cerebra.cognition.cycle_runtime import CycleResult, CycleRuntime, StepResult
 from cerebra.cognition.llm_adapter import ClassificationError, ClassificationResult, LLMAdapter
-from cerebra.cognition.session import RuntimeSession
+from cerebra.cognition.session import RuntimeSession, SessionManager
 from cerebra.storage.fossic_store import FossicStore
 from cerebra.storage.migrations import run_migrations
 
@@ -99,6 +99,13 @@ def db_path(vault: Path) -> Path:
 @pytest.fixture()
 def store(vault: Path) -> FossicStore:
     return FossicStore(vault)
+
+
+@pytest.fixture()
+def session(db_path: Path, store: FossicStore, vault: Path) -> RuntimeSession:
+    mgr = SessionManager(db_path=db_path, store=store)
+    s, _ = mgr.open_session(goal="test goal for unit", cycle_config="test.v0", vault_path=vault)
+    return s
 
 
 def _make_session(vault: Path) -> RuntimeSession:
@@ -276,10 +283,10 @@ class TestCallLlmWithRetry:
 
 @pytest.mark.integration
 class TestCycleRuntimeRun:
-    def test_run_returns_cycle_result(self, vault: Path, db_path: Path, store: FossicStore) -> None:
+    def test_run_returns_cycle_result(self, vault: Path, db_path: Path, store: FossicStore, session: RuntimeSession) -> None:
         runtime = CycleRuntime(
             config=_two_step_config(),
-            session=_make_session(vault),
+            session=session,
             db_path=db_path,
             store=store,
             llm=_StubLLM(score=0.75),
@@ -287,12 +294,12 @@ class TestCycleRuntimeRun:
         result = runtime.run()
         assert isinstance(result, CycleResult)
         assert result.cycle_id.startswith("cycle_")
-        assert result.session_id == "sess_test001"
+        assert result.session_id.startswith("sess_")
 
-    def test_run_all_steps_complete_outcome_accept(self, vault: Path, db_path: Path, store: FossicStore) -> None:
+    def test_run_all_steps_complete_outcome_accept(self, vault: Path, db_path: Path, store: FossicStore, session: RuntimeSession) -> None:
         runtime = CycleRuntime(
             config=_two_step_config(),
-            session=_make_session(vault),
+            session=session,
             db_path=db_path,
             store=store,
             llm=_StubLLM(text="step output", score=0.75),
@@ -302,10 +309,10 @@ class TestCycleRuntimeRun:
         assert result.total_steps == 2
         assert result.final_output == "step output"
 
-    def test_run_clutch_stop_outcome_stop(self, vault: Path, db_path: Path, store: FossicStore) -> None:
+    def test_run_clutch_stop_outcome_stop(self, vault: Path, db_path: Path, store: FossicStore, session: RuntimeSession) -> None:
         runtime = CycleRuntime(
             config=_one_step_stop_config(),
-            session=_make_session(vault),
+            session=session,
             db_path=db_path,
             store=store,
             llm=_StubLLM(score=0.75),
@@ -313,11 +320,11 @@ class TestCycleRuntimeRun:
         result = runtime.run()
         assert result.outcome == "stop"
 
-    def test_run_cap_reached(self, vault: Path, db_path: Path, store: FossicStore) -> None:
+    def test_run_cap_reached(self, vault: Path, db_path: Path, store: FossicStore, session: RuntimeSession) -> None:
         # max_steps=1, 3 steps in config → cap fires after 1 step
         runtime = CycleRuntime(
             config=_cap_config(),
-            session=_make_session(vault),
+            session=session,
             db_path=db_path,
             store=store,
             llm=_StubLLM(score=0.75),
@@ -326,10 +333,10 @@ class TestCycleRuntimeRun:
         assert result.outcome == "cap_reached"
         assert result.total_steps == 1
 
-    def test_run_step_results_populated(self, vault: Path, db_path: Path, store: FossicStore) -> None:
+    def test_run_step_results_populated(self, vault: Path, db_path: Path, store: FossicStore, session: RuntimeSession) -> None:
         runtime = CycleRuntime(
             config=_two_step_config(),
-            session=_make_session(vault),
+            session=session,
             db_path=db_path,
             store=store,
             llm=_StubLLM(text="my output", score=0.75),
@@ -343,11 +350,11 @@ class TestCycleRuntimeRun:
         assert sr.clutch_action == "accept"
         assert not sr.failed
 
-    def test_run_llm_failure_marks_step_failed(self, vault: Path, db_path: Path, store: FossicStore) -> None:
+    def test_run_llm_failure_marks_step_failed(self, vault: Path, db_path: Path, store: FossicStore, session: RuntimeSession) -> None:
         # With a failing LLM and a "stop on fail" clutch, check step failed=True
         runtime = CycleRuntime(
             config=_one_step_stop_config(),
-            session=_make_session(vault),
+            session=session,
             db_path=db_path,
             store=store,
             llm=_FailingLLM(),
@@ -360,9 +367,8 @@ class TestCycleRuntimeRun:
         assert sr.composite_score == 0.0
         assert "stub failure" in (sr.error_message or "")
 
-    def test_run_cycle_id_unique_per_call(self, vault: Path, db_path: Path, store: FossicStore) -> None:
+    def test_run_cycle_id_unique_per_call(self, vault: Path, db_path: Path, store: FossicStore, session: RuntimeSession) -> None:
         cfg = _two_step_config()
-        sess = _make_session(vault)
-        r1 = CycleRuntime(cfg, sess, db_path, store, _StubLLM()).run()
-        r2 = CycleRuntime(cfg, sess, db_path, store, _StubLLM()).run()
+        r1 = CycleRuntime(cfg, session, db_path, store, _StubLLM()).run()
+        r2 = CycleRuntime(cfg, session, db_path, store, _StubLLM()).run()
         assert r1.cycle_id != r2.cycle_id

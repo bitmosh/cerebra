@@ -19,8 +19,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from cerebra.cognition._constants import ELEVATED_SALIENCE
 from cerebra.cognition.clutch_stub import ClutchContext, ClutchStubEngine
 from cerebra.cognition.cycle_config import CycleConfig, render_template
+from cerebra.cognition.episode_writer import EpisodeWriter
 from cerebra.cognition.evaluation import EvaluationComposer, emit_evaluation_events
 from cerebra.cognition.event_emitter import EventEmitter
 from cerebra.cognition.llm_adapter import ClassificationError, LLMAdapter
@@ -35,6 +37,7 @@ from cerebra.cognition.predictions import (
 from cerebra.cognition.session import RuntimeSession
 from cerebra.cognition.signals import SignalEvaluator
 from cerebra.cognition.stop_conditions import CycleState, StopConditionEvaluator
+from cerebra.cognition.working_memory import WorkingMemory, get_active_session
 from cerebra.governance.defaults import DEFAULT_CONSTITUTIONAL_RULES, DEFAULT_LEEWAY_RULES
 from cerebra.governance.gate_events import emit_leeway_grant_applied
 from cerebra.governance.pre_action_gate import LeewayPreActionGate
@@ -100,6 +103,7 @@ class CycleRuntime:
         store: FossicStore,
         llm: LLMAdapter,
         opened_event_id: bytes | None = None,
+        episode_writer: EpisodeWriter | None = None,
     ) -> None:
         self.config = config
         self.session = session
@@ -107,6 +111,7 @@ class CycleRuntime:
         self.store = store
         self.llm = llm
         self._opened_event_id = opened_event_id  # DEV-018: causation for CycleStarted
+        self._episode_writer = episode_writer or EpisodeWriter(db_path)
         self._gate = LeewayPreActionGate(DEFAULT_LEEWAY_RULES, DEFAULT_CONSTITUTIONAL_RULES)
         self._signal_evaluator = SignalEvaluator(llm)
         self._eval_composer = EvaluationComposer()
@@ -422,10 +427,27 @@ class CycleRuntime:
                 )
 
                 if gate_decision.final_decision == "permitted":
-                    # D2 STUB: real episode record write awaiting brainstorm answer
-                    # on memory_records FK strategy (see #brainstorm 2026-06-12).
-                    # Synthetic record_id emitted in event; no DB row written yet.
-                    record_id = _generate_id("episode")
+                    # D1 closed (v0.3.5a): real episode DB write to cycle_episode_records
+                    wm_session_id = self._get_active_working_memory_session()
+                    cited_ids = self._extract_citations(output_text)
+
+                    record_id = self._episode_writer.write(
+                        content=output_text,
+                        runtime_session_id=session_id,
+                        cycle_id=cycle_id,
+                        step_id=step_id,
+                        step_name=step.name,
+                        working_memory_session_id=wm_session_id,
+                        leeway_grant_event_id=leeway_id,
+                        cited_record_ids=cited_ids,
+                        metadata={
+                            "step_index": current_step_pos,
+                            "step_executions_count": total_steps_run,
+                        },
+                    )
+
+                    self._boost_salience_for_cited(cited_ids, wm_session_id)
+
                     emitter.emit_cycle_event(
                         "MemoryWriteFromCycle",
                         {
@@ -436,6 +458,9 @@ class CycleRuntime:
                             "write_reason": "accept",
                             "content_summary": output_text[:200],
                             "written_at": _now_ms(),
+                            "cited_record_ids": cited_ids,
+                            "working_memory_session_id": wm_session_id,
+                            "table_target": "cycle_episode_records",
                         },
                         causation_id=leeway_id,
                         indexed_tags={
@@ -510,6 +535,61 @@ class CycleRuntime:
         )
 
     # ── Helpers ───────────────────────────────────────────────────────────────
+
+    def _get_active_working_memory_session(self) -> str | None:
+        """Return active Phase 5 working memory session_id for this vault, or None.
+
+        Per Decision 1: episodes persist even without an active WM session.
+        The nullable FK working_memory_session_id handles the None case.
+        """
+        return get_active_session(self.db_path, str(self.session.vault_path))
+
+    def _extract_citations(self, output_text: str) -> list[str]:
+        """Best-effort v0.1: extract memory_records record_ids cited in output.
+
+        Looks for 'rec_<12hexchars>' patterns. Empty list is normal — most LLM
+        outputs won't use the exact citation format in v0.1.
+        """
+        import re
+        return re.findall(r"\brec_[0-9a-f]{12}\b", output_text)
+
+    def _boost_salience_for_cited(
+        self,
+        cited_record_ids: list[str],
+        wm_session_id: str | None,
+    ) -> None:
+        """Promote cited memory_records into working memory with elevated salience.
+
+        Per Decision 3: salience boost via WorkingMemory.promote() with
+        ELEVATED_SALIENCE. Silent skip when no WM session active or record missing.
+        """
+        if not cited_record_ids or wm_session_id is None:
+            return
+
+        import sqlite3 as _sqlite3
+        wm = WorkingMemory(self.db_path, wm_session_id)
+        conn = _sqlite3.connect(self.db_path)
+        conn.row_factory = _sqlite3.Row
+        try:
+            for record_id in cited_record_ids:
+                row = conn.execute(
+                    "SELECT record_id, content FROM memory_records WHERE record_id = ?",
+                    (record_id,),
+                ).fetchone()
+                if row is None:
+                    continue
+                try:
+                    wm.promote(
+                        slot_type="context",
+                        record_id=record_id,
+                        content_summary=row["content"][:200],
+                        salience_score=ELEVATED_SALIENCE,
+                        is_pinned=False,
+                    )
+                except Exception:
+                    pass  # silent: eviction failure, slot full of pinned items, etc.
+        finally:
+            conn.close()
 
     def _build_context_packet(
         self,
