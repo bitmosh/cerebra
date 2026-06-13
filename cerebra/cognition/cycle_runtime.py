@@ -99,12 +99,14 @@ class CycleRuntime:
         db_path: Path,
         store: FossicStore,
         llm: LLMAdapter,
+        opened_event_id: bytes | None = None,
     ) -> None:
         self.config = config
         self.session = session
         self.db_path = db_path
         self.store = store
         self.llm = llm
+        self._opened_event_id = opened_event_id  # DEV-018: causation for CycleStarted
         self._gate = LeewayPreActionGate(DEFAULT_LEEWAY_RULES, DEFAULT_CONSTITUTIONAL_RULES)
         self._signal_evaluator = SignalEvaluator(llm)
         self._eval_composer = EvaluationComposer()
@@ -126,7 +128,7 @@ class CycleRuntime:
         session_id = self.session.session_id
         emitter = EventEmitter(self.store, session_id, cycle_id)
 
-        # CycleStarted — root event of this cycle's stream
+        # CycleStarted — causation chains to SessionOpened if event_id provided (DEV-018)
         cycle_started_id = emitter.emit_cycle_event(
             "CycleStarted",
             {
@@ -135,7 +137,7 @@ class CycleRuntime:
                 "cycle_config": self.config.name,
                 "started_at": _now_ms(),
             },
-            causation_id=None,
+            causation_id=self._opened_event_id,
             indexed_tags={
                 "session_id": session_id,
                 "cycle_id": cycle_id,

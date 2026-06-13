@@ -187,7 +187,7 @@ class TestSessionManagerLifecycle:
     def test_open_session_returns_active_session(
         self, manager: SessionManager, vault: Path
     ) -> None:
-        s = manager.open_session(goal="test goal", cycle_config="default", vault_path=vault)
+        s, _ = manager.open_session(goal="test goal", cycle_config="default", vault_path=vault)
         assert s.state == "active"
         assert s.goal == "test goal"
         assert s.vault_path == vault
@@ -195,7 +195,7 @@ class TestSessionManagerLifecycle:
         assert s.parent_session_id is None
 
     def test_open_session_persisted(self, manager: SessionManager, vault: Path, db_path: Path) -> None:
-        s = manager.open_session(goal="persist check", cycle_config="default", vault_path=vault)
+        s, _ = manager.open_session(goal="persist check", cycle_config="default", vault_path=vault)
         loaded = read_session(db_path, s.session_id)
         assert loaded is not None
         assert loaded.session_id == s.session_id
@@ -206,7 +206,7 @@ class TestSessionManagerLifecycle:
     ) -> None:
         from fossic import ReadQuery
 
-        s = manager.open_session(goal="emit check", cycle_config="default", vault_path=vault)
+        s, _ = manager.open_session(goal="emit check", cycle_config="default", vault_path=vault)
         events = store._store.read_range(
             ReadQuery(stream_id=f"cerebra/agent-trace/{s.session_id}")
         )
@@ -224,7 +224,7 @@ class TestSessionManagerLifecycle:
         """DEV-012: session_id IS the cycle_id segment — no 'session-' prefix."""
         from fossic import ReadQuery
 
-        s = manager.open_session(goal="stream check", cycle_config="default", vault_path=vault)
+        s, _ = manager.open_session(goal="stream check", cycle_config="default", vault_path=vault)
         events = store._store.read_range(
             ReadQuery(stream_id=f"cerebra/agent-trace/{s.session_id}")
         )
@@ -236,7 +236,7 @@ class TestSessionManagerLifecycle:
         assert len(wrong_stream) == 0, "Events incorrectly on session-prefixed stream"
 
     def test_flush_session_marks_flushed(self, manager: SessionManager, vault: Path) -> None:
-        s = manager.open_session(goal="flush test", cycle_config="default", vault_path=vault)
+        s, _ = manager.open_session(goal="flush test", cycle_config="default", vault_path=vault)
         flushed = manager.flush_session(
             session_id=s.session_id,
             outcome="completed",
@@ -252,7 +252,7 @@ class TestSessionManagerLifecycle:
     def test_flush_session_updates_persisted_state(
         self, manager: SessionManager, vault: Path, db_path: Path
     ) -> None:
-        s = manager.open_session(goal="flush persist", cycle_config="default", vault_path=vault)
+        s, _ = manager.open_session(goal="flush persist", cycle_config="default", vault_path=vault)
         manager.flush_session(
             session_id=s.session_id, outcome="done", total_cycles=1, total_steps=3
         )
@@ -266,7 +266,7 @@ class TestSessionManagerLifecycle:
             manager.flush_session("sess_missing", "done", 0, 0)
 
     def test_flush_already_flushed_raises(self, manager: SessionManager, vault: Path) -> None:
-        s = manager.open_session(goal="double flush", cycle_config="default", vault_path=vault)
+        s, _ = manager.open_session(goal="double flush", cycle_config="default", vault_path=vault)
         manager.flush_session(session_id=s.session_id, outcome="done", total_cycles=0, total_steps=0)
         with pytest.raises(ValueError, match="not active"):
             manager.flush_session(session_id=s.session_id, outcome="done", total_cycles=0, total_steps=0)
@@ -274,8 +274,8 @@ class TestSessionManagerLifecycle:
     def test_open_child_session_increments_depth(
         self, manager: SessionManager, vault: Path
     ) -> None:
-        parent = manager.open_session(goal="parent", cycle_config="default", vault_path=vault)
-        child = manager.open_session(
+        parent, _ = manager.open_session(goal="parent", cycle_config="default", vault_path=vault)
+        child, _ = manager.open_session(
             goal="child", cycle_config="default", vault_path=vault,
             parent_session_id=parent.session_id,
         )
@@ -304,7 +304,7 @@ class TestSessionManagerLifecycle:
     def test_build_session_state_returns_state(
         self, manager: SessionManager, vault: Path
     ) -> None:
-        s = manager.open_session(goal="state build", cycle_config="default", vault_path=vault)
+        s, _ = manager.open_session(goal="state build", cycle_config="default", vault_path=vault)
         ss = manager.build_session_state(s.session_id)
         assert isinstance(ss, SessionState)
         assert ss.session.session_id == s.session_id
@@ -324,7 +324,7 @@ class TestPredictInputFromSessionIntegration:
     def test_full_open_to_prediction_input(
         self, manager: SessionManager, vault: Path
     ) -> None:
-        s = manager.open_session(goal="predict test", cycle_config="default", vault_path=vault)
+        s, _ = manager.open_session(goal="predict test", cycle_config="default", vault_path=vault)
         ss = manager.build_session_state(s.session_id)
         pi = predict_input_from_session(ss, cycle_id="cycle_001", step_id="step_001")
         assert pi.session_id == s.session_id
@@ -337,7 +337,7 @@ class TestPredictInputFromSessionIntegration:
     def test_prediction_input_session_id_matches_opened(
         self, manager: SessionManager, vault: Path
     ) -> None:
-        s = manager.open_session(goal="id check", cycle_config="default", vault_path=vault)
+        s, _ = manager.open_session(goal="id check", cycle_config="default", vault_path=vault)
         ss = manager.build_session_state(s.session_id)
         pi = predict_input_from_session(ss, "c", "s")
         assert pi.session_id == s.session_id

@@ -1373,3 +1373,164 @@ def memory_evict(item_id: str, vault: str | None) -> None:
             sys.exit(2)
 
     click.echo(f"Evicted: {item_id}")
+
+
+# ── run-cycle ─────────────────────────────────────────────────────────────────
+
+
+@cli.command("run-cycle")
+@click.argument("config_name")
+@click.option("--goal", required=True, help="Goal for this cognitive cycle.")
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option("--continue", "continue_session", default=None, metavar="SESSION_ID",
+              help="[stub] Continue from a prior session (Phase 9).")
+@click.option("--max-steps", "max_steps_override", default=None, type=int,
+              help="Override max_steps from the cycle config.")
+@click.option("--dry-run", is_flag=True, default=False,
+              help="Validate config and session setup; do not run the cycle.")
+@click.option("--quiet", is_flag=True, default=False, help="Suppress progress output.")
+@click.option("--verbose", is_flag=True, default=False, help="Emit per-step detail.")
+def run_cycle(
+    config_name: str,
+    goal: str,
+    vault: str | None,
+    continue_session: str | None,
+    max_steps_override: int | None,
+    dry_run: bool,
+    quiet: bool,
+    verbose: bool,
+) -> None:
+    """Run a cognitive cycle against CONFIG_NAME with GOAL.
+
+    Exit codes:
+      0  Cycle completed with 'accept' outcome.
+      1  Cycle halted with 'stop' or 'cap_reached' outcome.
+      2  Setup or configuration error.
+      3  Runtime failure (LLM error, unhandled exception).
+    """
+    import dataclasses
+    import sys
+
+    from cerebra.cognition.cycle_config import CycleConfigLoader, CycleConfigValidationError
+    from cerebra.cognition.cycle_runtime import CycleRuntime
+    from cerebra.cognition.llm_adapter import OllamaDirectAdapter
+    from cerebra.cognition.session import SessionManager
+    from cerebra.storage.fossic_store import FossicStore
+    from cerebra.storage.migrations import run_migrations
+
+    def _out(msg: str) -> None:
+        if not quiet:
+            click.echo(msg)
+
+    def _verbose(msg: str) -> None:
+        if verbose and not quiet:
+            click.echo(msg)
+
+    # ── resolve vault ─────────────────────────────────────────────────────────
+    try:
+        vault_path = _get_vault(vault)
+    except Exception as e:
+        msg = e.format_message() if isinstance(e, click.ClickException) else str(e)
+        click.echo(f"Error: {msg}", err=True)
+        sys.exit(2)
+
+    db_path = vault_path / "data" / "cerebra.db"
+    if not db_path.exists():
+        click.echo(f"Error: vault database not found at {db_path}", err=True)
+        sys.exit(2)
+
+    try:
+        run_migrations(db_path)
+    except Exception as e:
+        click.echo(f"Error: migration failed: {e}", err=True)
+        sys.exit(2)
+
+    # ── load cycle config ─────────────────────────────────────────────────────
+    try:
+        loader = CycleConfigLoader()
+        cycle_config = loader.load(config_name, vault_path)
+    except FileNotFoundError:
+        click.echo(f"Error: cycle config {config_name!r} not found.", err=True)
+        sys.exit(2)
+    except CycleConfigValidationError as e:
+        click.echo(f"Error: cycle config invalid: {e}", err=True)
+        sys.exit(2)
+    except Exception as e:
+        click.echo(f"Error: could not load cycle config: {e}", err=True)
+        sys.exit(2)
+
+    # Apply max_steps override
+    if max_steps_override is not None:
+        cycle_config = dataclasses.replace(cycle_config, max_steps=max_steps_override)
+
+    _verbose(f"Config: {cycle_config.name} v{cycle_config.version}  "
+             f"steps: {len(cycle_config.steps)}  max: {cycle_config.max_steps}")
+
+    if continue_session is not None:
+        _out(f"Note: --continue is a stub in v0.1; SESSION_ID {continue_session!r} ignored.")
+
+    if dry_run:
+        _out(f"[dry-run] Config: {cycle_config.name}")
+        _out(f"[dry-run] Goal:   {goal}")
+        _out(f"[dry-run] Vault:  {vault_path}")
+        _out("[dry-run] Setup OK — no cycle executed.")
+        sys.exit(0)
+
+    # ── open session ──────────────────────────────────────────────────────────
+    try:
+        store = FossicStore(vault_path)
+        manager = SessionManager(db_path=db_path, store=store)
+        session, opened_event_id = manager.open_session(
+            goal=goal,
+            cycle_config=config_name,
+            vault_path=vault_path,
+        )
+    except Exception as e:
+        click.echo(f"Error: could not open session: {e}", err=True)
+        sys.exit(2)
+
+    _out(f"Session: {session.session_id}")
+    _out(f"Goal:    {goal}")
+    _out(f"Config:  {config_name}")
+    _out("")
+
+    # ── run cycle ─────────────────────────────────────────────────────────────
+    try:
+        llm = OllamaDirectAdapter()
+        runtime = CycleRuntime(
+            config=cycle_config,
+            session=session,
+            db_path=db_path,
+            store=store,
+            llm=llm,
+            opened_event_id=opened_event_id,
+        )
+        _out("Running cycle...")
+        result = runtime.run()
+    except Exception as e:
+        click.echo(f"Error: cycle runtime failed: {e}", err=True)
+        sys.exit(3)
+
+    # ── output results ────────────────────────────────────────────────────────
+    _out(f"Cycle:   {result.cycle_id}")
+    _out(f"Outcome: {result.outcome}")
+    _out(f"Steps:   {result.total_steps}")
+
+    if verbose and not quiet:
+        for sr in result.step_results:
+            status = "FAILED" if sr.failed else "ok"
+            _verbose(f"  step {sr.step_name}: {status}")
+            if sr.output_text and not sr.failed:
+                preview = sr.output_text[:120].replace("\n", " ")
+                _verbose(f"    {preview}")
+
+    if result.final_output and not quiet:
+        click.echo("")
+        click.echo("── Output ──")
+        click.echo(result.final_output)
+
+    # ── exit code ─────────────────────────────────────────────────────────────
+    if result.outcome == "accept":
+        sys.exit(0)
+    else:
+        sys.exit(1)

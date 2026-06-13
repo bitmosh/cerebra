@@ -804,6 +804,50 @@ class Migration014_Sessions(Migration):
         """)
 
 
+class Migration015_ContinuationBundles(Migration):
+    """Phase 8 Step 3: continuation_bundles table for ContinuationBundle persistence.
+
+    Stores distilled session-state bundles produced by BundleDistiller. These are
+    created when a cycle triggers continuation (Phase 9 wires the Clutch trigger;
+    v0.1 ships the mechanism callable but not auto-invoked).
+
+    FKs reference runtime_sessions for parent/child session linkage. child_session_id
+    is nullable until Phase 9 spawns the child session.
+    """
+
+    version = 15
+    description = "Phase 8 Step 3: continuation_bundles table"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS continuation_bundles (
+                bundle_id               TEXT    PRIMARY KEY,
+                parent_session_id       TEXT    NOT NULL
+                                                REFERENCES runtime_sessions(session_id),
+                child_session_id        TEXT
+                                                REFERENCES runtime_sessions(session_id),
+                distilled_goal          TEXT    NOT NULL,
+                summarized_prior_prompt TEXT    NOT NULL,
+                truth_tower_projection  TEXT    NOT NULL,
+                cognitive_insights      TEXT    NOT NULL,
+                next_focus              TEXT    NOT NULL,
+                open_questions          TEXT    NOT NULL,
+                constraints             TEXT    NOT NULL,
+                recursion_depth         INTEGER NOT NULL,
+                voice_mode              TEXT    NOT NULL,
+                bundle_size_bytes       INTEGER NOT NULL,
+                created_at              INTEGER NOT NULL,
+                triggered_at            INTEGER
+            );
+            CREATE INDEX IF NOT EXISTS idx_bundles_parent
+                ON continuation_bundles(parent_session_id);
+            CREATE INDEX IF NOT EXISTS idx_bundles_child
+                ON continuation_bundles(child_session_id);
+            CREATE INDEX IF NOT EXISTS idx_bundles_created
+                ON continuation_bundles(created_at);
+        """)
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -820,6 +864,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration012_Evaluations(),
     Migration013_PredictionsOutcomes(),
     Migration014_Sessions(),
+    Migration015_ContinuationBundles(),
 ]
 
 

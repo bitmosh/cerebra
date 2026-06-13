@@ -91,11 +91,12 @@ def manager(db_path: Path, store: FossicStore) -> SessionManager:
 
 
 def _open_session(manager: SessionManager, vault: Path, cycle_config: str = "simple.planning.v0") -> RuntimeSession:
-    return manager.open_session(
+    session, _event_id = manager.open_session(
         goal="design a search feature",
         cycle_config=cycle_config,
         vault_path=vault,
     )
+    return session
 
 
 def _minimal_accept_config() -> CycleConfig:

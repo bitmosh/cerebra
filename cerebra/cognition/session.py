@@ -247,8 +247,13 @@ class SessionManager:
         cycle_config: str,
         vault_path: Path,
         parent_session_id: str | None = None,
-    ) -> RuntimeSession:
+    ) -> tuple["RuntimeSession", bytes]:
         """Create a new session, persist it, and emit SessionOpened.
+
+        Returns:
+            (RuntimeSession, opened_event_id) — the event_id is the fossic bytes ID
+            of the SessionOpened event. CycleRuntime uses it as causation_id for
+            CycleStarted, restoring the full cross-stream causation chain (DEV-018).
 
         Stream pattern (DEV-012): session_id IS the cycle_id segment.
         EventEmitter constructed with cycle_id=session_id.
@@ -284,7 +289,7 @@ class SessionManager:
             session_id=session_id,
             cycle_id=session_id,  # session_id IS the stream segment per vocabulary spec
         )
-        emitter.emit_cycle_event(
+        opened_event_id = emitter.emit_cycle_event(
             event_type="SessionOpened",
             payload={
                 "session_id": session_id,
@@ -303,7 +308,7 @@ class SessionManager:
             },
         )
 
-        return session
+        return session, opened_event_id
 
     def flush_session(
         self,
