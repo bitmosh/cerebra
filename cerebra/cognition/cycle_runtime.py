@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any
 
 from cerebra.cognition._constants import ELEVATED_SALIENCE
-from cerebra.cognition.clutch_stub import ClutchContext, ClutchStubEngine
+from cerebra.cognition.clutch import ClutchContext, ClutchCycleState, ClutchEngine
 from cerebra.cognition.cycle_config import CycleConfig, render_template
 from cerebra.cognition.episode_writer import EpisodeWriter
 from cerebra.cognition.evaluation import EvaluationComposer, emit_evaluation_events
@@ -151,7 +151,8 @@ class CycleRuntime:
         )
 
         stop_evaluator = StopConditionEvaluator(self.config)
-        clutch_engine = ClutchStubEngine(self.config)
+        clutch_engine = ClutchEngine(self.config)
+        clutch_cycle_state = ClutchCycleState()
 
         current_step_pos = 0        # position in config.steps (advances on accept)
         total_steps_run = 0         # total LLM executions
@@ -277,8 +278,13 @@ class CycleRuntime:
                     composite_score=0.0,
                     last_clutch_action=last_clutch_action,
                     total_steps_run=total_steps_run,
+                    cycle_state=clutch_cycle_state,
+                    cycle_config=self.config,
                 )
                 clutch_decision = clutch_engine.decide(clutch_ctx)
+                clutch_cycle_state.prior_clutch_decisions.append(clutch_decision)
+                # LLM failure always counts as below floor
+                clutch_cycle_state.consecutive_steps_below_floor += 1
                 last_clutch_decision_id = emitter.emit_cycle_event(
                     "ClutchDecisionMade",
                     {
@@ -288,6 +294,8 @@ class CycleRuntime:
                         "decision_id": _generate_id("decision"),
                         "action": clutch_decision.action,
                         "rule_matched": clutch_decision.rule_matched,
+                        "cascade_depth": clutch_decision.cascade_depth,
+                        "escalate_to_catalyst": clutch_decision.escalate_to_catalyst,
                         "decided_at": _now_ms(),
                     },
                     indexed_tags={
@@ -375,8 +383,18 @@ class CycleRuntime:
                 composite_score=composite_score,
                 last_clutch_action=last_clutch_action,
                 total_steps_run=total_steps_run,
+                evaluation=eval_packet,
+                outcome=outcome_record,
+                cycle_state=clutch_cycle_state,
+                cycle_config=self.config,
             )
             clutch_decision = clutch_engine.decide(clutch_ctx)
+            # Update cycle state after decision
+            clutch_cycle_state.prior_clutch_decisions.append(clutch_decision)
+            if composite_score < self.config.composite_floor:
+                clutch_cycle_state.consecutive_steps_below_floor += 1
+            else:
+                clutch_cycle_state.consecutive_steps_below_floor = 0
             decision_id = _generate_id("decision")
             last_clutch_decision_id = emitter.emit_cycle_event(
                 "ClutchDecisionMade",
@@ -387,6 +405,8 @@ class CycleRuntime:
                     "decision_id": decision_id,
                     "action": clutch_decision.action,
                     "rule_matched": clutch_decision.rule_matched,
+                    "cascade_depth": clutch_decision.cascade_depth,
+                    "escalate_to_catalyst": clutch_decision.escalate_to_catalyst,
                     "decided_at": _now_ms(),
                     "evaluation_id": eval_packet.evaluation_id,
                 },

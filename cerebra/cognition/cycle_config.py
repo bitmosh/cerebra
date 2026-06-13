@@ -67,6 +67,7 @@ class CycleConfig:
     max_steps: int
     stop_conditions: list[StopCondition]
     clutch_rules: list[ClutchRule]
+    composite_floor: float = 0.3  # Phase 9: floor for consecutive_steps_below_floor tracking
 
 
 def render_template(template: str, context: dict[str, Any]) -> str:
@@ -198,6 +199,7 @@ def _parse_config(data: dict[str, Any]) -> CycleConfig:
         max_steps=int(data["max_steps"]),
         stop_conditions=stop_conditions,
         clutch_rules=clutch_rules,
+        composite_floor=float(data.get("composite_floor", 0.3)),
     )
     _validate_config(config)
     return config

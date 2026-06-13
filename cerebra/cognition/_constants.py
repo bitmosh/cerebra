@@ -126,12 +126,22 @@ STOP_CONDITION_TYPES: frozenset[str] = frozenset(
 # ── Phase 8 — Built-in clutch predicate names (for CycleConfig validation) ───
 BUILTIN_PREDICATE_NAMES: frozenset[str] = frozenset(
     {
+        # Phase 8 originals
         "at_terminal_step",
         "composite_below_threshold",
         "composite_above_threshold",
         "first_step",
         "step_index_at",
         "always",
+        # Phase 9 Step 1 additions
+        "prediction_severe_miss",
+        "prediction_notable_miss",
+        "signal_below_threshold",
+        "signal_above_threshold",
+        "consecutive_steps_below_floor",
+        "prior_step_action_was",
+        "step_at",
+        "catalyst_was_invoked",
     }
 )
 
