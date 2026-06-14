@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 from cerebra.cognition._constants import ELEVATED_SALIENCE
+from cerebra.cognition.catalyst import CatalystEngine, CatalystSelection
 from cerebra.cognition.clutch import ClutchContext, ClutchCycleState, ClutchEngine
 from cerebra.cognition.cycle_config import CycleConfig, render_template
 from cerebra.cognition.episode_writer import EpisodeWriter
@@ -117,6 +118,11 @@ class CycleRuntime:
         self._eval_composer = EvaluationComposer()
         self._pred_pipeline = PredictionPipeline(self._eval_composer)
         self._interrupted = False
+        self._catalyst_engine: CatalystEngine | None = (
+            CatalystEngine(session.session_id, db_path, config.catalyst_arms)
+            if config.catalyst_arms
+            else None
+        )
 
         # D7: install signal handlers for graceful interrupt
         signal.signal(signal.SIGINT, self._handle_interrupt)
@@ -166,6 +172,8 @@ class CycleRuntime:
         outcome = "cap_reached"
         final_output: str | None = None
         step_results: list[StepResult] = []
+        pending_catalyst_selection: CatalystSelection | None = None
+        pending_strategy_hint: str = ""
 
         while True:
             # ── Stop condition check (before each step) ──────────────────────
@@ -262,6 +270,7 @@ class CycleRuntime:
                 "retrieved_context": render_text(packet) if not packet.is_abstained else "",
                 "prior_step_output": prior_step_output,
                 "prior_steps": prior_steps_list,
+                "strategy_hint": pending_strategy_hint,
             }
             prompt = render_template(step.prompt_template.template, tpl_context)
 
@@ -271,6 +280,10 @@ class CycleRuntime:
             )
 
             if llm_failed:
+                # Reset catalyst state — bandit shouldn't learn from LLM failures
+                clutch_cycle_state.catalyst_invoked_this_step = False
+                pending_catalyst_selection = None
+                pending_strategy_hint = ""
                 # Treat as composite=0.0 for Clutch; skip evaluation events
                 clutch_ctx = ClutchContext(
                     step_index=current_step_pos,
@@ -376,6 +389,14 @@ class CycleRuntime:
             within_cycle_composites.append(composite_score)
             last_per_signal = dict(eval_packet.per_signal_scores)
 
+            # ── Catalyst reward (D7: at step N+1's eval, record step N's reward) ──
+            if pending_catalyst_selection is not None and self._catalyst_engine is not None:
+                reward = composite_score * eval_packet.confidence
+                self._catalyst_engine.record_reward(
+                    pending_catalyst_selection.arm_id, reward, total_steps_run
+                )
+                pending_catalyst_selection = None
+
             # ── Clutch decision ───────────────────────────────────────────────
             clutch_ctx = ClutchContext(
                 step_index=current_step_pos,
@@ -391,6 +412,7 @@ class CycleRuntime:
             clutch_decision = clutch_engine.decide(clutch_ctx)
             # Update cycle state after decision
             clutch_cycle_state.prior_clutch_decisions.append(clutch_decision)
+            clutch_cycle_state.catalyst_invoked_this_step = False  # reset before catalyst block
             if composite_score < self.config.composite_floor:
                 clutch_cycle_state.consecutive_steps_below_floor += 1
             else:
@@ -419,8 +441,71 @@ class CycleRuntime:
                 },
             )
 
+            # ── Catalyst invocation (escalate_to_catalyst path) ───────────────
+            effective_action = clutch_decision.action
+            pending_strategy_hint = ""
+            if clutch_decision.escalate_to_catalyst and self._catalyst_engine is not None:
+                emitter.emit_cycle_event(
+                    "CatalystInvoked",
+                    {
+                        "session_id": session_id,
+                        "cycle_id": cycle_id,
+                        "step_id": step_id,
+                        "invoked_at": _now_ms(),
+                    },
+                    indexed_tags={
+                        "session_id": session_id,
+                        "cycle_id": cycle_id,
+                        "step_id": step_id,
+                    },
+                )
+                catalyst_selection = self._catalyst_engine.select()
+                if catalyst_selection is not None:
+                    emitter.emit_cycle_event(
+                        "CatalystArmSelected",
+                        {
+                            "session_id": session_id,
+                            "cycle_id": cycle_id,
+                            "step_id": step_id,
+                            "arm_id": catalyst_selection.arm_id,
+                            "arm_type": catalyst_selection.arm_type,
+                            "mapped_action": catalyst_selection.mapped_action,
+                            "selection_reason": catalyst_selection.selection_reason,
+                            "score": catalyst_selection.score,
+                            "selected_at": _now_ms(),
+                        },
+                        indexed_tags={
+                            "session_id": session_id,
+                            "cycle_id": cycle_id,
+                            "step_id": step_id,
+                            "arm_id": catalyst_selection.arm_id,
+                        },
+                    )
+                    effective_action = catalyst_selection.mapped_action
+                    pending_catalyst_selection = catalyst_selection
+                    pending_strategy_hint = catalyst_selection.strategy_prompt
+                    clutch_cycle_state.catalyst_invoked_this_step = True
+                else:
+                    emitter.emit_cycle_event(
+                        "CatalystArmSelected",
+                        {
+                            "session_id": session_id,
+                            "cycle_id": cycle_id,
+                            "step_id": step_id,
+                            "arm_id": None,
+                            "selection_reason": "no_arms",
+                            "selected_at": _now_ms(),
+                        },
+                        indexed_tags={
+                            "session_id": session_id,
+                            "cycle_id": cycle_id,
+                            "step_id": step_id,
+                        },
+                    )
+                    effective_action = "accept"
+
             total_steps_run += 1
-            last_clutch_action = clutch_decision.action
+            last_clutch_action = effective_action
             step_results.append(
                 StepResult(
                     step_id=step_id,
@@ -428,12 +513,12 @@ class CycleRuntime:
                     step_index=current_step_pos,
                     output_text=output_text,
                     composite_score=composite_score,
-                    clutch_action=clutch_decision.action,
+                    clutch_action=effective_action,
                 )
             )
 
             # ── Action dispatch ───────────────────────────────────────────────
-            if clutch_decision.action == "accept":
+            if effective_action == "accept":
                 # Gate the memory write (D3: MemoryWriteFromCycle is state-mutating)
                 proposed = ProposedAction(
                     action_name="write_to_episodic_memory",
@@ -498,7 +583,7 @@ class CycleRuntime:
                     all_completed = True
                     final_output = output_text
 
-            elif clutch_decision.action == "stop":
+            elif effective_action == "stop":
                 outcome = "stop"
                 break
             # else: refine, critique, explore, etc. — stay on same step

@@ -12,7 +12,7 @@ YAML search order: vault's cycles/ first, then built-in cycles/ next to cerebra 
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +40,17 @@ class CycleStep:
     name: str
     description: str
     prompt_template: StepPromptTemplate
+    role: str = ""
+
+
+@dataclass(frozen=True)
+class CatalystArm:
+    """One selectable arm in the CatalystEngine bandit."""
+
+    arm_id: str
+    type: str
+    mapped_action: str
+    strategy_prompt: str
 
 
 @dataclass(frozen=True)
@@ -68,16 +79,30 @@ class CycleConfig:
     stop_conditions: list[StopCondition]
     clutch_rules: list[ClutchRule]
     composite_floor: float = 0.3  # Phase 9: floor for consecutive_steps_below_floor tracking
+    catalyst_arms: list[CatalystArm] = field(default_factory=list)
 
 
 def render_template(template: str, context: dict[str, Any]) -> str:
     """Render a Jinja2-compatible template with simple variable substitution.
 
-    Supports {{ var }} and {{ var[N] }} (integer list indexing only).
-    Missing variables or out-of-bounds indices render as empty string.
-    Does NOT support loops, conditionals, filters, or attribute access.
-    This is sufficient for all simple.planning.v0 templates in v0.1.
+    Supports {{ var }}, {{ var[N] }} (integer list indexing), and single-level
+    {% if var %}...{% endif %} blocks. Missing variables render as empty string;
+    if-blocks collapse to empty string when the variable is falsy.
+    Does NOT support loops, nested conditionals, filters, or attribute access.
     """
+
+    def _process_if_blocks(tmpl: str) -> str:
+        def _replace_if(m: re.Match) -> str:  # type: ignore[type-arg]
+            var_name = m.group(1).strip()
+            block_content = m.group(2)
+            val = context.get(var_name)
+            return block_content if val else ""
+        return re.sub(
+            r"\{%\s*if\s+(\w+)\s*%\}(.*?)\{%\s*endif\s*%\}",
+            _replace_if,
+            tmpl,
+            flags=re.DOTALL,
+        )
 
     def _replace(m: re.Match) -> str:  # type: ignore[type-arg]
         expr = m.group(1).strip()
@@ -94,14 +119,15 @@ def render_template(template: str, context: dict[str, Any]) -> str:
         val = context.get(expr)
         return "" if val is None else str(val)
 
-    return re.sub(r"\{\{\s*(.*?)\s*\}\}", _replace, template)
+    processed = _process_if_blocks(template)
+    return re.sub(r"\{\{\s*(.*?)\s*\}\}", _replace, processed)
 
 
 # ── Validation ────────────────────────────────────────────────────────────────
 
 
 def _validate_config(config: CycleConfig) -> None:
-    """Raise CycleConfigValidationError on any violation of the 7 spec rules."""
+    """Raise CycleConfigValidationError on any violation of the 8 spec rules."""
     # 1. Step name uniqueness
     names = [s.name for s in config.steps]
     if len(names) != len(set(names)):
@@ -149,6 +175,12 @@ def _validate_config(config: CycleConfig) -> None:
                 "but output_schema is missing"
             )
 
+    # 8. Catalyst arm IDs must be unique (if any)
+    arm_ids = [a.arm_id for a in config.catalyst_arms]
+    if len(arm_ids) != len(set(arm_ids)):
+        dupes = sorted({aid for aid in arm_ids if arm_ids.count(aid) > 1})
+        raise CycleConfigValidationError(f"Duplicate catalyst arm IDs: {dupes}")
+
 
 # ── Parser ────────────────────────────────────────────────────────────────────
 
@@ -168,8 +200,19 @@ def _parse_config(data: dict[str, Any]) -> CycleConfig:
                 name=s["name"],
                 description=s.get("description", ""),
                 prompt_template=tpl,
+                role=s.get("role", ""),
             )
         )
+
+    catalyst_arms: list[CatalystArm] = [
+        CatalystArm(
+            arm_id=a["arm_id"],
+            type=a["type"],
+            mapped_action=a["mapped_action"],
+            strategy_prompt=a["strategy_prompt"],
+        )
+        for a in data.get("catalyst_arms", [])
+    ]
 
     stop_conditions: list[StopCondition] = [
         StopCondition(
@@ -200,6 +243,7 @@ def _parse_config(data: dict[str, Any]) -> CycleConfig:
         stop_conditions=stop_conditions,
         clutch_rules=clutch_rules,
         composite_floor=float(data.get("composite_floor", 0.3)),
+        catalyst_arms=catalyst_arms,
     )
     _validate_config(config)
     return config

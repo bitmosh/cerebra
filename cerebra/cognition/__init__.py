@@ -52,9 +52,13 @@ from cerebra.cognition.sku_classifier import (
     BackfillReport,
     SKUClassifier,
 )
+from cerebra.cognition.catalyst import CatalystEngine, CatalystSelection
 from cerebra.cognition.sku_relationships import D4Relationship
 
 __all__ = [
+    # Phase 9 Step 3 — CatalystEngine
+    "CatalystEngine",
+    "CatalystSelection",
     # Lattica primitives
     "ArmStats",
     "Bandit",

@@ -894,6 +894,47 @@ class Migration016_CycleEpisodeRecords(Migration):
         """)
 
 
+class Migration017_CatalystArmStats(Migration):
+    """Phase 9 Step 3: catalyst_arm_stats and catalyst_recent_selections tables.
+
+    catalyst_arm_stats: cumulative per-arm reward stats per session (PK: arm_id + session).
+    catalyst_recent_selections: rolling K=5 window of recent arm types (PK: session + order).
+    """
+
+    version = 17
+    description = "Phase 9 Step 3: catalyst_arm_stats and catalyst_recent_selections"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS catalyst_arm_stats (
+                arm_id                TEXT    NOT NULL,
+                runtime_session_id    TEXT    NOT NULL
+                                              REFERENCES runtime_sessions(session_id),
+                count                 INTEGER NOT NULL DEFAULT 0,
+                total_reward          REAL    NOT NULL DEFAULT 0.0,
+                last_selected_step    INTEGER,
+                created_at            INTEGER NOT NULL,
+                updated_at            INTEGER NOT NULL,
+                PRIMARY KEY (arm_id, runtime_session_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS catalyst_recent_selections (
+                runtime_session_id    TEXT    NOT NULL
+                                              REFERENCES runtime_sessions(session_id),
+                selection_order       INTEGER NOT NULL,
+                arm_id                TEXT    NOT NULL,
+                arm_type              TEXT    NOT NULL,
+                selected_at           INTEGER NOT NULL,
+                PRIMARY KEY (runtime_session_id, selection_order)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_catalyst_arm_stats_session
+                ON catalyst_arm_stats(runtime_session_id);
+            CREATE INDEX IF NOT EXISTS idx_catalyst_recent_session
+                ON catalyst_recent_selections(runtime_session_id, selection_order DESC);
+        """)
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -912,6 +953,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration014_Sessions(),
     Migration015_ContinuationBundles(),
     Migration016_CycleEpisodeRecords(),
+    Migration017_CatalystArmStats(),
 ]
 
 

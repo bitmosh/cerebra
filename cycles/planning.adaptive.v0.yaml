@@ -1,0 +1,245 @@
+name: planning.adaptive.v0
+version: 1
+description: |
+  A five-step planning cycle with CatalystEngine integration. Same step
+  structure as simple.planning.v0 but Clutch rules are tuned so moderate
+  composite scores escalate to catalyst rather than accepting immediately.
+  Demonstrates bandit-driven adaptive strategy selection in v0.1.
+
+max_steps: 12
+composite_floor: 0.3
+
+steps:
+  - name: understand_goal
+    role: comprehension
+    description: Read the goal carefully and structure the understanding
+    prompt_template:
+      template: |
+        # Goal
+        {{ goal }}
+
+        # Context from memory
+        {{ retrieved_context }}
+
+        # Task
+        Read the goal carefully. Produce a structured understanding that covers:
+        1. What is being asked (the core deliverable)
+        2. What context from memory is relevant
+        3. What ambiguities or open questions exist
+        4. What success would look like
+
+        Be specific. Avoid vague generalities. If something is unclear, say so explicitly.
+      expected_output_format: free_form
+
+  - name: draft_plan
+    role: generation
+    description: Generate an initial plan structure
+    prompt_template:
+      template: |
+        # Goal
+        {{ goal }}
+
+        # Understanding (prior step)
+        {{ prior_step_output }}
+
+        # Context from memory
+        {{ retrieved_context }}
+
+        # Task
+        Draft an initial plan that addresses the goal. Structure your plan with:
+        1. Major phases or work-streams
+        2. Key decisions that need to be made
+        3. Dependencies and ordering
+        4. Open questions that still need answering
+
+        This is a draft — don't try to make it perfect. Get the structure on paper.
+        Subsequent steps will critique and refine.
+      expected_output_format: free_form
+
+  - name: critique_plan
+    role: critique
+    description: Critically examine the plan for gaps and weaknesses
+    prompt_template:
+      template: |
+        # Goal
+        {{ goal }}
+
+        # Plan to critique
+        {{ prior_step_output }}
+
+        # Task
+        Critique the plan above. Be specific and direct. Identify:
+        1. Hidden assumptions that should be made explicit
+        2. Missing considerations or stakeholders
+        3. Internal contradictions or tensions
+        4. Steps that may be harder than they appear
+        5. What success criteria are missing
+
+        Don't be polite — your job is to find real problems. The plan will be revised
+        based on this critique, so substantive criticism is more useful than mild
+        suggestions.
+      expected_output_format: free_form
+
+  - name: refine_plan
+    role: refinement
+    description: Address critique findings and produce a refined plan
+    prompt_template:
+      template: |
+        # Goal
+        {{ goal }}
+
+        # Critique of the current plan
+        {{ prior_step_output }}
+
+        {% if strategy_hint %}
+        # Strategy focus
+        {{ strategy_hint }}
+        {% endif %}
+
+        # Task
+        Revise the current plan to address the critique findings. For each major
+        critique point, explicitly show how the revision addresses it.
+
+        The current draft plan is available in your working memory context.
+        Don't paper over critique points — if something genuinely can't be addressed,
+        say so and explain why.
+      expected_output_format: free_form
+
+  - name: finalize
+    role: synthesis
+    description: Produce the polished final output
+    prompt_template:
+      template: |
+        # Goal
+        {{ goal }}
+
+        # Refined plan
+        {{ prior_step_output }}
+
+        # Task
+        Produce the final, polished output. This should be ready to share or act on.
+
+        - Reorganize for clarity if needed
+        - Acknowledge uncertainty where appropriate ("we estimate", "depends on", "if X then Y")
+        - State key assumptions explicitly at the top
+        - Make the structure scannable (headers, lists where appropriate)
+        - End with concrete next steps
+
+        This is the output the user will actually use. Make it useful.
+      expected_output_format: free_form
+
+stop_conditions:
+  - name: max_steps_hit
+    type: max_steps_reached
+    parameters: {}
+
+  - name: all_steps_done
+    type: all_steps_completed
+    parameters: {}
+
+  - name: stop_on_persistent_floor
+    type: composite_floor_consecutive
+    parameters:
+      threshold: 0.30
+      consecutive_count: 2
+
+  - name: explicit_stop
+    type: explicit_clutch_stop
+    parameters: {}
+
+  - name: user_interrupt
+    type: user_interrupt
+    parameters: {}
+
+# Clutch rules tuned to escalate more often than simple.planning.v0.
+# No default_accept rule — moderate composite scores escalate to catalyst.
+clutch_rules:
+  # Catastrophic first-step failure
+  - name: catastrophic_first_step
+    description: First step scored below 0.3 — bail out
+    predicate_name: composite_below_threshold
+    action: stop
+    parameters:
+      threshold: 0.30
+      with_constraint: first_step
+
+  # High-confidence accept at terminal step
+  - name: accept_final_high_confidence
+    description: At finalize step with strong composite — accept
+    predicate_name: at_terminal_step
+    action: accept
+    parameters:
+      min_composite: 0.70
+
+  # Accept only strong-quality intermediate steps
+  - name: accept_strong
+    description: Step scored >= 0.70 — quality meets bar for acceptance
+    predicate_name: composite_above_threshold
+    action: accept
+    parameters:
+      threshold: 0.70
+
+  # Explicit stop signal
+  - name: stop_on_clutch_stop
+    description: Explicit stop action from prior Clutch decision
+    predicate_name: prior_step_action_was
+    action: stop
+    parameters:
+      action: stop
+
+  # Floor violation — stop after persistent low quality
+  - name: stop_on_persistent_floor
+    description: Two consecutive steps below floor composite — stop
+    predicate_name: consecutive_steps_below_floor
+    action: stop
+    parameters:
+      count: 2
+
+# Catalyst arms — five cognitive strategies for adaptive planning.
+# mapped_action for all v0.1 arms: "refine" (catalyst fires after a step that
+# didn't earn an accept; it chooses the strategy, runtime continues with refine).
+catalyst_arms:
+  - arm_id: constraint_check
+    type: verification
+    mapped_action: refine
+    strategy_prompt: |
+      Critique the plan with focus on constraint satisfaction.
+      Identify any implicit or explicit constraints that may be violated.
+      Surface assumptions that need explicit verification.
+      Flag any steps that depend on unconfirmed external conditions.
+
+  - arm_id: decomposition
+    type: structuring
+    mapped_action: refine
+    strategy_prompt: |
+      Break down complex sub-goals into more concrete sub-steps.
+      Identify dependencies between sub-goals and make them explicit.
+      Surface any sub-goals that need further decomposition before they can be executed.
+      Focus on making the plan actionable at the task level.
+
+  - arm_id: risk_assessment
+    type: verification
+    mapped_action: refine
+    strategy_prompt: |
+      Assess the plan for risk exposure.
+      Identify the top 3 risks that could cause the plan to fail or run significantly over budget.
+      For each risk, suggest a concrete mitigation or contingency.
+      Surface any unacknowledged dependencies on third parties or external events.
+
+  - arm_id: prerequisite_id
+    type: structuring
+    mapped_action: refine
+    strategy_prompt: |
+      Identify the prerequisites that must be satisfied before the plan can execute.
+      List any resources, approvals, or information that aren't currently confirmed available.
+      Flag any ordering constraints between plan phases that aren't yet explicit.
+      Highlight which prerequisites have the longest lead time.
+
+  - arm_id: resource_estimate
+    type: estimation
+    mapped_action: refine
+    strategy_prompt: |
+      Produce rough resource estimates for the plan's major phases.
+      Cover: time (days/weeks), people (roles needed), and any significant costs or tools.
+      Flag where estimates are particularly uncertain and why.
+      Note which phases drive the critical path.

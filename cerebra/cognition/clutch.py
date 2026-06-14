@@ -41,6 +41,7 @@ class ClutchCycleState:
 
     consecutive_steps_below_floor: int = 0
     prior_clutch_decisions: list[ClutchDecision] = field(default_factory=list)
+    catalyst_invoked_this_step: bool = False
 
 
 # ── ClutchContext ─────────────────────────────────────────────────────────────
@@ -187,13 +188,9 @@ def _step_at(ctx: ClutchContext, params: dict[str, Any]) -> bool:
     return steps[ctx.step_index].name == params["step_name"]
 
 
-def _catalyst_was_invoked(_ctx: ClutchContext, _params: dict[str, Any]) -> bool:
-    """True if catalyst was invoked this step.
-
-    Phase 9 Step 1: always returns False (catalyst not yet implemented).
-    Phase 9 Step 2: reads ctx.catalyst_invocation_this_step.
-    """
-    return False
+def _catalyst_was_invoked(ctx: ClutchContext, _params: dict[str, Any]) -> bool:
+    """True if catalyst was invoked on the immediately prior step."""
+    return ctx.cycle_state.catalyst_invoked_this_step
 
 
 # ── BUILTIN_PREDICATES registry ───────────────────────────────────────────────
