@@ -189,10 +189,10 @@ steps:
     role: refinement
     prompt_template: |
       Goal: {{ goal }}
-      Original plan: {{ prior_steps[1].output }}
-      Critique: {{ prior_step_output }}
+      Critique of the current plan: {{ prior_step_output }}
       
-      Produce a refined plan that addresses the critique.
+      Produce a refined plan that addresses the critique. The current draft plan
+      is in your working memory context.
 
   - name: finalize
     role: synthesis
@@ -218,7 +218,7 @@ clutch_rules:
   
   - name: stop_on_persistent_floor
     predicate: consecutive_steps_below_floor
-    parameters: {floor: 0.3, count: 2}
+    parameters: {count: 2}
     action: stop
   
   - name: accept_on_high_composite
@@ -385,3 +385,10 @@ These should NOT appear in planning.adaptive.v0's behavior. Implementation must 
 - **`tests/unit/test_catalyst.py`** — unit tests for CatalystEngine, scoring formula, arm selection
 - **`tests/integration/test_catalyst_e2e.py`** — end-to-end test running planning.adaptive.v0
 - **`docs/agent/deviations/v0.3.6.md`** — continue logging deviations
+
+---
+
+## Document corrections
+
+- 2026-06-13: Q2 — removed redundant `floor:` parameter from `consecutive_steps_below_floor` predicate parameters (cycle-level `composite_floor` is source of truth; the predicate reads `ctx.cycle_state.consecutive_steps_below_floor`, not a parameter-supplied floor).
+- 2026-06-13: Q3 — refine_plan template uses `prior_step_output` only; cross-step context via working memory rather than `prior_steps[]` indexed lookback (`prior_steps` contains strings not objects, so `.output` access would fail at render time).

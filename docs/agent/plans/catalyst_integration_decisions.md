@@ -306,6 +306,32 @@ This decision simplifies v0.1 implementation: no LeewayCatalystFilter, no per-ar
 
 ---
 
+## D11 — `role:` field on CycleStep
+
+**Decision:** Add `role: str = ""` to CycleStep dataclass. Backward-compatible default
+(empty string). Used as documentary metadata at v0.1; reserved for v0.2+ role-scoped
+catalyst arm filtering.
+
+**Alternatives considered:**
+
+- **Option A: Add explicit `role` field** — CHOSEN
+- **Option B: Treat unknown YAML keys as passthrough metadata dict** — rejected (loses
+  typo-protection; schema-as-contract is Cerebra discipline)
+- **Option C: Drop `role` from YAML entirely** — rejected (loses forward-compatible
+  semantic signal; `planning.adaptive.v0` YAML already uses it)
+
+**Reasoning:**
+
+Schema-as-contract is Cerebra discipline. Adding an explicit field with backward-compatible
+default is the smallest change that accepts the YAML without silent unknown-key drop.
+`simple.planning.v0` stays valid without modifications (empty string default).
+
+**Implementation note:** CycleStep validator accepts optional `role` field; if present,
+must be string (no enum constraint at v0.1). Role-scoped arm filtering (restricting catalyst
+arm eligibility by matching step role) is v0.2+.
+
+---
+
 ## Summary of decisions
 
 | # | Decision | Rationale source |
@@ -320,6 +346,7 @@ This decision simplifies v0.1 implementation: no LeewayCatalystFilter, no per-ar
 | D8 | CatalystEngine at `cerebra/cognition/catalyst.py` | Mirror Phase 9 Step 1 ClutchEngine placement |
 | D9 | Two tables: arm_stats + recent_selections | Type_penalty efficient calculation |
 | D10 | No v0.1 leeway integration | CEREBRA_CATALYST.md MVP v0.2 deferral |
+| D11 | Add `role` field to CycleStep | Schema-as-contract discipline |
 
 ---
 
