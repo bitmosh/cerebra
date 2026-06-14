@@ -18,7 +18,11 @@ from typing import Any
 
 import yaml
 
-from cerebra.cognition._constants import BUILTIN_PREDICATE_NAMES, CLUTCH_ACTIONS
+from cerebra.cognition._constants import (
+    BUILTIN_PREDICATE_NAMES,
+    BUILTIN_REINJECTION_PREDICATE_NAMES,
+    CLUTCH_ACTIONS,
+)
 
 # Built-in cycles/ directory ships alongside the cerebra package at repo root.
 _BUILTIN_CYCLES_DIR = Path(__file__).parent.parent.parent / "cycles"
@@ -54,6 +58,15 @@ class CatalystArm:
 
 
 @dataclass(frozen=True)
+class ReinjectionTrigger:
+    """One re-injection trigger predicate in a cycle config."""
+
+    name: str
+    predicate: str
+    parameters: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class StopCondition:
     name: str
     type: str
@@ -80,6 +93,8 @@ class CycleConfig:
     clutch_rules: list[ClutchRule]
     composite_floor: float = 0.3  # Phase 9: floor for consecutive_steps_below_floor tracking
     catalyst_arms: list[CatalystArm] = field(default_factory=list)
+    reinjection_triggers: list[ReinjectionTrigger] = field(default_factory=list)
+    max_recursion_depth: int = 0  # 0 = no recursion; set > 0 to enable re-injection
 
 
 def render_template(template: str, context: dict[str, Any]) -> str:
@@ -181,6 +196,26 @@ def _validate_config(config: CycleConfig) -> None:
         dupes = sorted({aid for aid in arm_ids if arm_ids.count(aid) > 1})
         raise CycleConfigValidationError(f"Duplicate catalyst arm IDs: {dupes}")
 
+    # 9. Reinjection trigger predicates must be known
+    for trigger in config.reinjection_triggers:
+        if trigger.predicate not in BUILTIN_REINJECTION_PREDICATE_NAMES:
+            raise CycleConfigValidationError(
+                f"Unknown reinjection predicate '{trigger.predicate}' in trigger "
+                f"'{trigger.name}'. Known predicates: "
+                f"{sorted(BUILTIN_REINJECTION_PREDICATE_NAMES)}"
+            )
+
+    # 10. max_recursion_depth must be non-negative; triggers require depth > 0
+    if config.max_recursion_depth < 0:
+        raise CycleConfigValidationError(
+            f"max_recursion_depth must be >= 0; got {config.max_recursion_depth}"
+        )
+    if config.reinjection_triggers and config.max_recursion_depth == 0:
+        raise CycleConfigValidationError(
+            "reinjection_triggers defined but max_recursion_depth is 0 (recursion disabled). "
+            "Set max_recursion_depth > 0 to enable re-injection."
+        )
+
 
 # ── Parser ────────────────────────────────────────────────────────────────────
 
@@ -234,6 +269,15 @@ def _parse_config(data: dict[str, Any]) -> CycleConfig:
         for r in data.get("clutch_rules", [])
     ]
 
+    reinjection_triggers: list[ReinjectionTrigger] = [
+        ReinjectionTrigger(
+            name=t["name"],
+            predicate=t["predicate"],
+            parameters=t.get("parameters") or {},
+        )
+        for t in data.get("reinjection_triggers", [])
+    ]
+
     config = CycleConfig(
         name=data["name"],
         version=int(data.get("version", 1)),
@@ -244,6 +288,8 @@ def _parse_config(data: dict[str, Any]) -> CycleConfig:
         clutch_rules=clutch_rules,
         composite_floor=float(data.get("composite_floor", 0.3)),
         catalyst_arms=catalyst_arms,
+        reinjection_triggers=reinjection_triggers,
+        max_recursion_depth=int(data.get("max_recursion_depth", 0)),
     )
     _validate_config(config)
     return config

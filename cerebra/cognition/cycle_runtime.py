@@ -22,7 +22,9 @@ from typing import Any
 from cerebra.cognition._constants import ELEVATED_SALIENCE
 from cerebra.cognition.catalyst import CatalystEngine, CatalystSelection
 from cerebra.cognition.clutch import ClutchContext, ClutchCycleState, ClutchEngine
+from cerebra.cognition.continuation_bundle import BundleDistiller, write_bundle, link_child_session
 from cerebra.cognition.cycle_config import CycleConfig, render_template
+from cerebra.cognition.reinjection import ReinjectionTriggerEvaluator
 from cerebra.cognition.episode_writer import EpisodeWriter
 from cerebra.cognition.evaluation import EvaluationComposer, emit_evaluation_events
 from cerebra.cognition.event_emitter import EventEmitter
@@ -86,6 +88,7 @@ class CycleResult:
     outcome: str  # "accept" | "stop" | "cap_reached" | "error"
     final_output: str | None
     step_results: list[StepResult] = field(default_factory=list)
+    child_result: CycleResult | None = None  # set when re-injection fires
 
 
 class CycleRuntime:
@@ -119,7 +122,12 @@ class CycleRuntime:
         self._pred_pipeline = PredictionPipeline(self._eval_composer)
         self._interrupted = False
         self._catalyst_engine: CatalystEngine | None = (
-            CatalystEngine(session.session_id, db_path, config.catalyst_arms)
+            CatalystEngine(
+                session.session_id,
+                db_path,
+                config.catalyst_arms,
+                parent_session_id=session.parent_session_id,
+            )
             if config.catalyst_arms
             else None
         )
@@ -472,6 +480,7 @@ class CycleRuntime:
                             "mapped_action": catalyst_selection.mapped_action,
                             "selection_reason": catalyst_selection.selection_reason,
                             "score": catalyst_selection.score,
+                            "score_components": catalyst_selection.score_components,
                             "selected_at": _now_ms(),
                         },
                         indexed_tags={
@@ -630,6 +639,14 @@ class CycleRuntime:
 
         emitter.trigger_lattice_snapshots_at_cycle_boundary(set())
 
+        child_result = self._try_reinject(
+            emitter=emitter,
+            session_id=session_id,
+            outcome=outcome,
+            step_results=step_results,
+            step_pos_outputs=step_pos_outputs,
+        )
+
         return CycleResult(
             cycle_id=cycle_id,
             session_id=session_id,
@@ -637,6 +654,7 @@ class CycleRuntime:
             outcome=outcome,
             final_output=final_output,
             step_results=step_results,
+            child_result=child_result,
         )
 
     # ── Helpers ───────────────────────────────────────────────────────────────
@@ -770,3 +788,87 @@ class CycleRuntime:
                     },
                 )
                 return "", True, error_str
+
+    # ── Re-injection ──────────────────────────────────────────────────────────
+
+    def _try_reinject(
+        self,
+        emitter: EventEmitter,
+        session_id: str,
+        outcome: str,
+        step_results: list[StepResult],
+        step_pos_outputs: dict[int, str],
+    ) -> CycleResult | None:
+        """Evaluate re-injection triggers post-cycle. Spawn child session if fired.
+
+        Returns the child CycleResult when re-injection fires, None otherwise.
+        Emits ReinjectionTriggered on the parent stream before spawning child.
+        """
+        if not self.config.reinjection_triggers or self.config.max_recursion_depth <= 0:
+            return None
+
+        evaluator = ReinjectionTriggerEvaluator(self.config.reinjection_triggers)
+        decision = evaluator.evaluate(
+            termination_reason=outcome,
+            step_history=step_results,
+            recursion_depth=self.session.recursion_depth,
+            max_recursion_depth=self.config.max_recursion_depth,
+        )
+
+        if not decision.should_fire:
+            return None
+
+        # Distill parent context into a bundle and persist it
+        step_outputs = [step_pos_outputs.get(i, "") for i in range(len(self.config.steps))]
+        distiller = BundleDistiller()
+        bundle = distiller.distill(
+            parent_session_id=session_id,
+            goal=self.session.goal,
+            recursion_depth=self.session.recursion_depth,
+            step_outputs=step_outputs,
+        )
+        write_bundle(self.db_path, bundle)
+
+        # Spawn child session
+        from cerebra.cognition.session import SessionManager
+        sm = SessionManager(self.db_path, self.store)
+        child_session, child_opened_event_id = sm.open_session(
+            goal=self.session.goal,
+            cycle_config=self.config.name,
+            vault_path=self.session.vault_path,
+            parent_session_id=session_id,
+        )
+
+        # Link bundle to child
+        link_child_session(self.db_path, bundle.bundle_id, child_session.session_id)
+
+        # Emit ReinjectionTriggered on parent stream (auto-chains from SessionFlushed)
+        emitter.emit_cycle_event(
+            "ReinjectionTriggered",
+            {
+                "session_id": session_id,
+                "cycle_id": emitter.cycle_id,
+                "trigger_predicate": decision.predicate,
+                "continuation_bundle_id": bundle.bundle_id,
+                "child_session_id": child_session.session_id,
+                "recursion_depth": child_session.recursion_depth,
+                "triggered_at": _now_ms(),
+            },
+            indexed_tags={
+                "session_id": session_id,
+                "child_session_id": child_session.session_id,
+                "recursion_depth": str(child_session.recursion_depth),
+            },
+        )
+
+        # Run child cycle synchronously
+        child_runtime = CycleRuntime(
+            config=self.config,
+            session=child_session,
+            db_path=self.db_path,
+            store=self.store,
+            llm=self.llm,
+            opened_event_id=child_opened_event_id,
+            episode_writer=self._episode_writer,
+        )
+        return child_runtime.run()

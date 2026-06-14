@@ -248,8 +248,17 @@ whether the test should be marked skip with explanatory marker.
 
 ## Resolved entries
 
-(none yet — Phase 8 close is the first formal review)
+### TD-016 — ContinuationBundle mechanism unused until Phase 9 ✓ RESOLVED
+
+**Resolved at:** Phase 9 Step 4 (v0.3.6), commit TBD
+**Resolution:** `ReinjectionTriggerEvaluator` (Phase 9 Step 4) is the consumer that was
+pending. After cycle termination with outcome="cap_reached" and no accepted step,
+`CycleRuntime._try_reinject()` calls `BundleDistiller.distill()` and `write_bundle()`,
+then spawns a child session via `SessionManager.open_session(parent_session_id=...)`.
+`ContinuationBundle.to_prompt_prefix()` primes the child's context. The mechanism is
+now invoked from every cycle that fires the `max_steps_without_acceptance` trigger
+with recursion depth < `max_recursion_depth`.
 
 ---
 
-*Last reviewed at v0.3.7 (Phase 9 Step 3 close). Next review: Phase 10 kickoff, or supervisor pass when triggered.*
+*Last reviewed at v0.3.6 (Phase 9 Step 4 close). Next review: Phase 10 kickoff, or supervisor pass when triggered.*

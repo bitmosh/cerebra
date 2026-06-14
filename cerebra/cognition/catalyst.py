@@ -21,7 +21,7 @@ import sqlite3
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from cerebra._primitives import Bandit
 
@@ -67,9 +67,11 @@ class CatalystEngine:
         session_id: str,
         db_path: Path,
         arms: list[CatalystArm],
+        parent_session_id: str | None = None,
     ) -> None:
         self._session_id = session_id
         self._db_path = db_path
+        self._parent_session_id = parent_session_id
         self._arms = arms
         self._arm_map = {a.arm_id: a for a in arms}
         self._bandit = Bandit()
@@ -148,20 +150,30 @@ class CatalystEngine:
 
     # ── Persistence ───────────────────────────────────────────────────────────
 
-    def _load_bandit_state(self) -> None:
-        """Restore arm stats from catalyst_arm_stats table for this session."""
+    def _fetch_arm_stats(self, session_id: str) -> list[Any]:
+        """Fetch catalyst_arm_stats rows for a session_id. Returns [] on any error."""
         conn = sqlite3.connect(self._db_path)
         conn.row_factory = sqlite3.Row
         try:
-            rows = conn.execute(
+            return conn.execute(
                 "SELECT arm_id, count, total_reward, last_selected_step "
                 "FROM catalyst_arm_stats WHERE runtime_session_id = ?",
-                (self._session_id,),
+                (session_id,),
             ).fetchall()
         except sqlite3.OperationalError:
-            return
+            return []
         finally:
             conn.close()
+
+    def _load_bandit_state(self) -> None:
+        """Restore arm stats from catalyst_arm_stats table.
+
+        Tries own session_id first; falls back to parent_session_id for child
+        sessions inheriting arm stats at spawn time (S4-D2).
+        """
+        rows = self._fetch_arm_stats(self._session_id)
+        if not rows and self._parent_session_id:
+            rows = self._fetch_arm_stats(self._parent_session_id)
 
         if not rows:
             return

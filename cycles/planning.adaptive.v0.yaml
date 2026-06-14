@@ -8,6 +8,12 @@ description: |
 
 max_steps: 12
 composite_floor: 0.3
+max_recursion_depth: 3
+
+reinjection_triggers:
+  - name: continue_on_max_steps
+    predicate: max_steps_without_acceptance
+    parameters: {}
 
 steps:
   - name: understand_goal

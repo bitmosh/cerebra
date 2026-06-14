@@ -123,6 +123,13 @@ STOP_CONDITION_TYPES: frozenset[str] = frozenset(
     }
 )
 
+# ── Phase 9 Step 4 — Re-injection trigger predicate names ────────────────────
+BUILTIN_REINJECTION_PREDICATE_NAMES: frozenset[str] = frozenset(
+    {
+        "max_steps_without_acceptance",
+    }
+)
+
 # ── Phase 8 — Built-in clutch predicate names (for CycleConfig validation) ───
 BUILTIN_PREDICATE_NAMES: frozenset[str] = frozenset(
     {
