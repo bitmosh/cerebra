@@ -187,7 +187,7 @@ class TestPredictionPipelineE2E:
         emit_outcome_recorded(emitter, out, eval_event_id)
 
         # Verify events on the cycle stream
-        stream_id = "cerebra/agent-trace/cycle_chain"
+        stream_id = "cerebra/agent-trace/sess_e2e"
         from fossic import ReadQuery
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         event_types = [e.event_type for e in events]
@@ -244,7 +244,7 @@ class TestPredictionPipelineE2E:
         outcome_event_id, severe_event_id = emit_outcome_recorded(emitter, out, eval_event_id)
         assert severe_event_id is not None
 
-        stream_id = "cerebra/agent-trace/cycle_smiss_e2e"
+        stream_id = "cerebra/agent-trace/sess_e2e"
         from fossic import ReadQuery
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
 

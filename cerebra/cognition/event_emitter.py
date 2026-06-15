@@ -32,12 +32,12 @@ class EventEmitter:
         causation_id: Optional[bytes] = None,
         indexed_tags: Optional[dict[str, Any]] = None,
     ) -> bytes:
-        """Emit an event on cerebra/agent-trace/<cycle_id>.
+        """Emit an event on cerebra/agent-trace/<session_id>.
 
         If causation_id is None, the previous cycle event's ID is used, making
         the full cycle trace a causation chain without caller bookkeeping.
         """
-        stream_id = f"cerebra/agent-trace/{self.cycle_id}"
+        stream_id = f"cerebra/agent-trace/{self.session_id}"
         eid = self.store.append(
             stream_id=stream_id,
             event_type=event_type,

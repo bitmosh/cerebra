@@ -73,7 +73,7 @@ class TestLeewayGateE2E:
         from fossic import ReadQuery
 
         events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cycle_gate_e2e")
+            ReadQuery(stream_id="cerebra/agent-trace/sess_e2e")
         )
         lga_events = [e for e in events if e.event_type == "LeewayGrantApplied"]
         assert len(lga_events) == 1
@@ -104,7 +104,7 @@ class TestLeewayGateE2E:
         from fossic import ReadQuery
 
         events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cycle_gate_chain")
+            ReadQuery(stream_id="cerebra/agent-trace/sess_e2e")
         )
         lga = next(e for e in events if e.event_type == "LeewayGrantApplied")
         assert lga.causation_id is not None
@@ -122,7 +122,7 @@ class TestLeewayGateE2E:
             causation_id=lga_event_id,
         )
         events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cycle_gate_chain")
+            ReadQuery(stream_id="cerebra/agent-trace/sess_e2e")
         )
         cycle_ended = next(e for e in events if e.event_type == "CycleEnded")
         assert cycle_ended.causation_id is not None
@@ -155,7 +155,7 @@ class TestLeewayGateE2E:
         from fossic import ReadQuery
 
         events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cycle_gate_forb")
+            ReadQuery(stream_id="cerebra/agent-trace/sess_e2e")
         )
         lga_events = [e for e in events if e.event_type == "LeewayGrantApplied"]
         assert len(lga_events) == 1
@@ -185,7 +185,7 @@ class TestLeewayGateE2E:
         from fossic import ReadQuery
 
         events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cycle_gate_vocab")
+            ReadQuery(stream_id="cerebra/agent-trace/sess_e2e")
         )
         lga = next(e for e in events if e.event_type == "LeewayGrantApplied")
         payload = lga.payload()

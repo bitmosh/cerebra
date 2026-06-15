@@ -98,7 +98,7 @@ class TestFossicSnapshotLifecycleIntegration:
         e3 = emitter.emit_cycle_event("StepStarted", {"step": 1})
 
         events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cyc-caus")
+            ReadQuery(stream_id="cerebra/agent-trace/ses-caus")
         )
         assert len(events) == 3
         assert events[0].causation_id is None

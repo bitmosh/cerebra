@@ -70,7 +70,7 @@ class TestEmitCycleEvent:
 
     def test_stream_naming(self, emitter: EventEmitter, store: FossicStore) -> None:
         emitter.emit_cycle_event("StepStarted", _u())
-        assert store._store.stream_exists("cerebra/agent-trace/cyc-001")
+        assert store._store.stream_exists("cerebra/agent-trace/ses-001")
         assert not store._store.stream_exists("cerebra/agent-trace/other")
 
     def test_first_event_no_causation(
@@ -80,7 +80,7 @@ class TestEmitCycleEvent:
 
         emitter.emit_cycle_event("StepStarted", _u())
         events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cyc-001")
+            ReadQuery(stream_id="cerebra/agent-trace/ses-001")
         )
         assert events[0].causation_id is None
 
@@ -92,7 +92,7 @@ class TestEmitCycleEvent:
         eid1 = emitter.emit_cycle_event("StepStarted", _u())
         emitter.emit_cycle_event("StepExecuted", _u())
         events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cyc-001")
+            ReadQuery(stream_id="cerebra/agent-trace/ses-001")
         )
         assert events[1].causation_id is not None
         assert events[1].causation_id.as_bytes() == eid1
@@ -106,7 +106,7 @@ class TestEmitCycleEvent:
         eid_explicit = store.append("other/stream", "E", _u())
         emitter.emit_cycle_event("StepExecuted", _u(), causation_id=eid_explicit)
         events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cyc-001")
+            ReadQuery(stream_id="cerebra/agent-trace/ses-001")
         )
         assert events[1].causation_id.as_bytes() == eid_explicit
 
@@ -119,7 +119,7 @@ class TestEmitCycleEvent:
         e2 = emitter.emit_cycle_event("B", _u())
         emitter.emit_cycle_event("C", _u())
         events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cyc-001")
+            ReadQuery(stream_id="cerebra/agent-trace/ses-001")
         )
         assert events[1].causation_id.as_bytes() == e1
         assert events[2].causation_id.as_bytes() == e2
@@ -138,22 +138,24 @@ class TestEmitCycleEvent:
 
         emitter.emit_cycle_event("E", _u(), indexed_tags={"k": "v"})
         events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cyc-001")
+            ReadQuery(stream_id="cerebra/agent-trace/ses-001")
         )
         assert events[0].indexed_tags() == {"k": "v"}
 
-    def test_different_cycles_isolated(self, store: FossicStore) -> None:
+    def test_different_sessions_isolated(self, store: FossicStore) -> None:
+        # Different sessions go to different streams; same session / different
+        # cycles share one stream (cycle_id is a payload field, not a stream segment).
         from fossic import ReadQuery
 
-        e1 = EventEmitter(store, "ses", "cyc-A")
-        e2 = EventEmitter(store, "ses", "cyc-B")
+        e1 = EventEmitter(store, "ses-A", "cyc-1")
+        e2 = EventEmitter(store, "ses-B", "cyc-2")
         e1.emit_cycle_event("E", _u({"from": "A"}))
         e2.emit_cycle_event("E", _u({"from": "B"}))
         a_events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cyc-A")
+            ReadQuery(stream_id="cerebra/agent-trace/ses-A")
         )
         b_events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/cyc-B")
+            ReadQuery(stream_id="cerebra/agent-trace/ses-B")
         )
         assert len(a_events) == 1
         assert len(b_events) == 1
@@ -202,7 +204,7 @@ class TestEmitLatticeEvent:
         self, emitter: EventEmitter, store: FossicStore
     ) -> None:
         emitter.emit_lattice_event("lin", "E", _u())
-        cycle_stream = "cerebra/agent-trace/cyc-001"
+        cycle_stream = "cerebra/agent-trace/ses-001"
         assert not store._store.stream_exists(cycle_stream)
 
     def test_indexed_tags_forwarded(

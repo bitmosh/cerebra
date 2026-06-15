@@ -31,6 +31,7 @@ FTS index may be behind. Note: this does not detect lifecycle-state changes
 
 from __future__ import annotations
 
+import re
 import time
 from pathlib import Path
 
@@ -181,6 +182,22 @@ def update_fts_index(
 
 # ── Search ────────────────────────────────────────────────────────────────────
 
+_FTS5_SAFE = re.compile(r'[^a-zA-Z0-9\s]')
+
+
+def _sanitize_fts_query(query: str) -> str:
+    """Strip non-alphanumeric characters so raw LLM output is safe for FTS5 MATCH.
+
+    FTS5's query language treats many punctuation characters as operators or
+    syntax elements. We keep only alphanumerics and whitespace; everything
+    else is replaced with a space, then tokens are rejoined.
+    """
+    clean = _FTS5_SAFE.sub(" ", query)
+    tokens = clean.split()
+    if not tokens:
+        return ""
+    return " ".join(tokens)
+
 
 def search(
     db_path: Path,
@@ -194,6 +211,10 @@ def search(
     negative — more negative means a better match. Returns an empty list if
     the query matches nothing or if the FTS table doesn't exist yet.
     """
+    safe_query = _sanitize_fts_query(query)
+    if not safe_query:
+        return []
+
     with connect(db_path) as conn:
         # Verify FTS table exists before querying
         exists = conn.execute(
@@ -213,7 +234,7 @@ def search(
              ORDER BY fts.rank
              LIMIT ?
             """,
-            (query, limit),
+            (safe_query, limit),
         ).fetchall()
     return [(row["record_id"], float(row["rank"])) for row in rows]
 

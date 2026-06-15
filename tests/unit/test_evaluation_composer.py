@@ -206,7 +206,7 @@ class TestEmitEvaluationEvents:
 
         emit_evaluation_events(em, scores, packet, seed_id)
 
-        stream_id = f"cerebra/agent-trace/{cycle_id}"
+        stream_id = "cerebra/agent-trace/sess_emit_test"
         events = store._store.read_range(
             __import__("fossic").ReadQuery(stream_id=stream_id, branch="main")
         )
@@ -228,7 +228,7 @@ class TestEmitEvaluationEvents:
 
         emit_evaluation_events(em, scores, packet, seed_id)
 
-        stream_id = f"cerebra/agent-trace/{cycle_id}"
+        stream_id = "cerebra/agent-trace/sess_emit_test"
         events = store._store.read_range(
             __import__("fossic").ReadQuery(stream_id=stream_id, branch="main")
         )
@@ -244,7 +244,7 @@ class TestEmitEvaluationEvents:
 
         emit_evaluation_events(em, scores, packet, seed_id)
 
-        stream_id = f"cerebra/agent-trace/{cycle_id}"
+        stream_id = "cerebra/agent-trace/sess_emit_test"
         events = store._store.read_range(
             __import__("fossic").ReadQuery(stream_id=stream_id, branch="main")
         )
@@ -260,7 +260,7 @@ class TestEmitEvaluationEvents:
 
         emit_evaluation_events(em, scores, packet, seed_id)
 
-        stream_id = f"cerebra/agent-trace/{cycle_id}"
+        stream_id = "cerebra/agent-trace/sess_emit_test"
         events = store._store.read_range(
             __import__("fossic").ReadQuery(stream_id=stream_id, branch="main")
         )

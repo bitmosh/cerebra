@@ -281,10 +281,10 @@ class TestEpisodePersistenceOnAccept:
 
 
 class TestMemoryWriteFromCycleEvent:
-    def _read_events(self, store: FossicStore, cycle_id: str) -> list[Any]:
+    def _read_events(self, store: FossicStore, session_id: str) -> list[Any]:
         from fossic import ReadQuery
         return store._store.read_range(
-            ReadQuery(stream_id=f"cerebra/agent-trace/{cycle_id}")
+            ReadQuery(stream_id=f"cerebra/agent-trace/{session_id}")
         )
 
     def test_memory_write_event_record_id_starts_with_ep(
@@ -295,8 +295,8 @@ class TestMemoryWriteFromCycleEvent:
             _minimal_accept_config(), session, db_path, store, _StubLLM(),
             opened_event_id=eid, episode_writer=writer,
         )
-        result = runtime.run()
-        events = self._read_events(store, result.cycle_id)
+        runtime.run()
+        events = self._read_events(store, session.session_id)
         mw_events = [e for e in events if e.event_type == "MemoryWriteFromCycle"]
         assert len(mw_events) == 1
         payload = mw_events[0].payload()
@@ -311,8 +311,8 @@ class TestMemoryWriteFromCycleEvent:
             _minimal_accept_config(), session, db_path, store, _StubLLM(),
             opened_event_id=eid, episode_writer=writer,
         )
-        result = runtime.run()
-        events = self._read_events(store, result.cycle_id)
+        runtime.run()
+        events = self._read_events(store, session.session_id)
         mw_events = [e for e in events if e.event_type == "MemoryWriteFromCycle"]
         payload = mw_events[0].payload()
         record_id = payload["record_id"]
@@ -327,8 +327,8 @@ class TestMemoryWriteFromCycleEvent:
             _minimal_accept_config(), session, db_path, store, _StubLLM(),
             opened_event_id=eid, episode_writer=writer,
         )
-        result = runtime.run()
-        events = self._read_events(store, result.cycle_id)
+        runtime.run()
+        events = self._read_events(store, session.session_id)
         mw_events = [e for e in events if e.event_type == "MemoryWriteFromCycle"]
         payload = mw_events[0].payload()
         assert payload["table_target"] == "cycle_episode_records"

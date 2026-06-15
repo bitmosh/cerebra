@@ -45,6 +45,19 @@ class FossicStore:
         # Maps glob pattern → registered reducer object (for snapshot_info lookups).
         self._reducers: dict[str, Any] = {}
 
+    @classmethod
+    def at_platform_path(cls, db_path: Path) -> "FossicStore":
+        """Open FossicStore at an explicit path (e.g., the platform store).
+
+        Used when Cerebra should write to ~/.lattica/fossic/store.db instead
+        of the vault-local store. Creates parent directories if needed.
+        """
+        instance = cls.__new__(cls)
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        instance._store = Store.open(str(db_path))
+        instance._reducers = {}
+        return instance
+
     # ── Core write ────────────────────────────────────────────────────────────
 
     def append(

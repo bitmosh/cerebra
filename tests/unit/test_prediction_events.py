@@ -102,7 +102,7 @@ class TestEmitPredictionMade:
         emit_prediction_made(emitter, pred, step_event_id)
 
         # Read events from the stream and find PredictionMade
-        stream_id = "cerebra/agent-trace/cycle_emit"
+        stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         pm_events = [e for e in events if e.event_type == "PredictionMade"]
@@ -130,7 +130,7 @@ class TestEmitPredictionMade:
         pred = pipeline.predict(inp)
         emit_prediction_made(emitter, pred, step_event_id)
 
-        stream_id = "cerebra/agent-trace/cycle_tags"
+        stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         pm_events = [e for e in events if e.event_type == "PredictionMade"]
@@ -150,7 +150,7 @@ class TestEmitPredictionMade:
         pred = pipeline.predict(inp)
         emit_prediction_made(emitter, pred, step_event_id)
 
-        stream_id = "cerebra/agent-trace/cycle_cause"
+        stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         pm_events = [e for e in events if e.event_type == "PredictionMade"]
@@ -179,7 +179,7 @@ class TestEmitPredictionMade:
         eid1 = emit_prediction_made(emitter, pred1, step_id1)
         eid2 = emit_prediction_made(emitter, pred2, step_id1)
 
-        stream_id = "cerebra/agent-trace/cycle_two"
+        stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         pm_events = [e for e in events if e.event_type == "PredictionMade"]
@@ -231,7 +231,7 @@ class TestEmitOutcomeRecorded:
         assert severe_id is not None
         assert isinstance(severe_id, bytes)
 
-        stream_id = "cerebra/agent-trace/cycle_severe"
+        stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         severe_events = [e for e in events if e.event_type == "PredictionSevereMiss"]
@@ -253,7 +253,7 @@ class TestEmitOutcomeRecorded:
         out = pipeline.resolve(pred, ev)
         emit_outcome_recorded(emitter, out, eval_event_id)
 
-        stream_id = "cerebra/agent-trace/cycle_smiss"
+        stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         severe = [e for e in events if e.event_type == "PredictionSevereMiss"][0]
@@ -280,7 +280,7 @@ class TestEmitOutcomeRecorded:
         out = pipeline.resolve(pred, ev)
         outcome_id, _severe_id = emit_outcome_recorded(emitter, out, eval_event_id)
 
-        stream_id = "cerebra/agent-trace/cycle_scause"
+        stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         severe = [e for e in events if e.event_type == "PredictionSevereMiss"][0]
@@ -304,7 +304,7 @@ class TestEmitOutcomeRecorded:
         out = pipeline.resolve(pred, ev)
         emit_outcome_recorded(emitter, out, eval_event_id)
 
-        stream_id = "cerebra/agent-trace/cycle_orcause"
+        stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         or_events = [e for e in events if e.event_type == "OutcomeRecorded"]
@@ -328,7 +328,7 @@ class TestEmitOutcomeRecorded:
         out = pipeline.resolve(pred, ev)
         emit_outcome_recorded(emitter, out, eval_event_id)
 
-        stream_id = "cerebra/agent-trace/cycle_ortags"
+        stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         or_events = [e for e in events if e.event_type == "OutcomeRecorded"]

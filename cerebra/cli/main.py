@@ -5,6 +5,7 @@ Cerebra CLI — entry point for all `cerebra` commands.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import click
@@ -1478,7 +1479,11 @@ def run_cycle(
 
     # ── open session ──────────────────────────────────────────────────────────
     try:
-        store = FossicStore(vault_path)
+        _platform_store_env = os.environ.get("CEREBRA_PLATFORM_STORE")
+        if _platform_store_env:
+            store = FossicStore.at_platform_path(Path(_platform_store_env).expanduser())
+        else:
+            store = FossicStore(vault_path)
         manager = SessionManager(db_path=db_path, store=store)
         session, opened_event_id = manager.open_session(
             goal=goal,
