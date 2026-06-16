@@ -16,7 +16,7 @@ class TestCLI:
         runner = CliRunner()
         result = runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "0.0.0" in result.output
+        assert "cerebra, version" in result.output
 
     def test_init_creates_vault(self, tmp_path: Path) -> None:
         runner = CliRunner()

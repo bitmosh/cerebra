@@ -195,8 +195,8 @@ class TestPhase6EventTypes:
     def test_contains_memory_and_session_end(self) -> None:
         assert {"MemoryWriteFromCycle", "SessionFlushed"}.issubset(PHASE_6_EVENT_TYPES)
 
-    def test_twenty_three_event_types(self) -> None:
-        assert len(PHASE_6_EVENT_TYPES) == 23
+    def test_twenty_six_event_types(self) -> None:
+        assert len(PHASE_6_EVENT_TYPES) == 26
 
     def test_matches_inspector_phase6_event_types(self) -> None:
         assert PHASE_6_EVENT_TYPES == INSPECTOR_PHASE_6_EVENT_TYPES

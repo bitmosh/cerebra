@@ -1541,6 +1541,113 @@ def run_cycle(
         sys.exit(1)
 
 
+# ── lifecycle ─────────────────────────────────────────────────────────────────
+
+
+@cli.group()
+def lifecycle() -> None:
+    """Manage memory record lifecycle states (archive, tombstone, restore)."""
+
+
+def _lifecycle_manager(vault_flag: str | None):  # type: ignore[return]
+    """Resolve vault + db_path and return a LifecycleManager with an event log."""
+    import sys
+
+    from cerebra.inspector.sqlite_log import SQLiteEventLog
+    from cerebra.memory.lifecycle import LifecycleManager
+    from cerebra.storage.migrations import run_migrations
+
+    try:
+        vault_path = _get_vault(vault_flag)
+    except Exception as e:
+        msg = e.format_message() if isinstance(e, click.ClickException) else str(e)
+        click.echo(f"Error: {msg}", err=True)
+        sys.exit(2)
+
+    db_path = vault_path / "data" / "cerebra.db"
+    if not db_path.exists():
+        click.echo(f"Error: vault database not found at {db_path}", err=True)
+        sys.exit(2)
+
+    try:
+        run_migrations(db_path)
+    except Exception as e:
+        click.echo(f"Error: migration failed: {e}", err=True)
+        sys.exit(2)
+
+    event_log = SQLiteEventLog(db_path)
+    return LifecycleManager(db_path, event_log=event_log)
+
+
+@lifecycle.command("archive")
+@click.argument("record_id")
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option("--reason", default=None, help="Optional reason for archiving.")
+def lifecycle_archive(record_id: str, vault: str | None, reason: str | None) -> None:
+    """Archive a memory record (excludes from retrieval; restorable)."""
+    import sys
+
+    from cerebra.memory.lifecycle import InvalidTransitionError, RecordNotFoundError
+
+    mgr = _lifecycle_manager(vault)
+    try:
+        prev = mgr.archive(record_id, reason=reason)
+    except RecordNotFoundError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(2)
+    except InvalidTransitionError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(2)
+
+    click.echo(f"Archived: {record_id}  ({prev} → archived)")
+
+
+@lifecycle.command("tombstone")
+@click.argument("record_id")
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option("--reason", default=None, help="Optional reason for tombstoning.")
+def lifecycle_tombstone(record_id: str, vault: str | None, reason: str | None) -> None:
+    """Tombstone a memory record (excluded from retrieval; blocks re-ingestion; terminal)."""
+    import sys
+
+    from cerebra.memory.lifecycle import InvalidTransitionError, RecordNotFoundError
+
+    mgr = _lifecycle_manager(vault)
+    try:
+        prev = mgr.tombstone(record_id, reason=reason)
+    except RecordNotFoundError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(2)
+    except InvalidTransitionError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(2)
+
+    click.echo(f"Tombstoned: {record_id}  ({prev} → tombstoned)")
+
+
+@lifecycle.command("restore")
+@click.argument("record_id")
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option("--reason", default=None, help="Optional reason for restoring.")
+def lifecycle_restore(record_id: str, vault: str | None, reason: str | None) -> None:
+    """Restore an archived memory record back to active."""
+    import sys
+
+    from cerebra.memory.lifecycle import InvalidTransitionError, RecordNotFoundError
+
+    mgr = _lifecycle_manager(vault)
+    try:
+        prev = mgr.restore(record_id, reason=reason)
+    except RecordNotFoundError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(2)
+    except InvalidTransitionError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(2)
+
+    click.echo(f"Restored: {record_id}  ({prev} → active)")
+
+
 # ── serve (daemon) ────────────────────────────────────────────────────────────
 
 from cerebra.cli.daemon import serve as _serve_cmd  # noqa: E402

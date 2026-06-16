@@ -167,7 +167,7 @@ class SQLiteStore:
         with self._conn() as conn:
             conn.executemany(
                 """
-                INSERT INTO memory_records (
+                INSERT OR IGNORE INTO memory_records (
                     record_id, record_type, source_id, document_id,
                     chunk_id, content, content_hash, token_estimate,
                     sku_address, sku_assigned_at, lifecycle_state,
@@ -192,7 +192,8 @@ class SQLiteStore:
     def mark_records_stale_for_source(self, source_id: str) -> None:
         with self._conn() as conn:
             conn.execute(
-                "UPDATE memory_records SET lifecycle_state = 'stale' WHERE source_id = ?",
+                "UPDATE memory_records SET lifecycle_state = 'stale' "
+                "WHERE source_id = ? AND lifecycle_state != 'tombstoned'",
                 (source_id,),
             )
 

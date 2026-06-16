@@ -196,7 +196,11 @@ PHASE_6_EVENT_TYPES: frozenset[str] = frozenset(
         # Consolidation (Phase 10)
         "ConsolidationStarted",
         "ConsolidationCompleted",
-        # Graph export (Phase 11)
+        # Lifecycle (Phase 11)
+        "MemoryRecordArchived",
+        "MemoryRecordTombstoned",
+        "MemoryRecordRestored",
+        # Graph export (Phase 12)
         "GraphExported",
     }
 )
