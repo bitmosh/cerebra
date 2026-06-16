@@ -38,7 +38,7 @@ def _get_vault(vault_flag: str | None) -> Path:
 
 
 @click.group()
-@click.version_option(version="0.0.0", prog_name="cerebra")
+@click.version_option(package_name="cerebra", prog_name="cerebra")
 def cli() -> None:
     """Cerebra — local-first cognitive runtime."""
 
