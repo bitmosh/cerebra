@@ -159,6 +159,52 @@ class FossicStore:
         if not self._store.stream_exists(stream_id):
             self._store.declare_stream(stream_id, "cerebra", stream_id)
 
+    def read_events(
+        self,
+        *,
+        stream_id: str | None = None,
+        stream_pattern: str | None = None,
+        event_type: str | None = None,
+        branch: str = "main",
+        from_version: Optional[int] = None,
+    ) -> list[dict[str, Any]]:
+        """Read events from a stream or pattern. Returns plain dicts with keys:
+        event_type, payload, version, stream_id.
+
+        stream_id reads a single named stream.
+        stream_pattern uses glob matching across all streams.
+        event_type optionally filters to one event type.
+        from_version (stream_id mode only) returns events with version >= that value.
+        """
+        from fossic import AggregateQuery, ReadQuery
+
+        if stream_id is not None:
+            if not self._store.stream_exists(stream_id):
+                return []
+            kw: dict[str, Any] = {"stream_id": stream_id, "branch": branch}
+            if event_type is not None:
+                kw["event_type_filter"] = event_type
+            if from_version is not None:
+                kw["from_version"] = from_version
+            events = self._store.read_range(ReadQuery(**kw))
+        elif stream_pattern is not None:
+            agg_kw: dict[str, Any] = {"stream_pattern": stream_pattern}
+            if event_type is not None:
+                agg_kw["event_type_filter"] = event_type
+            events = self._store.aggregate(AggregateQuery(**agg_kw))
+        else:
+            raise ValueError("Either stream_id or stream_pattern must be provided.")
+
+        return [
+            {
+                "event_type": e.event_type,
+                "payload": e.payload(),
+                "version": getattr(e, "version", 0),
+                "stream_id": getattr(e, "stream_id", ""),
+            }
+            for e in events
+        ]
+
     def _find_reducer_for_stream(self, stream_id: str) -> Any:
         """Find the most-specific registered reducer pattern matching stream_id.
 

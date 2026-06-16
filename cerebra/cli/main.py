@@ -1717,6 +1717,12 @@ def export_graph_cmd(vault: str | None, out_path: str | None, output_json: bool)
     click.echo(f"  Output:      {stats.out_path}")
 
 
+# ── inspect ───────────────────────────────────────────────────────────────────
+
+from cerebra.cli.inspect import inspect as _inspect_cmd  # noqa: E402
+cli.add_command(_inspect_cmd)
+
+
 # ── serve (daemon) ────────────────────────────────────────────────────────────
 
 from cerebra.cli.daemon import serve as _serve_cmd  # noqa: E402
