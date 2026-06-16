@@ -108,6 +108,7 @@ class CycleRuntime:
         llm: LLMAdapter,
         opened_event_id: bytes | None = None,
         episode_writer: EpisodeWriter | None = None,
+        install_signal_handlers: bool = True,
     ) -> None:
         self.config = config
         self.session = session
@@ -132,9 +133,10 @@ class CycleRuntime:
             else None
         )
 
-        # D7: install signal handlers for graceful interrupt
-        signal.signal(signal.SIGINT, self._handle_interrupt)
-        signal.signal(signal.SIGTERM, self._handle_interrupt)
+        # D7: signal handlers must run in main thread; daemon passes False
+        if install_signal_handlers:
+            signal.signal(signal.SIGINT, self._handle_interrupt)
+            signal.signal(signal.SIGTERM, self._handle_interrupt)
 
     def _handle_interrupt(self, signum: int, frame: Any) -> None:
         self._interrupted = True
@@ -193,7 +195,7 @@ class CycleRuntime:
                 user_interrupted=self._interrupted,
             )
             should_stop, _cond_name = stop_evaluator.check(cycle_state)
-            if should_stop:
+            if should_stop or all_completed:
                 if all_completed:
                     outcome = "accept"
                     final_output = step_pos_outputs.get(len(self.config.steps) - 1)

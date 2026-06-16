@@ -1539,3 +1539,9 @@ def run_cycle(
         sys.exit(0)
     else:
         sys.exit(1)
+
+
+# ── serve (daemon) ────────────────────────────────────────────────────────────
+
+from cerebra.cli.daemon import serve as _serve_cmd  # noqa: E402
+cli.add_command(_serve_cmd)
