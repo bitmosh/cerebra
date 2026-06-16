@@ -75,7 +75,7 @@ def _seed_memory_record(db_path: Path, record_id: str = "rec_test") -> str:
 
 
 def _invoke(args: list[str]):  # type: ignore[return]
-    return CliRunner(mix_stderr=False).invoke(cli, args)
+    return CliRunner().invoke(cli, args)
 
 
 # ── memory status ─────────────────────────────────────────────────────────────

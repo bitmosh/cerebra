@@ -41,8 +41,13 @@ class TestLatticeColumnsOnVault:
         assert "is_lattice_member" in col_names
         assert "lattice_confidence" in col_names
 
-    def test_existing_records_have_default_lattice_state(self, vault_db: Path) -> None:
-        """All pre-existing records default to is_lattice_member=0, lineage_id=NULL."""
+    def test_lattice_column_schema(self, vault_db: Path) -> None:
+        """Migration010 wires up the lattice columns with the correct schema.
+
+        Checks PRAGMA table_info rather than vault data — the vault accumulates
+        real lattice members over time as classify runs, so data-level assertions
+        would become stale. Schema constraints are invariant after migration.
+        """
         from cerebra.storage.db import connect
         from cerebra.storage.migrations import run_migrations
 
@@ -50,15 +55,21 @@ class TestLatticeColumnsOnVault:
 
         conn = connect(vault_db)
         try:
-            non_lattice = conn.execute(
-                "SELECT COUNT(*) FROM memory_records WHERE is_lattice_member != 0"
-            ).fetchone()[0]
-            non_null_lineage = conn.execute(
-                "SELECT COUNT(*) FROM memory_records "
-                "WHERE lattice_lineage_id IS NOT NULL AND is_lattice_member = 0"
-            ).fetchone()[0]
+            rows = conn.execute("PRAGMA table_info(memory_records)").fetchall()
         finally:
             conn.close()
 
-        assert non_lattice == 0, f"{non_lattice} pre-existing records have is_lattice_member != 0"
-        assert non_null_lineage == 0
+        col_info = {r[1]: {"notnull": r[3], "dflt_value": r[4]} for r in rows}
+
+        assert col_info["is_lattice_member"]["dflt_value"] == "0", (
+            "is_lattice_member must default to 0 so pre-migration rows are non-lattice"
+        )
+        assert col_info["is_lattice_member"]["notnull"] == 1, (
+            "is_lattice_member must be NOT NULL"
+        )
+        assert col_info["lattice_lineage_id"]["dflt_value"] is None, (
+            "lattice_lineage_id should have no default (NULL for non-members)"
+        )
+        assert col_info["lattice_confidence"]["dflt_value"] is None, (
+            "lattice_confidence should have no default (NULL for non-members)"
+        )

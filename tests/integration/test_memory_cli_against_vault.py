@@ -35,7 +35,7 @@ def fresh_session(vault_root: Path) -> tuple[Path, str]:
 
 
 def _invoke(args: list[str]):  # type: ignore[return]
-    return CliRunner(mix_stderr=False).invoke(cli, args)
+    return CliRunner().invoke(cli, args)
 
 
 def _vault_args(vault_root: Path) -> list[str]:
