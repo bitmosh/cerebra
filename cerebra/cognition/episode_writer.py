@@ -1,14 +1,15 @@
 """Phase 8 v0.3.5a — EpisodeWriter: cycle episode persistence.
 
-Per Decision 1: episodes live in cycle_episode_records, not memory_records.
-memory_records has hard NOT NULL FKs to sources/documents/chunks that
-cycle episodes (LLM-generated content) can't satisfy without dishonest schema gymnastics.
-
-Phase 10 consolidation will bridge selected episodes to memory_records.
+Phase 10: EpisodeWriter now dual-writes to both cycle_episode_records (primary,
+for direct session queries) and memory_records (record_type='cycle_episode',
+for retrieval visibility). The memory_records write uses synthetic sentinel FKs
+inserted by Migration018. Embeddings are queued after each write so the vector
+index picks up cycle output.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sqlite3
 import time
@@ -16,6 +17,13 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+from cerebra.cognition._constants import (
+    SYNTHETIC_CHUNK_ID,
+    SYNTHETIC_DOCUMENT_ID,
+    SYNTHETIC_SOURCE_ID,
+)
+from cerebra.storage.embeddings import queue_for_embedding
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -89,6 +97,10 @@ class EpisodeWriter:
         cited_json = json.dumps(cited_record_ids or [])
         metadata_json = json.dumps(metadata or {})
 
+        now = _now_ms()
+        content_hash = hashlib.sha256(content.encode()).hexdigest()[:16]
+        token_estimate = len(content.split())
+
         with _connect(self.db_path) as conn:
             conn.execute(
                 """
@@ -110,9 +122,34 @@ class EpisodeWriter:
                     metadata_json,
                     leeway_grant_event_id,
                     cited_json,
-                    _now_ms(),
+                    now,
                 ),
             )
+            # Phase 10 bridge: dual-write to memory_records so cycle output is
+            # visible to the retrieval pipeline. Sentinel FKs from Migration018.
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO memory_records (
+                    record_id, record_type, source_id, document_id, chunk_id,
+                    content, content_hash, token_estimate, lifecycle_state, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    record_id,
+                    "cycle_episode",
+                    SYNTHETIC_SOURCE_ID,
+                    SYNTHETIC_DOCUMENT_ID,
+                    SYNTHETIC_CHUNK_ID,
+                    content,
+                    content_hash,
+                    token_estimate,
+                    "active",
+                    now,
+                ),
+            )
+
+        # Queue for vector embedding outside the transaction (best-effort).
+        queue_for_embedding(self.db_path, [record_id])
 
         return record_id
 

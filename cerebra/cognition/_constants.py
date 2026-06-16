@@ -25,6 +25,14 @@ SLOT_CAPACITIES: dict[str, int] = {
 
 SLOT_CAPACITY_TOTAL: int = sum(SLOT_CAPACITIES.values())  # 34
 
+# Synthetic sentinel provenance for cycle_episode records bridged into memory_records.
+# Migration018 inserts these rows once. EpisodeWriter.write() references them as FK
+# anchors so cycle-generated content can satisfy memory_records' NOT NULL constraints
+# without fabricating real ingestion provenance.
+SYNTHETIC_SOURCE_ID   = "cerebra_synthetic_source"
+SYNTHETIC_DOCUMENT_ID = "cerebra_synthetic_document"
+SYNTHETIC_CHUNK_ID    = "cerebra_synthetic_chunk"
+
 TOWER_CAPACITIES: dict[int, int] = {
     1: 10,  # T1 source-grounded evidence
     2: 5,   # T2 high-salience memories

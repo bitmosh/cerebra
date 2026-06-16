@@ -935,6 +935,74 @@ class Migration017_CatalystArmStats(Migration):
         """)
 
 
+class Migration018_SyntheticEpisodeProvenance(Migration):
+    """Phase 10: synthetic sentinel rows for cycle_episode memory_records.
+
+    EpisodeWriter dual-writes cycle episodes to both cycle_episode_records and
+    memory_records (Phase 10 retrieval feedback bridge). memory_records has NOT NULL
+    FKs to sources/documents/chunks; cycle-generated content has no real ingestion
+    provenance to satisfy them.
+
+    This migration inserts one permanent sentinel row in each of sources, documents,
+    and chunks. EpisodeWriter uses these as FK anchors when writing
+    record_type='cycle_episode' rows. Sentinel IDs match _constants.SYNTHETIC_*_ID.
+
+    INSERT OR IGNORE — idempotent if re-run on a vault that already has them.
+    """
+
+    version = 18
+    description = "Phase 10: synthetic sentinel provenance rows for cycle episode bridge"
+
+    def up(self, conn: sqlite3.Connection) -> None:
+        conn.execute(
+            "INSERT OR IGNORE INTO sources"
+            " (source_id, canonical_path, content_hash, size_bytes, detected_type,"
+            "  detection_confidence, parser_status, lifecycle_state, created_at)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, CAST(strftime('%s','now') * 1000 AS INTEGER))",
+            (
+                "cerebra_synthetic_source",
+                "cerebra://cycle-episodes",
+                "cerebra_synthetic",
+                0,
+                "cerebra_cycle",
+                1.0,
+                "skipped",
+                "active",
+            ),
+        )
+        conn.execute(
+            "INSERT OR IGNORE INTO documents"
+            " (document_id, source_id, document_type, lifecycle_state, created_at)"
+            " VALUES (?, ?, ?, ?, CAST(strftime('%s','now') * 1000 AS INTEGER))",
+            (
+                "cerebra_synthetic_document",
+                "cerebra_synthetic_source",
+                "cerebra_cycle",
+                "active",
+            ),
+        )
+        conn.execute(
+            "INSERT OR IGNORE INTO chunks"
+            " (chunk_id, document_id, source_id, heading_path, chunk_index, depth,"
+            "  content, content_hash, token_estimate, chunk_strategy,"
+            "  lifecycle_state, created_at)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CAST(strftime('%s','now') * 1000 AS INTEGER))",
+            (
+                "cerebra_synthetic_chunk",
+                "cerebra_synthetic_document",
+                "cerebra_synthetic_source",
+                "",
+                0,
+                0,
+                "Cerebra synthetic chunk — anchor for cycle episode provenance.",
+                "cerebra_synthetic",
+                0,
+                "synthetic",
+                "active",
+            ),
+        )
+
+
 # Registry: all migrations in ascending version order.
 ALL_MIGRATIONS: list[Migration] = [
     Migration001_InitSchema(),
@@ -954,6 +1022,7 @@ ALL_MIGRATIONS: list[Migration] = [
     Migration015_ContinuationBundles(),
     Migration016_CycleEpisodeRecords(),
     Migration017_CatalystArmStats(),
+    Migration018_SyntheticEpisodeProvenance(),
 ]
 
 
