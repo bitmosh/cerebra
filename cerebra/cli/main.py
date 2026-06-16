@@ -138,6 +138,17 @@ def ingest(
         for err in report.errors:
             click.echo(f"  {err}", err=True)
 
+    if not dry_run:
+        try:
+            from cerebra.graph.exporter import export_graph
+            gstats = export_graph(vault_path)
+            click.echo(
+                f"  Graph:    {gstats.node_count} nodes, {gstats.edge_count} edges"
+                f" → .cerebra/graph.json"
+            )
+        except Exception as _ge:
+            click.echo(f"  Warning: graph export failed: {_ge}", err=True)
+
 
 # ── config ────────────────────────────────────────────────────────────────────
 
@@ -1646,6 +1657,64 @@ def lifecycle_restore(record_id: str, vault: str | None, reason: str | None) -> 
         sys.exit(2)
 
     click.echo(f"Restored: {record_id}  ({prev} → active)")
+
+
+# ── export ───────────────────────────────────────────────────────────────────
+
+
+@cli.group()
+def export() -> None:
+    """Export vault data to external formats."""
+
+
+@export.command("graph")
+@click.option("--vault", default=None, help="Vault path (overrides env + config).")
+@click.option(
+    "--out", "out_path", default=None,
+    help="Output path (default: {vault}/.cerebra/graph.json).",
+)
+@click.option("--json", "output_json", is_flag=True, default=False, help="Output stats as JSON.")
+def export_graph_cmd(vault: str | None, out_path: str | None, output_json: bool) -> None:
+    """Export the vault knowledge graph to cerebra/v1 JSON for LumaWeave."""
+    import json as json_mod
+
+    from cerebra.graph.exporter import export_graph
+    from cerebra.inspector.sqlite_log import SQLiteEventLog
+    from cerebra.storage.migrations import run_migrations
+
+    vault_path = _get_vault(vault)
+    db_path = vault_path / "data" / "cerebra.db"
+
+    if not db_path.exists():
+        raise click.ClickException(
+            f"Vault at {vault_path} has no database. Run 'cerebra init {vault_path}' first."
+        )
+
+    try:
+        run_migrations(db_path)
+    except Exception as e:
+        raise click.ClickException(f"Migration failed: {e}") from e
+
+    resolved_out = Path(out_path) if out_path else None
+    event_log = SQLiteEventLog(db_path)
+
+    try:
+        stats = export_graph(vault_path, out_path=resolved_out, event_log=event_log)
+    except Exception as e:
+        raise click.ClickException(f"Graph export failed: {e}") from e
+
+    if output_json:
+        click.echo(json_mod.dumps(stats.as_dict(), indent=2))
+        return
+
+    click.echo(f"Graph export complete ({stats.elapsed_ms}ms):")
+    click.echo(f"  Nodes:       {stats.node_count}  ({stats.spine_count} sources, "
+               f"{stats.record_count} records)")
+    click.echo(f"  Edges:       {stats.edge_count}")
+    for etype, count in stats.edges_by_type.items():
+        click.echo(f"    {etype}: {count}")
+    click.echo(f"  Unclassified: {stats.unclassified_count} records omitted (no SKU)")
+    click.echo(f"  Output:      {stats.out_path}")
 
 
 # ── serve (daemon) ────────────────────────────────────────────────────────────
