@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cerebra — Development Arc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --paper: #ECEEF0;
+    --paper-warm: #E8EAEC;
+    --paper-shadow: #D8DCE0;
+    --ink: #1A1F2E;
+    --ink-soft: #2E3445;
+    --ink-mute: #5A6072;
+    --rule: #A8AEB8;
+    --rule-soft: #C8CCD2;
+    --active: #C73E1D;
+    --active-soft: #E07050;
+    --done: #6B6635;
+    --done-soft: #908862;
+    --concept: #1F4D52;
+    --concept-soft: #4A7A7F;
+    --warning: #B85C2A;
+    --measurement: #1A2742;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+@media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--ink);
+    background: var(--paper);
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.field-notes {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 60px 48px 120px;
+    position: relative;
+}
+
+/* MASTHEAD */
+
+.masthead {
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding: 28px 0 24px;
+    margin-bottom: 48px;
+    position: relative;
+}
+
+.masthead-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+}
+
+.masthead h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-variation-settings: 'opsz' 144, 'SOFT' 50;
+    font-size: 64px;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.masthead .ital {
+    font-style: italic;
+    font-variation-settings: 'opsz' 144, 'SOFT' 70;
+    color: var(--measurement);
+}
+
+.masthead .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-align: right;
+    line-height: 1.6;
+}
+
+.masthead .meta span {
+    display: block;
+}
+
+.masthead .meta .accent {
+    color: var(--active);
+}
+
+.subhead {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-style: italic;
+    font-weight: 350;
+    font-variation-settings: 'opsz' 24, 'SOFT' 60;
+    color: var(--ink-soft);
+    margin-top: 24px;
+    max-width: 680px;
+    line-height: 1.5;
+}
+
+/* STATBAR */
+
+.statbar {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    border: 1px solid var(--rule);
+    background: var(--paper-warm);
+    margin-bottom: 64px;
+}
+
+.stat {
+    padding: 18px 20px;
+    border-right: 1px solid var(--rule-soft);
+}
+
+.stat:last-child { border-right: none; }
+
+.stat .num {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 60, 'SOFT' 30;
+    font-size: 36px;
+    line-height: 1;
+    color: var(--ink);
+    font-weight: 400;
+}
+
+.stat .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-mute);
+    margin-top: 6px;
+}
+
+/* SECTION HEADERS */
+
+.section {
+    margin-bottom: 72px;
+}
+
+.section-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--active);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+}
+
+.section-eyebrow .marker {
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: var(--active);
+    transform: translateY(-3px);
+}
+
+.section h2 {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 96, 'SOFT' 40;
+    font-weight: 380;
+    font-size: 44px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 16px;
+    max-width: 740px;
+}
+
+.section h2 em {
+    font-style: italic;
+    font-variation-settings: 'opsz' 96, 'SOFT' 70;
+    color: var(--measurement);
+}
+
+.section .lede {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 350;
+    font-variation-settings: 'opsz' 24, 'SOFT' 50;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 680px;
+    margin-bottom: 32px;
+}
+
+/* PHASE CARDS */
+
+.phase {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 32px;
+    margin-bottom: 56px;
+    position: relative;
+}
+
+/* Core sample bar — the signature motif */
+.phase-core {
+    border-left: 1px solid var(--ink);
+    padding-left: 0;
+    position: relative;
+}
+
+.phase-core-strata {
+    width: 24px;
+    height: 100%;
+    position: relative;
+    margin-left: -1px;
+    border-left: 3px solid var(--ink);
+    background: var(--paper-warm);
+}
+
+.phase-core-strata::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        180deg,
+        transparent 0px,
+        transparent 6px,
+        var(--rule-soft) 6px,
+        var(--rule-soft) 7px
+    );
+}
+
+.phase-core-strata.foundation::before {
+    background-image: repeating-linear-gradient(180deg, transparent 0px, transparent 8px, var(--done) 8px, var(--done) 10px);
+}
+.phase-core-strata.storage::before {
+    background-image: repeating-linear-gradient(180deg, transparent 0px, transparent 4px, var(--measurement) 4px, var(--measurement) 6px);
+}
+.phase-core-strata.concept::before {
+    background-image: repeating-linear-gradient(45deg, transparent 0px, transparent 3px, var(--concept) 3px, var(--concept) 4px);
+    opacity: 0.5;
+}
+.phase-core-strata.retrieval::before {
+    background-image: repeating-linear-gradient(180deg, transparent 0px, transparent 2px, var(--measurement) 2px, var(--measurement) 5px);
+}
+.phase-core-strata.working {
+    border-left-color: var(--active);
+}
+.phase-core-strata.working::before {
+    background-image: repeating-linear-gradient(180deg, transparent 0px, transparent 3px, var(--active) 3px, var(--active) 5px);
+}
+
+.phase-marker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--ink-mute);
+    position: absolute;
+    top: 2px;
+    right: -8px;
+    background: var(--paper);
+    padding: 2px 6px;
+    transform: rotate(-90deg) translateX(-50%);
+    transform-origin: top right;
+    white-space: nowrap;
+}
+
+.phase-content {
+    padding-top: 0;
+}
+
+.phase-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 8px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.phase-meta .version {
+    color: var(--measurement);
+    font-weight: 600;
+}
+
+.phase-meta .status-active {
+    color: var(--active);
+    font-weight: 600;
+}
+
+.phase-meta .status-done {
+    color: var(--done);
+}
+
+.phase-meta .dot {
+    width: 4px;
+    height: 4px;
+    background: var(--rule);
+    border-radius: 50%;
+}
+
+.phase-title {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 60, 'SOFT' 30;
+    font-size: 30px;
+    font-weight: 420;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 8px;
+}
+
+.phase-thesis {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-style: italic;
+    font-variation-settings: 'opsz' 24, 'SOFT' 60;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 24px;
+    padding-left: 14px;
+    border-left: 2px solid var(--rule-soft);
+}
+
+.phase-body {
+    font-size: 15px;
+    color: var(--ink);
+}
+
+.phase-body p {
+    margin-bottom: 14px;
+    max-width: 680px;
+}
+
+.phase-body strong {
+    color: var(--measurement);
+    font-weight: 600;
+}
+
+/* SHIPPED LIST */
+
+.shipped {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 36px;
+    margin: 20px 0;
+    padding: 18px 22px;
+    background: var(--paper-warm);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+}
+
+.shipped-section h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 10px;
+}
+
+.shipped-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.shipped-section li {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    padding: 3px 0;
+    line-height: 1.5;
+}
+
+.shipped-section li::before {
+    content: '·';
+    color: var(--measurement);
+    margin-right: 8px;
+    font-weight: 700;
+}
+
+/* MEASUREMENT BAND */
+
+.measurement {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin: 24px 0;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+}
+
+.measurement-cell {
+    padding: 12px 14px;
+    border-right: 1px solid var(--rule-soft);
+}
+
+.measurement-cell:last-child { border-right: none; }
+
+.measurement-cell .v {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 48, 'SOFT' 20;
+    font-size: 22px;
+    color: var(--measurement);
+    font-weight: 450;
+    line-height: 1;
+}
+
+.measurement-cell .l {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-mute);
+    margin-top: 4px;
+}
+
+/* LEARNINGS / CALLOUTS */
+
+.learnings {
+    margin: 24px 0 0;
+    padding: 0;
+}
+
+.learnings h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 12px;
+}
+
+.learnings .learning {
+    padding: 10px 0 10px 22px;
+    border-top: 1px solid var(--rule-soft);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink);
+    position: relative;
+    max-width: 680px;
+}
+
+.learnings .learning:last-child {
+    border-bottom: 1px solid var(--rule-soft);
+}
+
+.learnings .learning::before {
+    content: '✦';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    color: var(--measurement);
+    font-size: 11px;
+}
+
+/* CONCEPT SECTION */
+
+.concept-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.concept-card {
+    border: 1px solid var(--concept-soft);
+    padding: 18px 20px;
+    background: rgba(31, 77, 82, 0.03);
+}
+
+.concept-card h4 {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 36, 'SOFT' 60;
+    font-style: italic;
+    font-size: 19px;
+    font-weight: 420;
+    color: var(--concept);
+    margin-bottom: 6px;
+    line-height: 1.2;
+}
+
+.concept-card .file {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--concept-soft);
+    margin-bottom: 10px;
+}
+
+.concept-card p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+}
+
+/* AHEAD SECTION */
+
+.phase-ahead {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 24px;
+    padding: 20px 0;
+    border-top: 1px solid var(--rule-soft);
+    align-items: start;
+}
+
+.phase-ahead:last-child {
+    border-bottom: 1px solid var(--rule-soft);
+}
+
+.phase-ahead-num {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 144, 'SOFT' 20;
+    font-size: 56px;
+    font-weight: 320;
+    line-height: 1;
+    color: var(--measurement);
+    letter-spacing: -0.04em;
+}
+
+.phase-ahead-num .small {
+    font-size: 20px;
+    color: var(--ink-mute);
+    letter-spacing: 0;
+    margin-left: -8px;
+    vertical-align: top;
+    font-weight: 400;
+}
+
+.phase-ahead-content h3 {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 48, 'SOFT' 40;
+    font-size: 24px;
+    font-weight: 430;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 6px;
+}
+
+.phase-ahead-content .codeword {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.phase-ahead-content p {
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    max-width: 660px;
+}
+
+.phase-ahead-content .delivers {
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--measurement);
+    line-height: 1.6;
+}
+
+.phase-ahead-content .delivers strong {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+/* THREADS */
+
+.threads-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px 36px;
+    margin-top: 24px;
+}
+
+.thread {
+    border-top: 2px solid var(--measurement);
+    padding-top: 14px;
+}
+
+.thread h4 {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: 'opsz' 36, 'SOFT' 50;
+    font-style: italic;
+    font-size: 19px;
+    font-weight: 440;
+    color: var(--ink);
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.thread .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--measurement);
+    margin-bottom: 10px;
+}
+
+.thread p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+}
+
+/* TRAINING SECTION */
+
+.training-thesis {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 350;
+    font-variation-settings: 'opsz' 36, 'SOFT' 65;
+    font-size: 22px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    max-width: 720px;
+    margin: 24px 0 32px;
+    padding-left: 22px;
+    border-left: 3px solid var(--measurement);
+}
+
+.signal-source {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 24px;
+    padding: 18px 0;
+    border-top: 1px solid var(--rule-soft);
+    align-items: baseline;
+}
+
+.signal-source:last-child {
+    border-bottom: 1px solid var(--rule-soft);
+}
+
+.signal-source h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--measurement);
+}
+
+.signal-source p {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.55;
+    max-width: 620px;
+}
+
+.signal-source .producer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-mute);
+    margin-bottom: 6px;
+}
+
+/* CLOSING */
+
+.closing {
+    margin-top: 96px;
+    padding-top: 32px;
+    border-top: 2px solid var(--ink);
+    text-align: center;
+}
+
+.closing .glyph {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 32px;
+    color: var(--measurement);
+    line-height: 1;
+}
+
+.closing .line {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-variation-settings: 'opsz' 36, 'SOFT' 75;
+    font-size: 18px;
+    color: var(--ink-soft);
+    margin-top: 14px;
+    font-weight: 350;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+}
+
+.closing .sig {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-top: 28px;
+}
+
+/* SMALL SCREENS */
+
+@media (max-width: 720px) {
+    .field-notes { padding: 36px 24px 80px; }
+    .masthead h1 { font-size: 44px; }
+    .masthead-grid { grid-template-columns: 1fr; }
+    .masthead .meta { text-align: left; }
+    .statbar { grid-template-columns: repeat(2, 1fr); }
+    .stat { border-bottom: 1px solid var(--rule-soft); }
+    .section h2 { font-size: 32px; }
+    .phase { grid-template-columns: 1fr; gap: 0; }
+    .phase-core { display: none; }
+    .shipped { grid-template-columns: 1fr; gap: 16px; }
+    .concept-grid { grid-template-columns: 1fr; }
+    .measurement { grid-template-columns: repeat(2, 1fr); }
+    .threads-grid { grid-template-columns: 1fr; }
+    .phase-ahead { grid-template-columns: 60px 1fr; gap: 16px; }
+    .phase-ahead-num { font-size: 40px; }
+    .signal-source { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* PRINT */
+
+@media print {
+    body { background: white; }
+    .field-notes { max-width: none; padding: 24px; }
+}
+</style>
+</head>
+<body>
+<div class="field-notes">
+
+<!-- MASTHEAD -->
+<header class="masthead">
+    <div class="masthead-grid">
+        <h1>Cerebra<br><span class="ital">field notes</span></h1>
+        <div class="meta">
+            <span>Development arc</span>
+            <span>v0.0.1 &rarr; <span class="accent">v0.2.2</span></span>
+            <span>~10 days · solo author</span>
+        </div>
+    </div>
+    <p class="subhead">
+        A cognitive substrate for memory-aware AI systems. These notes record the architecture as it surfaced, decision by decision, and trace the work remaining toward a runtime that doesn't just retrieve but actively thinks.
+    </p>
+</header>
+
+<!-- STATBAR -->
+<div class="statbar">
+    <div class="stat">
+        <div class="num">746</div>
+        <div class="label">tests passing</div>
+    </div>
+    <div class="stat">
+        <div class="num">~83<span style="font-size:18px;color:var(--ink-mute);">%</span></div>
+        <div class="label">coverage</div>
+    </div>
+    <div class="stat">
+        <div class="num">9</div>
+        <div class="label">migrations</div>
+    </div>
+    <div class="stat">
+        <div class="num">13k</div>
+        <div class="label">lines python</div>
+    </div>
+    <div class="stat">
+        <div class="num">745</div>
+        <div class="label">embedded records</div>
+    </div>
+</div>
+
+<!-- THE ARC -->
+<section class="section">
+    <div class="section-eyebrow"><span class="marker"></span>I — The Arc</div>
+    <h2>What's been <em>built</em>, in order of how it became necessary.</h2>
+    <p class="lede">
+        Cerebra started as source-memory infrastructure and accumulated layers as each layer's absence became the next constraint. The work moves in phases — design doc, then implementation, then close-out — with version markers at every meaningful threshold. The architecture you're reading wasn't planned all at once. It surfaced.
+    </p>
+</section>
+
+<!-- PHASE 1-2 -->
+<div class="phase">
+    <div class="phase-core">
+        <div class="phase-core-strata foundation"></div>
+    </div>
+    <div class="phase-content">
+        <div class="phase-meta">
+            <span class="version">v0.0.1 — v0.1.0</span>
+            <span class="dot"></span>
+            <span>Phases 1–2</span>
+            <span class="dot"></span>
+            <span class="status-done">SHIPPED</span>
+        </div>
+        <h3 class="phase-title">Foundations</h3>
+        <p class="phase-thesis">
+            Source ingestion, chunk-and-record architecture, and a working SKU classifier. The substrate the rest of the system would sit on.
+        </p>
+        <div class="phase-body">
+            <p>
+                Phase 1 established the source memory model: documents enter as <strong>sources</strong>, get chunked into <strong>chunks</strong>, each chunk becomes one or more <strong>memory records</strong>. The forward-only migration discipline started here and has held through every subsequent phase.
+            </p>
+            <p>
+                Phase 2 shipped the production substrate at v0.1.0: <strong>Granite 4.1 3B Instruct</strong> as the SKU classifier, running locally via Ollama. 65% partial-credit accuracy on the v0.1.0 calibration set. The methodology question that surfaced — multi-model comparison to surface contested classifications — became the foundation for everything that came after.
+            </p>
+            <p>
+                The benched LoRA arc lived between Phase 2 and Phase 3. Phase 1 of training hit 10% with 83% parse failures. Phase 2 of training fixed the methodology (EOS + completion-only loss) and reached 46.7% with 0 parse failures. Phase 3 of training surfaced the real problem: corpus imbalance. The work was strategically benched pending corpus growth or a specific downstream need — a deliberate scope cut, not a failure.
+            </p>
+        </div>
+        <div class="learnings">
+            <h4>Banked</h4>
+            <div class="learning">Forward-only migrations as an inviolable discipline. Edit-in-place breaks reproducibility; subsequent migrations with idempotent guards is the only acceptable path.</div>
+            <div class="learning">The two-tier teacher pattern (weak teacher + strong corrector) emerged as the right methodology for corpus enrichment, with naming separated from "distillation" to avoid classifier overlap with worried use cases.</div>
+        </div>
+    </div>
+</div>
+
+<!-- PHASE 3 -->
+<div class="phase">
+    <div class="phase-core">
+        <div class="phase-core-strata storage"></div>
+    </div>
+    <div class="phase-content">
+        <div class="phase-meta">
+            <span class="version">v0.1.0 — v0.1.5</span>
+            <span class="dot"></span>
+            <span>Phase 3</span>
+            <span class="dot"></span>
+            <span class="status-done">SHIPPED</span>
+        </div>
+        <h3 class="phase-title">Storage and the Index Layer</h3>
+        <p class="phase-thesis">
+            The substrate gained the indexes it needed to be queryable: vector embeddings, lexical FTS, a polymorphic graph schema, and event-driven freshness tracking.
+        </p>
+        <div class="phase-body">
+            <p>
+                The phase shipped five new tables in Migration006 — <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">embeddings, pending_embeddings, index_state, graph_nodes, graph_edges</code> — plus Migration007 for seeding fixes after a real-world wrinkle (Migration006 was already applied to the dev vault, so its seed logic moved to a new migration rather than editing the original).
+            </p>
+            <p>
+                The graph schema is polymorphic from day one: <strong>20 structural edge types plus 16 SKU semantic edge types</strong> are schema-accepted in Phase 3, even though Phase 3 only writes two of them. The decision to leave the doors open up front costs nothing in migration weight and avoids expensive schema changes later when more edge types get used.
+            </p>
+            <p>
+                The embedding model is <strong>mxbai-embed-large-v1</strong> at 1024-dim, with Matryoshka representation learning preserved. 745 records embedded in 9.6 seconds on RTX 4070 SUPER, 11.9ms average latency. Forward-compat columns reserved for future training work (<code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">embedding_alt</code>).
+            </p>
+            <p>
+                Verification ran 8 vector queries against the corpus: 0.696 mean top-1 on domain queries, 0.485 on adversarial. <strong>A 0.21 discrimination gap.</strong> Clean separation between "system knows this" and "system doesn't know this."
+            </p>
+        </div>
+        <div class="shipped">
+            <div class="shipped-section">
+                <h4>Modules added</h4>
+                <ul>
+                    <li>cerebra/storage/embeddings.py</li>
+                    <li>cerebra/storage/lexical.py</li>
+                    <li>cerebra/storage/graph_store.py</li>
+                    <li>cerebra/storage/artifact_store.py</li>
+                    <li>cerebra/storage/index_state.py</li>
+                </ul>
+            </div>
+            <div class="shipped-section">
+                <h4>Architectural commits</h4>
+                <ul>
+                    <li>Polymorphic graph (36 edge types)</li>
+                    <li>Event-driven index freshness</li>
+                    <li>Per-index model versioning</li>
+                    <li>CLI lockfile mechanism (specced)</li>
+                    <li>updated_at + ON DELETE RESTRICT</li>
+                </ul>
+            </div>
+        </div>
+        <div class="measurement">
+            <div class="measurement-cell"><div class="v">409</div><div class="l">tests</div></div>
+            <div class="measurement-cell"><div class="v">86.7%</div><div class="l">coverage</div></div>
+            <div class="measurement-cell"><div class="v">5</div><div class="l">new tables</div></div>
+            <div class="measurement-cell"><div class="v">0.21</div><div class="l">discrimination gap</div></div>
+        </div>
+        <div class="learnings">
+            <h4>Banked</h4>
+            <div class="learning">PRAGMA foreign_keys = ON is per-connection, not per-database. ON DELETE RESTRICT is silently ignored if the pragma isn't set. The kind of footgun that bites in production code that worked in development.</div>
+            <div class="learning">Schema decisions made for forward compatibility (extra columns, reserved edge types) cost almost nothing at write-time and pay back many times over when they prevent expensive migrations later.</div>
+        </div>
+    </div>
+</div>
+
+<!-- CONCEPT INTERLUDE -->
+<div class="phase">
+    <div class="phase-core">
+        <div class="phase-core-strata concept"></div>
+    </div>
+    <div class="phase-content">
+        <div class="phase-meta">
+            <span class="version" style="color:var(--concept);">interlude</span>
+            <span class="dot"></span>
+            <span>Cognitive Extension</span>
+            <span class="dot"></span>
+            <span style="color:var(--concept);">CONCEPT</span>
+        </div>
+        <h3 class="phase-title">Five concept documents.</h3>
+        <p class="phase-thesis">
+            Between Phase 3's close and Phase 4's design, a four-hour conversation produced a coherent post-v0.1 architectural direction. The concept docs are durable artifacts, not implementation specs.
+        </p>
+        <div class="phase-body">
+            <p>
+                The series describes a layered cognitive architecture extension: a <strong>substrate</strong> that preserves interpretive ambiguity, a <strong>perspectival layer</strong> that generates multi-commit signal, a <strong>coherence layer</strong> that keeps commits honest, and a <strong>training methodology</strong> that converts the resulting structured data into model weights. Forward-compat with current Cerebra; nothing in the concept docs blocks shipped work.
+            </p>
+        </div>
+        <div class="concept-grid">
+            <div class="concept-card">
+                <h4>Interpretive Lattice</h4>
+                <div class="file">interpretive_lattice.md · substrate</div>
+                <p>Confidence-gated multi-commit. When the classifier produces a distribution where multiple categories clear 65%, the chunk lands at every qualifying position. Interpretive ambiguity preserved rather than collapsed.</p>
+            </div>
+            <div class="concept-card">
+                <h4>Archetypal Lenses</h4>
+                <div class="file">archetypal_lenses.md · generation</div>
+                <p>Twenty-two cognitive postures evaluated in parallel, with full N×N transformation operators between them. Silence operator as a first-class lens. Structural pattern from Major Arcana, content removed.</p>
+            </div>
+            <div class="concept-card">
+                <h4>Evaluative Frame</h4>
+                <div class="file">evaluative_frame.md · coherence</div>
+                <p>Eight mutually-reinforcing aspects of cognitive functioning, with clutch-driven event-based rebalancing. Constitutional self-critique pattern applied to interpretive coherence rather than harm avoidance.</p>
+            </div>
+            <div class="concept-card">
+                <h4>Self-Improvement</h4>
+                <div class="file">iterative_self_improvement.md · method</div>
+                <p>Harness-internalization spiral: model runs with cognitive harness, structured data captured, strong-corrector amendments applied, model fine-tuned, harness extends into new territory. Drift mitigated by held-out paradox-shaped fixtures.</p>
+            </div>
+        </div>
+        <p class="phase-body" style="margin-top:18px;">
+            A fifth document, <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">cognitive_extension_overview.md</code>, ties the four together. Total ~15,600 words. Implementation is post-v0.1, distributed across future phases. The docs exist so the architectural commitments can be made deliberately rather than discovered during implementation.
+        </p>
+    </div>
+</div>
+
+<!-- PHASE 4 -->
+<div class="phase">
+    <div class="phase-core">
+        <div class="phase-core-strata retrieval"></div>
+    </div>
+    <div class="phase-content">
+        <div class="phase-meta">
+            <span class="version">v0.1.5 — v0.2.0</span>
+            <span class="dot"></span>
+            <span>Phase 4</span>
+            <span class="dot"></span>
+            <span class="status-done">SHIPPED</span>
+        </div>
+        <h3 class="phase-title">Retrieval Orchestration</h3>
+        <p class="phase-thesis">
+            The substrate started <em>doing something visible</em>. A query enters; six steps run; ranked results emerge with full provenance. Abstention semantics catch the cases where the right answer is silence.
+        </p>
+        <div class="phase-body">
+            <p>
+                The query planner classifies incoming queries into D1 categories via a heuristic keyword vocabulary (loadable TOML, no LLM cost). Three modes — <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">hybrid</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">lexical_only</code>, <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">vector_only</code> — selected from query shape.
+            </p>
+            <p>
+                The six-step traversal walks the SKU substrate: query construction, exact SKU match, partial D1 match, sibling traversal (explicit no-op for v0.1 with documented swap-in interface), vector fallback (200-cap), trace annotation. <strong>Every result carries its retrieval path</strong> — a string describing how it was found. <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">partial_sku:D1=0xe + vector_fallback</code> is real output.
+            </p>
+            <p>
+                Salience composition runs five components with calibrated weights: <strong>semantic 0.40, lexical 0.25, sku_match 0.15, recency 0.10, lifecycle 0.10</strong>. The lexical normalization formula was direction-pinned by unit test after a near-miss where the formula was inverted in the design doc. Best BM25 maps to 1.0; worst maps to 0.0. The test catches any future re-inversion.
+            </p>
+            <p>
+                Abstention is the substrate-level silence operator. When the maximum salience score falls below the configurable floor (default 0.35), no commitment happens. <strong>A structured abstention packet</strong> is returned containing <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">best_score_seen</code>, an <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">abstention_rationale</code>, and an empty <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">selected_memory</code> list. Downstream agents get an honest answer to "what should I tell you when retrieval found nothing useful?"
+            </p>
+            <p>
+                <strong>ContextPackets</strong> carry full provenance: retrieval_trace_id, origin_event_ids, per-candidate score components, vault-relative source paths, packet_version for forward compat. The packet is regenerable from the trace, not stored. The trace is queryable for any retrieval that ever happened.
+            </p>
+        </div>
+        <div class="shipped">
+            <div class="shipped-section">
+                <h4>Modules added</h4>
+                <ul>
+                    <li>cerebra/retrieval/planner.py</li>
+                    <li>cerebra/retrieval/traversal.py</li>
+                    <li>cerebra/retrieval/scorer.py</li>
+                    <li>cerebra/retrieval/trace.py</li>
+                    <li>cerebra/retrieval/context_packet.py</li>
+                    <li>cerebra/retrieval/d1_keywords.toml</li>
+                </ul>
+            </div>
+            <div class="shipped-section">
+                <h4>CLI surface</h4>
+                <ul>
+                    <li>cerebra search "&lt;query&gt;"</li>
+                    <li>cerebra context "&lt;task&gt;"</li>
+                    <li>cerebra reindex --lexical</li>
+                    <li>--format json (NDJSON)</li>
+                    <li>--floor, --limit, --out, --explain</li>
+                </ul>
+            </div>
+        </div>
+        <div class="measurement">
+            <div class="measurement-cell"><div class="v">751</div><div class="l">tests</div></div>
+            <div class="measurement-cell"><div class="v">88.5%</div><div class="l">coverage</div></div>
+            <div class="measurement-cell"><div class="v">11</div><div class="l">impl steps</div></div>
+            <div class="measurement-cell"><div class="v">0</div><div class="l">failed at close</div></div>
+        </div>
+        <div class="learnings">
+            <h4>Banked</h4>
+            <div class="learning">"Every result carries its retrieval path" is the Cerebra differentiator from RAG. A query that returns "this chunk was found via partial_sku:D1=0xe + vector_fallback" explains itself in ways pure vector retrieval cannot.</div>
+            <div class="learning">Calibrated abstention as a first-class concept. Most ML systems are trained to always produce something; the silence operator gives the architecture a positive concept of "deciding not to" — the kind of training signal nothing else generates.</div>
+            <div class="learning">FTS5 strict-AND semantics + the mode gate routing means lexical contributes 0.0 for most realistic queries on this corpus. Calibration concern flagged for Phase 5+ rather than rushed.</div>
+        </div>
+    </div>
+</div>
+
+<!-- PHASE 5 -->
+<div class="phase">
+    <div class="phase-core">
+        <div class="phase-core-strata working"></div>
+    </div>
+    <div class="phase-content">
+        <div class="phase-meta">
+            <span class="version" style="color:var(--active);">v0.2.0 — v0.2.2 →</span>
+            <span class="dot"></span>
+            <span>Phase 5</span>
+            <span class="dot"></span>
+            <span class="status-active">IN PROGRESS · 4/8</span>
+        </div>
+        <h3 class="phase-title">Working Memory and Truth Tower</h3>
+        <p class="phase-thesis">
+            The substrate gains genuine state across time. Working memory persists between command invocations. A two-tier truth tower captures what the system has actually verified.
+        </p>
+        <div class="phase-body">
+            <p>
+                Phase 5 is the threshold where Cerebra becomes "an actively thinking system" rather than "a substrate that supports thinking." Through Step 4, working memory operates as ten named slots (goal, constraint, context, hypothesis, evidence, contradiction, recent_output, question, procedure, interrupt) with capacity caps and a four-tier eviction policy: <strong>pinned items never evicted, tower-cited items eviction-resistant, lowest effective salience evicted first, oldest as tiebreaker</strong>.
+            </p>
+            <p>
+                Sessions are persistent — one active per vault, generated on first write-path command, reusable across subsequent commands. The lockfile mechanism from Phase 3's design doc (which got carried as debt through Phase 4) finally landed in Step 2 with proper PID-based stale detection.
+            </p>
+            <p>
+                The truth tower (Step 5+) will hold T1 evidence (auto-populated from <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">cerebra context</code>) and T2 insights (manual promotion with T1 citation requirement). Staleness propagation when T1 evicts. Chronological render embeddable in ContextPacket via the optional <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">truth_tower</code> field — no packet version bump needed.
+            </p>
+            <p>
+                Forward-compat columns reserved on <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">working_memory_items</code> at Migration009 time: <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">interpretive_lens</code> and <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--paper-warm);padding:1px 5px;">frame_metadata_json</code>, both nullable in Phase 5. The cognitive extension can be implemented later without further schema changes to this table.
+            </p>
+        </div>
+        <div class="shipped">
+            <div class="shipped-section">
+                <h4>Steps complete</h4>
+                <ul>
+                    <li>Step 1: Migration009 + constants</li>
+                    <li>Step 2: Session management + lockfile</li>
+                    <li>Step 3: WorkingMemory core + eviction</li>
+                    <li>Step 4: cerebra memory CLI surface</li>
+                </ul>
+            </div>
+            <div class="shipped-section">
+                <h4>Steps remaining</h4>
+                <ul>
+                    <li>Step 5: TruthTower T1+T2 core</li>
+                    <li>Step 6: cerebra context T1 auto-populate</li>
+                    <li>Step 7: T2 promotion via --tier flag</li>
+                    <li>Step 8: Tower status + integration tests</li>
+                </ul>
+            </div>
+        </div>
+        <div class="measurement">
+            <div class="measurement-cell"><div class="v">746</div><div class="l">tests</div></div>
+            <div class="measurement-cell"><div class="v">83.3%</div><div class="l">coverage</div></div>
+            <div class="measurement-cell"><div class="v">16</div><div class="l">new event types</div></div>
+            <div class="measurement-cell"><div class="v">10</div><div class="l">slot types</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- WHAT'S AHEAD -->
+<section class="section" style="margin-top:96px;">
+    <div class="section-eyebrow"><span class="marker"></span>II — What's Ahead</div>
+    <h2>The work <em>remaining</em>, in the order it earns its place.</h2>
+    <p class="lede">
+        The roadmap beyond Phase 5 is mostly composing what's already there into a working cognitive runtime. Each phase has a single thesis and a clear set of architectural commitments. The pace from Phase 3 forward suggests these phases land in roughly 1–3 weeks each.
+    </p>
+</section>
+
+<div class="phase-ahead">
+    <div class="phase-ahead-num">06<span class="small">·</span></div>
+    <div class="phase-ahead-content">
+        <h3>Cycle Runtime</h3>
+        <div class="codeword">the thinking loop</div>
+        <p>Working memory + truth tower + retrieval composed into reasoning cycles. A cycle starts with a goal, retrieves into working memory, derives toward the tower, evaluates, consolidates. This is where Cerebra goes from "you can ask it" to "it can ask itself."</p>
+        <div class="delivers">
+            DELIVERS: <strong>cerebra serve</strong> daemon mode; cycle_id as runtime context; the <em>actually thinking</em> demo.
+        </div>
+    </div>
+</div>
+
+<div class="phase-ahead">
+    <div class="phase-ahead-num">07<span class="small">·</span></div>
+    <div class="phase-ahead-content">
+        <h3>Prediction and Evaluation</h3>
+        <div class="codeword">did we get it right</div>
+        <p>The runtime records what it predicted and whether the prediction held. Each cycle's outputs become training data for whether the cycle's reasoning was sound. This is the layer that lets the system improve from its own operation.</p>
+        <div class="delivers">
+            DELIVERS: PredictionMade and PredictionEvaluated events as structured training signal; calibration of confidence vs accuracy at the cycle level.
+        </div>
+    </div>
+</div>
+
+<div class="phase-ahead">
+    <div class="phase-ahead-num">08<span class="small">·</span></div>
+    <div class="phase-ahead-content">
+        <h3>Consolidation</h3>
+        <div class="codeword">long-running memory hygiene</div>
+        <p>Memory records age. Tower items get evicted or revisited. Some interpretations get retired in favor of better ones. Consolidation is the policy layer for "what happens to memory over time" — archive, tombstone, re-classify, summarize.</p>
+        <div class="delivers">
+            DELIVERS: retired-but-not-deleted commits as training signal; tower stale-management; the resolution mechanism for multi-commit ambiguity.
+        </div>
+    </div>
+</div>
+
+<div class="phase-ahead">
+    <div class="phase-ahead-num">09<span class="small">·</span></div>
+    <div class="phase-ahead-content">
+        <h3>Catalyst</h3>
+        <div class="codeword">strategic decisions as first-class data</div>
+        <p>Not every chunk is the same. Some decisions are <em>load-bearing</em> — they shape what comes after. Catalyst makes strategic decisions first-class memory entities with their own node type, lineage, and discoverability.</p>
+        <div class="delivers">
+            DELIVERS: <strong>Decision</strong> node type populated; "what did we decide and why" becomes a queryable structure rather than buried prose.
+        </div>
+    </div>
+</div>
+
+<div class="phase-ahead">
+    <div class="phase-ahead-num">10<span class="small">·</span></div>
+    <div class="phase-ahead-content">
+        <h3>Truth Tower T3–T5</h3>
+        <div class="codeword">insights, hypotheses, goals</div>
+        <p>The two-tier tower from Phase 5 grows to its full form. T3 is derived insight (cross-references multiple T2s). T4 is hypothesis (requires deliberate cognitive work to form). T5 is goal — set externally, never auto-promoted.</p>
+        <div class="delivers">
+            DELIVERS: full truth tower; asymmetric promotion semantics (higher tiers require deliberate work); the discipline that prevents the tower from becoming a house of cards.
+        </div>
+    </div>
+</div>
+
+<!-- CROSS-CUTTING -->
+<section class="section" style="margin-top:96px;">
+    <div class="section-eyebrow"><span class="marker"></span>III — Cross-cutting</div>
+    <h2>Threads that <em>run alongside</em> the phase work.</h2>
+    <p class="lede">
+        Not everything fits in the phase progression. Some work is architectural cleanup, some is integration with other projects in the portfolio, some is product surface. These threads emerged from real friction and have natural homes between phases or as sidequests.
+    </p>
+</section>
+
+<div class="threads-grid">
+    <div class="thread">
+        <div class="tag">infrastructure</div>
+        <h4>lattica-primitives extraction</h4>
+        <p>Six primitives are vendored across Cerebra, LumaWeave, Bons.ai, Policy Scout. Extraction to a real PyPI package once 2+ consumers stabilize. Phase 6 territory or a sidequest between phases. Converts personal codebase into infrastructure others can build on.</p>
+    </div>
+    <div class="thread">
+        <div class="tag">infrastructure</div>
+        <h4>eval-core extraction</h4>
+        <p>Policy Scout's mature eval runner (EvalCase, runner, YAML DSL, 7 assertion types) becomes a shared package. Cerebra is the heaviest consumer (SKU accuracy, retrieval regression, LoRA quality, abstention calibration). Lives in its own repo to keep dependency directions clean.</p>
+    </div>
+    <div class="thread">
+        <div class="tag">integration</div>
+        <h4>Daemon mode (cerebra serve)</h4>
+        <p>Unix-domain-socket protocol with FastAPI-shaped routes. Lets Lattica's Tauri dashboard and LumaWeave's graph adapter consume Cerebra at runtime without shelling out. Phase 6's natural surface; design now so Phase 5 work doesn't accidentally close the doors.</p>
+    </div>
+    <div class="thread">
+        <div class="tag">integration</div>
+        <h4>Discord ingest adapter</h4>
+        <p>Discord channel history → cerebra ingest pipeline → searchable corpus. Decoupled from the discord-bot's gather_context swap (which waits for daemon mode). Probably 1–2 days of work between phases.</p>
+    </div>
+    <div class="thread">
+        <div class="tag">methodology</div>
+        <h4>LoRA resume</h4>
+        <p>Currently benched pending corpus growth. Phase 5+ generates new corpus shape: working memory access patterns, tower citation chains, frame deviation chains. Resume after Phase 6 ships, when usage data has accumulated enough to retrain meaningfully against arbitrary-content anchors.</p>
+    </div>
+    <div class="thread">
+        <div class="tag">methodology</div>
+        <h4>Cognitive extension implementation</h4>
+        <p>The five concept docs become real code starting post-Phase-5. Lattice multi-commit substrate first (extends Phase 5's working memory). Lens system next. Evaluative frame third. Iterative methodology last. Publishable as research if framed deliberately.</p>
+    </div>
+    <div class="thread">
+        <div class="tag">product</div>
+        <h4>Multi-vault future</h4>
+        <p>Phase 5's "one active session per vault" is a simplifying assumption. Multi-vault adds session-identity questions, permission models, sync semantics. Months of work; not v0.x; the path from personal tool to team tool to service.</p>
+    </div>
+    <div class="thread">
+        <div class="tag">product</div>
+        <h4>MCP server interface</h4>
+        <p>Cerebra-as-MCP-server lets other Claude or agent systems use Cerebra as their memory substrate. A real product story for the framework angle. Sits on top of daemon mode rather than replacing it.</p>
+    </div>
+</div>
+
+<!-- TRAINING SIGNAL -->
+<section class="section" style="margin-top:96px;">
+    <div class="section-eyebrow"><span class="marker"></span>IV — Training</div>
+    <h2>The training signal <em>each layer</em> produces.</h2>
+    <p class="lede">
+        The architecture isn't built independent of training — it's built so that <em>operating it</em> produces the data needed to train better versions of itself. Each phase contributes a different kind of training signal. The methodology document spells this out at depth; what follows is the inventory.
+    </p>
+</section>
+
+<p class="training-thesis">
+    Cerebra produces interpreted experience, not labeled examples. That's the signal nothing else generates and the reason the architecture earns its complexity.
+</p>
+
+<div class="signal-source">
+    <h4>Phase 1–2</h4>
+    <div>
+        <div class="producer">// SKU classifications with provenance</div>
+        <p>Every chunk's classification carries its multi-model voting history. Contested classifications are queryable. Stage-2 disagreement is structured data, not noise — it's the fixture set for calibration work that hasn't started yet.</p>
+    </div>
+</div>
+
+<div class="signal-source">
+    <h4>Phase 3</h4>
+    <div>
+        <div class="producer">// embeddings + graph edges</div>
+        <p>Vector embeddings preserve semantic distance. Graph edges declare structural relationships (CONTAINS, DERIVED_FROM, plus 18 more structural and 16 SKU semantic types). The combination is the substrate for any future training that wants to learn the relationship between meaning-as-text and meaning-as-position-in-knowledge-structure.</p>
+    </div>
+</div>
+
+<div class="signal-source">
+    <h4>Phase 4</h4>
+    <div>
+        <div class="producer">// retrieval traces with usage labels</div>
+        <p>Every retrieval is fully audited. retrieval_traces + retrieval_steps + retrieval_candidates record query, plan, traversal path, candidates surfaced, scores at each component, selections, abstentions. Over time this becomes labeled-by-use training data: which interpretations served which queries, which patterns produced abstention, which queries needed which signals.</p>
+    </div>
+</div>
+
+<div class="signal-source">
+    <h4>Phase 5</h4>
+    <div>
+        <div class="producer">// working memory + tower citation chains</div>
+        <p>Access patterns over time. Which records get promoted to working memory and survive eviction. Which T1 items get cited by T2. When T1 evicts and T2 marks stale. The shape of <em>what the system was actually holding in attention</em> during its operation — a different signal than what it retrieved.</p>
+    </div>
+</div>
+
+<div class="signal-source">
+    <h4>Phase 6+</h4>
+    <div>
+        <div class="producer">// prediction-evaluation deltas</div>
+        <p>The runtime makes predictions; reality validates them. The delta between prediction and outcome is the training signal that lets the system improve at its own cognitive operation. This is the layer that closes the loop from "data accumulates" to "data improves the model that produces data."</p>
+    </div>
+</div>
+
+<div class="signal-source">
+    <h4>Concept</h4>
+    <div>
+        <div class="producer">// frame deviation-compensation chains</div>
+        <p>When the eight-aspect evaluative frame detects deviation in one aspect and triggers compensatory activity in others, the resulting chain — deviation, compensation, outcome — is recorded. Over time, this becomes meta-cognitive training data: how does the system recognize its own miscalibration, what compensations work, when does silence win.</p>
+    </div>
+</div>
+
+<!-- CLOSING -->
+<div class="closing">
+    <div class="glyph">✦</div>
+    <p class="line">
+        The architecture you're reading wasn't planned all at once. It surfaced. The work remaining will probably also surface — design doc, then implementation, then close-out, each phase earning the next.
+    </p>
+    <div class="sig">field notes · 2026.06.12</div>
+</div>
+
+</div>
+</body>
+</html>
