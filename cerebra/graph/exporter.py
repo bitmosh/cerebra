@@ -10,7 +10,9 @@ are exported. Stale, archived, and tombstoned records are omitted entirely.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -436,6 +438,54 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
     return graph
 
 
+# ── Hub-direct emission ───────────────────────────────────────────────────────
+
+
+def _emit_snapshot_available(
+    *,
+    out_path: Path,
+    vault_path: Path,
+    stats: "ExportStats",
+    hub_store: Any,
+    triggered_by: str | None,
+) -> None:
+    """Emit GraphSnapshotAvailable to the hub fossic store. Never raises."""
+    try:
+        from cerebra.storage.fossic_store import FossicStore
+
+        store = hub_store
+        if store is None:
+            platform_path = os.environ.get("CEREBRA_PLATFORM_STORE")
+            if not platform_path:
+                return
+            store = FossicStore.at_platform_path(Path(platform_path).expanduser())
+
+        content_hash = hashlib.sha256(out_path.read_bytes()).hexdigest()
+        lineage_id = hashlib.sha256(
+            str(vault_path.resolve()).encode()
+        ).hexdigest()[:16]
+
+        payload: dict[str, Any] = {
+            "lineage_id": lineage_id,
+            "graph_version": "cerebra/v1",
+            "snapshot_ref": str(out_path),
+            "content_hash": content_hash,
+            "node_count": stats.node_count,
+            "edge_count": stats.edge_count,
+        }
+        if triggered_by is not None:
+            payload["triggered_by"] = triggered_by
+
+        store.append(
+            f"cerebra/graph/{lineage_id}",
+            "GraphSnapshotAvailable",
+            payload,
+            indexed_tags={"lineage_id": lineage_id},
+        )
+    except Exception:
+        pass  # hub unavailability must never fail the export
+
+
 # ── Public entry point ────────────────────────────────────────────────────────
 
 
@@ -444,11 +494,15 @@ def export_graph(
     *,
     out_path: Path | None = None,
     event_log: SQLiteEventLog | None = None,
+    hub_store: Any = None,
+    triggered_by: str | None = None,
 ) -> ExportStats:
     """Export the vault graph to a cerebra/v1 JSON file.
 
     Writes to {vault_path}/.cerebra/graph.json by default, or to out_path if
     provided. Returns ExportStats. Emits GraphExported to event_log if supplied.
+    Emits GraphSnapshotAvailable hub-direct if hub_store is provided or
+    CEREBRA_PLATFORM_STORE env var is set. Hub errors are swallowed silently.
     """
     t0 = time.monotonic()
 
@@ -489,5 +543,13 @@ def export_graph(
             ),
             data=stats.as_dict(),
         ))
+
+    _emit_snapshot_available(
+        out_path=out_path,
+        vault_path=vault_path,
+        stats=stats,
+        hub_store=hub_store,
+        triggered_by=triggered_by,
+    )
 
     return stats
