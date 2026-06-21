@@ -1,134 +1,90 @@
-# Cerebra
+# cerebra-classic
 
-A local-first cognitive runtime. Memory is one subsystem; the runtime is the project.
+Archival fork of [Cerebra](https://github.com/bitmosh/cerebra) at the
+pre-dyson-sphere baseline state.
 
-Part of the [Lattica](https://github.com/bitmosh) suite alongside LumaWeave and Bons.ai. Each project is standalone — connection happens through data contracts and graph-native event emission, not runtime dependencies.
+**Tagged commit:** `v0.4.4-pre-dyson` (2026-06-21)
 
-## Status
+## What this repository is
 
-**v0.1** — Architecture complete, full spine tested against real Ollama. See `docs/refined-runtime-model/CEREBRA_DEV_ROADMAP_v8.1.md` for roadmap.
+This is a frozen snapshot of Cerebra immediately after the fossic v1.6.0
+substrate release and immediately before the dyson sphere migration begins.
+The migration absorbs portions of Cerebra's persistence layer into a
+Rust-backed substrate, transforming the architecture in measurable ways.
 
-## What Cerebra is
+This fork exists so the *before* state remains:
 
-A configurable cognitive cycle runtime that:
-- Maintains durable memory across sessions
-- Manages working context with bounded contested slots
-- Evaluates outputs across six epistemological signals (coherence, groundedness, relevance, precision, generativity, epistemic humility)
-- Learns from prediction error via a bandit selector
-- Operates within structural safety bounds (capability + leeway + constitutional layers)
-- Emits inspectable graph-native events for downstream visualization
+- **Inspectable** — every architectural decision, every line of code, every
+  schema migration is preserved as it was on 2026-06-21
+- **Runnable** — the system can be cloned, set up, and executed at this
+  exact state for empirical comparison with the post-state
+- **Citable** — academic and technical references can point to a specific
+  commit rather than a moving target
 
-Bons.ai will eventually be expressible as one cycle configuration that Cerebra runs.
+## What this repository is not
 
-## What Cerebra is not
+- Not the current Cerebra. Active development continues at the main
+  [Cerebra repository](https://github.com/bitmosh/cerebra).
+- Not feature-frozen by accident. New work does not land here. This fork
+  is maintained in archive mode only.
+- Not a deprecated version. It represents a deliberate architectural
+  baseline, not a superseded release.
 
-- Not a RAG system (memory is a substrate, not the product)
-- Not a visualization layer (LumaWeave does that)
-- Not a safety harness for arbitrary agent commands (Policy Scout will do that)
-- Not cloud-dependent (local-first by default, Ollama required)
+## Maintenance policy
 
-## Prerequisites
+This fork accepts:
 
-- Python 3.12+
-- [Ollama](https://ollama.ai) running locally (default `http://127.0.0.1:11434`)
-- A model pulled in Ollama, e.g. `ollama pull granite3.2:3b`
+- Critical security patches that affect the runnable baseline (so the
+  archive remains usable)
+- Documentation corrections that improve accuracy of the snapshot
+- Dependency version pin updates if a pinned dependency becomes
+  permanently unavailable
 
-## Setup
+This fork rejects:
 
-```bash
-uv sync --extra dev   # not plain `uv sync` — pytest/numpy land outside the venv otherwise
-```
+- New features
+- Architectural changes
+- Performance improvements (those go in the live Cerebra and become part
+  of the post-state comparison)
+- Cosmetic refactors
 
-## Quickstart
+## How to use this fork
 
-```bash
-# 1. Initialize a vault
-cerebra init ~/my-vault
+**For comparison reading:**
+See `CEREBRA_PRE_DYSON_SNAPSHOT.md` (forthcoming) for the architectural
+narrative that explains what this state represents.
 
-# 2. Ingest a directory of Markdown documents
-cerebra ingest ~/my-vault/docs --vault ~/my-vault
+**For comparison running:**
+Clone this repository, follow the original Cerebra setup instructions
+(preserved in `README_CEREBRA_ORIGINAL.md`), and run against a sample
+vault. The same vault should run on both this fork and the live Cerebra
+for direct empirical comparison.
 
-# 3. Search memory
-cerebra search "event sourcing trade-offs" --vault ~/my-vault
+**For academic citation:**
+Cite the tagged commit:
+> Cerebra (pre-dyson-sphere baseline). Tag v0.4.4-pre-dyson.
+> https://github.com/bitmosh/cerebra-classic
 
-# 4. Run a cognitive cycle
-cerebra run-cycle simple.planning.v0 \
-  --goal "Summarize the key trade-offs of event sourcing" \
-  --vault ~/my-vault
+## Related resources
 
-# 5. Inspect what happened
-cerebra inspect session list --vault ~/my-vault
-cerebra inspect cycle show <cycle_id> --signals --vault ~/my-vault
-cerebra inspect query --event-type CycleCompleted --vault ~/my-vault
-
-# 6. Export the knowledge graph
-cerebra export graph --vault ~/my-vault
-```
-
-## Example vault
-
-The `examples/` directory contains a ready-to-run demo:
-
-```bash
-cerebra init examples/demo-vault --force
-cerebra ingest examples/docs --vault examples/demo-vault
-cerebra run-cycle simple.planning.v0 \
-  --goal "What are the key patterns in knowledge-intensive systems?" \
-  --vault examples/demo-vault
-```
-
-## Cycle configs
-
-Built-in configs live in `cycles/`:
-
-- `simple.planning.v0` — five-step planning cycle (understand → draft → critique → refine → finalize)
-- `planning.adaptive.v0` — adaptive variant with bandit-driven strategy selection
-
-Custom configs go in `<vault>/cycles/<name>.yaml`.
-
-## Inspecting the runtime
-
-```bash
-# List sessions
-cerebra inspect session list
-
-# Show cycle detail with signals
-cerebra inspect cycle show <cycle_id> --signals
-
-# Stream live events
-cerebra inspect query --tail
-
-# Find low-scoring signals
-cerebra inspect query --signal-low COHERENCE --threshold 0.5
-
-# Show active leeway grants
-cerebra inspect leeway active
-```
-
-## Running tests
-
-```bash
-# Unit tests only (no model loading)
-.venv/bin/python -m pytest -m "not integration"
-
-# Full suite including E2E spine (requires Ollama)
-.venv/bin/python -m pytest tests/integration/test_e2e_spine.py -m integration -v
-```
-
-## Architecture
-
-```
-vault/
-  data/cerebra.db      — SQLite: memory records, retrieval traces, events
-  .fossic/store.db     — FossicStore: cycle events, session streams
-  .cerebra/graph.json  — exported knowledge graph
-  cycles/              — custom cycle config YAML files
-```
-
-Core pipeline: `ingest_path` → `query_plan` → `run_traversal` → `score_candidates` → `CycleRuntime` → `FossicStore` events
-
-For documentation: `docs/refined-runtime-model/CEREBRA_DOC_INDEX.md`
+- **[fossic v1.6.0](https://github.com/bitmosh/fossic)** — the
+  substrate that the dyson sphere transformation builds on. Phase 1
+  shipped 2026-06-21.
+- **[Cerebra](https://github.com/bitmosh/cerebra)** — live development,
+  post-fossic-integration evolution
+- **CEREBRA_PRE_DYSON_SNAPSHOT.md** (forthcoming) — narrative architecture
+  document explaining what this fork represents
+- **CEREBRA_POST_DYSON_SNAPSHOT.md** (forthcoming, Q4 2026) — the
+  corresponding post-transformation state, with measured deltas
+- **Aseptic methodology paper** (forthcoming) — companion document
+  describing the multi-Claude development methodology that produced this
+  transformation
 
 ## License
 
-MIT (see LICENSE)
+Same license as the original Cerebra repository. See `LICENSE` for terms.
+
+---
+
+*Repository established 2026-06-21 immediately following the fossic v1.6.0
+publication. Maintained by boop ([@bitmosh](https://github.com/bitmosh)).*
