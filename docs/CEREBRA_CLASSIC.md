@@ -174,7 +174,7 @@ examples/
 
 ## Setup and Usage
 
-See `README_CEREBRA_ORIGINAL.md` for complete setup instructions.
+See [`README.md`](../README.md) for setup instructions and prerequisites.
 
 **Quick start:**
 

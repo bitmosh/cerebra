@@ -30,7 +30,7 @@ Architecture reference: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
 ## Setup
 
-**Prerequisites:** Python 3.12+, Rust toolchain (for fossic), Ollama running locally.
+**Prerequisites:** Python 3.12+, Rust toolchain (for fossic, if your platform isn't covered by the vendored wheel — see `vendor/README.md`), Ollama running locally with a model pulled (e.g. `ollama pull granite3.2:3b`).
 
 ```bash
 git clone https://github.com/bitmosh/cerebra-classic
@@ -50,7 +50,7 @@ cerebra run-cycle simple.planning.v0 \
 cerebra inspect cycle show --signals --vault examples/demo-vault
 ```
 
-Full setup instructions (prerequisites, Ollama, vault layout): [`README_CEREBRA_ORIGINAL.md`](README_CEREBRA_ORIGINAL.md)
+Full CLI reference (21 commands): [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#cli-surface)
 
 ---
 
