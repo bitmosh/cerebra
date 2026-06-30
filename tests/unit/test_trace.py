@@ -447,12 +447,14 @@ class TestTraceTransactional:
         db = _migrated_db()
         try:
             with connect(db) as conn, pytest.raises(sqlite3.IntegrityError):
-                conn.execute("""
+                conn.execute(
+                    """
                         INSERT INTO retrieval_steps
                         (step_id, trace_id, step_number, step_name,
                          candidate_count, new_candidates, duration_ms, skipped)
                         VALUES ('s1', 'trace_nonexistent', 1, 'exact_sku', 0, 0, 0, 0)
-                        """)
+                        """
+                )
         finally:
             db.unlink(missing_ok=True)
 
@@ -463,13 +465,15 @@ class TestTraceTransactional:
         db = _migrated_db()
         try:
             with connect(db) as conn, pytest.raises(sqlite3.IntegrityError):
-                conn.execute("""
+                conn.execute(
+                    """
                         INSERT INTO retrieval_candidates
                         (candidate_id, trace_id, record_id, step_surfaced,
                          retrieval_path, salience_score, score_json, selected)
                         VALUES ('c1', 'trace_nonexistent', 'rec_001', 'vector_fallback',
                                 'vector_fallback', 0.75, '{}', 1)
-                        """)
+                        """
+                )
         finally:
             db.unlink(missing_ok=True)
 

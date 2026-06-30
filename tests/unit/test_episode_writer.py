@@ -112,12 +112,14 @@ class TestMigration016:
         conn = sqlite3.connect(db_path)
         conn.execute("PRAGMA foreign_keys = ON")
         with pytest.raises(sqlite3.IntegrityError):
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO cycle_episode_records
                 (record_id, runtime_session_id, cycle_id, step_id, step_name,
                  content, created_at)
                 VALUES ('ep_test', 'sess_doesnotexist', 'c1', 's1', 'step', 'x', 1)
-                """)
+                """
+            )
             conn.commit()
         conn.close()
 

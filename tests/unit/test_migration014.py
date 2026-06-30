@@ -85,10 +85,12 @@ class TestMigration014Schema:
         """Inserting a minimal row sets state, cycles_run, steps_run, recursion_depth defaults."""
         run_migrations(db_path)
         conn = sqlite3.connect(db_path)
-        conn.execute("""
+        conn.execute(
+            """
             INSERT INTO runtime_sessions (session_id, cycle_config, goal, vault_path, opened_at)
             VALUES ('sess_t1', 'default', 'test goal', '/tmp/v', 1700000000000)
-            """)
+            """
+        )
         conn.commit()
         row = conn.execute(
             "SELECT state, cycles_run, steps_run, recursion_depth, max_recursion_depth "
@@ -107,10 +109,12 @@ class TestMigration014Schema:
         conn = sqlite3.connect(db_path)
         conn.execute("PRAGMA foreign_keys = ON")
         with pytest.raises(sqlite3.IntegrityError):
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO runtime_sessions (session_id, cycle_config, goal, vault_path, opened_at, parent_session_id)
                 VALUES ('sess_child', 'default', 'g', '/tmp', 1700000000000, 'sess_nonexistent')
-                """)
+                """
+            )
             conn.commit()
 
     def test_self_referential_fk_valid_parent(self, db_path: Path) -> None:

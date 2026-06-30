@@ -17,12 +17,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Lint/format/type-check tools are pinned to the minor versions that produced
+# this archive (matches .pre-commit-config.yaml). See docs/CEREBRA_CLASSIC.md
+# for archive policy.
 dev = [
     "pytest>=8.2",
     "pytest-cov>=5.0",
-    "ruff>=0.4",
-    "black>=24.4",
-    "mypy>=1.10",
+    "ruff>=0.4,<0.5",
+    "black>=24.4,<25",
+    "mypy>=1.10,<2",
     "types-PyYAML>=6.0",
     "pre-commit>=3.7",
 ]

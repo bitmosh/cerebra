@@ -127,7 +127,8 @@ class TestMigration013Schema:
         try:
             run_migrations(db)
             conn = sqlite3.connect(db)
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO predictions
                     (prediction_id, session_id, cycle_id, step_id,
                      expected_composite_score, expected_per_signal,
@@ -135,7 +136,8 @@ class TestMigration013Schema:
                 VALUES
                     ('pred_001', 'sess_001', 'cycle_001', 'step_001',
                      0.65, '{}', 'static_baseline', 0.5, 1718000000000)
-            """)
+            """
+            )
             conn.commit()
             row = conn.execute(
                 "SELECT expected_composite_score FROM predictions WHERE prediction_id='pred_001'"
@@ -152,7 +154,8 @@ class TestMigration013Schema:
             run_migrations(db)
             conn = sqlite3.connect(db)
             conn.execute("PRAGMA foreign_keys=ON")
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO predictions
                     (prediction_id, session_id, cycle_id, step_id,
                      expected_composite_score, expected_per_signal,
@@ -160,8 +163,10 @@ class TestMigration013Schema:
                 VALUES
                     ('pred_002', 'sess_001', 'cycle_001', 'step_001',
                      0.65, '{}', 'static_baseline', 0.5, 1718000000000)
-            """)
-            conn.execute("""
+            """
+            )
+            conn.execute(
+                """
                 INSERT INTO outcomes
                     (outcome_id, prediction_id, session_id, cycle_id, step_id,
                      actual_composite_score, prediction_error, error_classification,
@@ -169,7 +174,8 @@ class TestMigration013Schema:
                 VALUES
                     ('outcome_001', 'pred_002', 'sess_001', 'cycle_001', 'step_001',
                      0.72, 0.07, 'noise', '{}', 1718000001000)
-            """)
+            """
+            )
             conn.commit()
             row = conn.execute(
                 "SELECT error_classification FROM outcomes WHERE outcome_id='outcome_001'"
@@ -189,7 +195,8 @@ class TestMigration013Schema:
 
             conn = cerebra_connect(db)  # uses PRAGMA foreign_keys=ON
             with pytest.raises(sqlite3.IntegrityError):
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO outcomes
                         (outcome_id, prediction_id, session_id, cycle_id, step_id,
                          actual_composite_score, prediction_error, error_classification,
@@ -197,7 +204,8 @@ class TestMigration013Schema:
                     VALUES
                         ('outcome_bad', 'pred_nonexistent', 'sess', 'cycle', 'step',
                          0.72, 0.07, 'noise', '{}', 1718000001000)
-                """)
+                """
+                )
                 conn.commit()
             conn.close()
         finally:
