@@ -86,7 +86,7 @@ class TestTraversalAgainstVault:
             assert c.retrieval_path, f"Empty retrieval_path for {c.record_id}"
 
     def test_sku_match_candidates_have_sku_d1_match(self, vault_db: Path, plan_from_vault) -> None:
-        from cerebra.retrieval.traversal import run_traversal, RawCandidate
+        from cerebra.retrieval.traversal import run_traversal
         plan = plan_from_vault("retrieval architecture design")
         result = run_traversal(plan, vault_db)
         # Candidates surfaced via exact_sku or partial_sku must have sku_d1_match=True

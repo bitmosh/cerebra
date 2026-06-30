@@ -23,7 +23,6 @@ from cerebra.cognition.event_emitter import EventEmitter
 from cerebra.cognition.predictions import PredictionInput, read_outcomes_for_session
 from cerebra.storage.fossic_store import FossicStore
 
-
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 
@@ -247,7 +246,7 @@ class SessionManager:
         cycle_config: str,
         vault_path: Path,
         parent_session_id: str | None = None,
-    ) -> tuple["RuntimeSession", bytes]:
+    ) -> tuple[RuntimeSession, bytes]:
         """Create a new session, persist it, and emit SessionOpened.
 
         Returns:

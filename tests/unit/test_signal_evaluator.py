@@ -9,9 +9,8 @@ from __future__ import annotations
 import pytest
 
 from cerebra.cognition._constants import SIGNAL_NAMES
-from cerebra.cognition.llm_adapter import ClassificationError, LLMAdapter, ClassificationResult
+from cerebra.cognition.llm_adapter import ClassificationError, ClassificationResult
 from cerebra.cognition.signals import SIGNAL_EVAL_ORDER, SignalEvaluator, SignalScore
-
 
 # ── mock adapter ──────────────────────────────────────────────────────────────
 

@@ -15,7 +15,6 @@ from cerebra.storage.artifact_store import (
 )
 from cerebra.storage.migrations import run_migrations
 
-
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
 

@@ -31,7 +31,6 @@ from cerebra.ingest.pipeline import ingest_path
 from cerebra.storage.fossic_store import FossicStore
 from cerebra.storage.migrations import run_migrations
 
-
 # ── Skip guard ────────────────────────────────────────────────────────────────
 
 

@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import tempfile
+import json
 from pathlib import Path
 
 import pytest
-
-import json
 
 from cerebra.inspector.sqlite_log import SQLiteEventLog
 from cerebra.storage.graph_store import (
@@ -26,7 +24,6 @@ from cerebra.storage.graph_store import (
     walk_parent_chain,
 )
 from cerebra.storage.migrations import run_migrations
-
 
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 

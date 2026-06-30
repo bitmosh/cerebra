@@ -14,12 +14,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from cerebra._primitives.score_composer import CompositeScore
 from cerebra.retrieval.lattice_dedup import dedup_siblings
 from cerebra.retrieval.scorer import ScoredCandidate
 from cerebra.storage.db import connect
 from cerebra.storage.migrations import run_migrations
-from cerebra._primitives.score_composer import CompositeScore
-
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -210,7 +209,7 @@ class TestTwoSiblingsNoQueryD1:
             row = conn.execute(
                 "SELECT exclusion_reason FROM retrieval_candidates "
                 "WHERE candidate_id = ?",
-                (f"cand_trace_ex_rec_l2",),
+                ("cand_trace_ex_rec_l2",),
             ).fetchone()
         finally:
             conn.close()

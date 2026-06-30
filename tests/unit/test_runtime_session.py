@@ -15,7 +15,6 @@ from cerebra.cognition.session import (
     predict_input_from_session,
 )
 
-
 # ── RuntimeSession ─────────────────────────────────────────────────────────────
 
 

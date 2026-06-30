@@ -17,7 +17,6 @@ from click.testing import CliRunner
 
 from cerebra.cli.main import cli
 
-
 # ── Shared helpers ─────────────────────────────────────────────────────────────
 
 
@@ -156,12 +155,11 @@ class TestAbstentionTrigger:
 
     def test_context_does_not_abstain_when_max_above_floor(self) -> None:
         scored = [_make_scored(composite=0.50)]
-        with _patched_context(scored):
-            with patch(
-                "cerebra.retrieval.context_packet.build_context_packet",
-                return_value=_make_normal_packet(),
-            ):
-                result = CliRunner().invoke(cli, ["context", "leeway network", "--floor", "0.45"])
+        with _patched_context(scored), patch(
+            "cerebra.retrieval.context_packet.build_context_packet",
+            return_value=_make_normal_packet(),
+        ):
+            result = CliRunner().invoke(cli, ["context", "leeway network", "--floor", "0.45"])
         assert result.exit_code == 0, result.output
 
     def test_empty_scored_list_abstains(self) -> None:
@@ -204,12 +202,11 @@ class TestFloorFlagOverride:
 
     def test_context_default_floor_does_not_abstain_for_score_0_39(self) -> None:
         scored = [_make_scored(composite=0.39)]
-        with _patched_context(scored):
-            with patch(
-                "cerebra.retrieval.context_packet.build_context_packet",
-                return_value=_make_normal_packet(),
-            ):
-                result = CliRunner().invoke(cli, ["context", "test"])
+        with _patched_context(scored), patch(
+            "cerebra.retrieval.context_packet.build_context_packet",
+            return_value=_make_normal_packet(),
+        ):
+            result = CliRunner().invoke(cli, ["context", "test"])
         assert result.exit_code == 0, result.output
 
 
@@ -451,6 +448,7 @@ class TestRetrievalAbstainedEvent:
 class TestTraceAbstainedFlag:
     def _migrated_db(self) -> Path:
         import tempfile
+
         from cerebra.storage.migrations import run_migrations
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db = Path(f.name)

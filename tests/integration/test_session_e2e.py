@@ -12,19 +12,18 @@ from pathlib import Path
 import pytest
 
 from cerebra.cognition.session import (
+    RuntimeSession,
     SessionManager,
+    SessionState,
     list_continuation_chain,
     list_sessions_for_vault,
-    read_session,
-    write_session,
-    update_session_state,
-    RuntimeSession,
-    SessionState,
     predict_input_from_session,
+    read_session,
+    update_session_state,
+    write_session,
 )
 from cerebra.storage.fossic_store import FossicStore
 from cerebra.storage.migrations import run_migrations
-
 
 # ── fixtures ──────────────────────────────────────────────────────────────────
 

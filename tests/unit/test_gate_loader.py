@@ -8,11 +8,9 @@ from pathlib import Path
 import pytest
 
 from cerebra.governance.defaults import DEFAULT_CONSTITUTIONAL_RULES, DEFAULT_LEEWAY_RULES
-from cerebra.governance.loader import load_pre_action_gate
-from cerebra.governance.loader import write_defaults_to_vault
+from cerebra.governance.loader import load_pre_action_gate, write_defaults_to_vault
 from cerebra.governance.pre_action_gate import LeewayPreActionGate
 from cerebra.governance.types import ProposedAction
-
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 

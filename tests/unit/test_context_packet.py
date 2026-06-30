@@ -6,28 +6,25 @@ import json
 import tempfile
 import time
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 
 from cerebra.retrieval.context_packet import (
+    EXCERPT_MAX_CHARS,
     ContextPacket,
     MemoryItem,
     _short_path,
     build_abstained_packet,
     build_context_packet,
     render_text,
-    EXCERPT_MAX_CHARS,
 )
 from cerebra.storage.db import connect
 from cerebra.storage.migrations import run_migrations
-
 
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
 
 def _migrated_db() -> Path:
-    import tempfile
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db = Path(f.name)
     run_migrations(db)
@@ -55,7 +52,7 @@ def _make_scored(
     retrieval_path: str = "vector_fallback",
     step_surfaced: str = "vector_fallback",
     content: str = "Sample content for testing the context packet builder.",
-) -> "ScoredCandidate":
+) -> ScoredCandidate:
     from cerebra._primitives.score_composer import CompositeScore
     from cerebra.retrieval.scorer import ScoredCandidate
     score = CompositeScore(

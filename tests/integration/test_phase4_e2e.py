@@ -55,6 +55,7 @@ class TestFullSearchPipeline:
     def test_full_search_pipeline_works(self, vault_root: Path) -> None:
         """leeway network search: exit 0, text output, trace + steps + candidates + events present."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -83,6 +84,7 @@ class TestFullSearchPipeline:
     def test_search_trace_rows_written(self, vault_root: Path) -> None:
         """Running search creates retrieval_traces, retrieval_steps, retrieval_candidates rows."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         # Run context (JSON) to get trace_id back
@@ -114,6 +116,7 @@ class TestFullSearchPipeline:
     def test_search_events_emitted(self, vault_root: Path) -> None:
         """Search emits QueryReceived, QueryPlanned, TraversalStepCompleted×6, SalienceScored."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -144,6 +147,7 @@ class TestFullContextPipeline:
     def test_full_context_pipeline_works(self, vault_root: Path) -> None:
         """cerebra context 'memory drift' exits 0 and produces valid §5 JSON."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -161,6 +165,7 @@ class TestFullContextPipeline:
     def test_context_packet_id_on_trace_row(self, vault_root: Path) -> None:
         """context_packet_id is set on the retrieval_traces row after a successful context call."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -183,6 +188,7 @@ class TestFullContextPipeline:
     def test_context_packet_built_event_emitted(self, vault_root: Path) -> None:
         """ContextPacketBuilt event is emitted with correct packet_id and trace_id."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -214,6 +220,7 @@ class TestSearchThenContextSharePipeline:
     def test_search_then_context_produce_distinct_traces(self, vault_root: Path) -> None:
         """Search and context on the same query produce isolated traces with different trace_ids."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         query = "Cerebra SKU addressing"
@@ -245,6 +252,7 @@ class TestSearchThenContextSharePipeline:
     def test_both_queries_emit_events_with_distinct_trace_ids(self, vault_root: Path) -> None:
         """Events from search and context runs are tagged with distinct trace_ids."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         query = "Cerebra inspector events"
@@ -279,6 +287,7 @@ class TestAbstentionEndToEnd:
     def test_abstention_exits_one_with_message(self, vault_root: Path) -> None:
         """search 'weather forecast' --floor 0.45 exits 1 with abstention message."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -292,6 +301,7 @@ class TestAbstentionEndToEnd:
     def test_abstention_trace_row_has_correct_state(self, vault_root: Path) -> None:
         """Abstained trace has abstained=1, non-null candidates, NULL context_packet_id."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         # Use context --format json to get the trace_id back
@@ -321,6 +331,7 @@ class TestAbstentionEndToEnd:
     def test_abstention_event_has_correct_fields(self, vault_root: Path) -> None:
         """RetrievalAbstained event carries best_score_seen and floor."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -352,6 +363,7 @@ class TestAbstentionContextPacket:
     def test_abstained_packet_is_valid_json(self, vault_root: Path) -> None:
         """context 'weather forecast' --floor 0.45 exits 1, output is valid abstained JSON."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -367,6 +379,7 @@ class TestAbstentionContextPacket:
     def test_abstained_packet_has_required_fields(self, vault_root: Path) -> None:
         """Abstained packet contains all §5 required fields including best_score_seen."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -385,6 +398,7 @@ class TestAbstentionContextPacket:
     def test_abstained_context_packet_built_event_emitted(self, vault_root: Path) -> None:
         """ContextPacketBuilt is emitted even for abstained packets (build happened, just abstained)."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -415,6 +429,7 @@ class TestJsonRoundTrip:
     def test_json_output_is_valid_and_complete(self, vault_root: Path) -> None:
         """context 'leeway network' --format json produces valid parseable JSON."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -429,6 +444,7 @@ class TestJsonRoundTrip:
     def test_json_round_trip_is_stable(self, vault_root: Path) -> None:
         """Re-serializing the parsed packet produces the identical object (no field loss)."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -447,6 +463,7 @@ class TestJsonRoundTrip:
     def test_json_selected_memory_items_have_required_fields(self, vault_root: Path) -> None:
         """Each item in selected_memory has the expected fields from §5."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -475,6 +492,7 @@ class TestOutFlag:
     def test_out_flag_writes_valid_json_to_file(self, vault_root: Path) -> None:
         """--out FILE writes a valid ContextPacket JSON to disk."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
@@ -497,6 +515,7 @@ class TestOutFlag:
     def test_out_flag_prints_confirmation_to_stdout(self, vault_root: Path) -> None:
         """--out FILE prints 'Packet written to' confirmation to stdout."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
@@ -516,6 +535,7 @@ class TestOutFlag:
     def test_out_flag_file_matches_json_format_output(self, vault_root: Path) -> None:
         """File written by --out contains same packet as --format json stdout."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
@@ -545,6 +565,7 @@ class TestLimitClamps:
     def test_limit_three_returns_three_items(self, vault_root: Path) -> None:
         """--limit 3 produces selected_memory with ≤3 items."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -561,6 +582,7 @@ class TestLimitClamps:
     def test_limit_large_value_clamped_to_200(self, vault_root: Path) -> None:
         """--limit 500 is clamped: selected_count ≤ 200 and no error."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -576,6 +598,7 @@ class TestLimitClamps:
     def test_limit_default_is_ten_or_fewer(self, vault_root: Path) -> None:
         """Default limit produces ≤10 items in selected_memory."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -601,6 +624,7 @@ class TestConcurrentQueriesIsolated:
         derived from shared state rather than fresh UUID generation, they would collide.
         """
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         q1 = "Cerebra salience scoring"
@@ -635,12 +659,13 @@ class TestConcurrentQueriesIsolated:
             cand2 = conn.execute(
                 "SELECT COUNT(*) FROM retrieval_candidates WHERE trace_id = ?", (trace2,)
             ).fetchone()[0]
-        assert cand1 >= 1, f"Trace 1 has no candidate rows"
-        assert cand2 >= 1, f"Trace 2 has no candidate rows"
+        assert cand1 >= 1, "Trace 1 has no candidate rows"
+        assert cand2 >= 1, "Trace 2 has no candidate rows"
 
     def test_concurrent_search_commands_exit_zero(self, vault_root: Path) -> None:
         """Two concurrent search invocations both exit cleanly."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         exit_codes: list[int | None] = [None, None]

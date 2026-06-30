@@ -10,8 +10,9 @@ New predicates require ClutchContext.evaluation, .outcome, .cycle_state, .cycle_
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from cerebra.cognition.cycle_config import CycleConfig

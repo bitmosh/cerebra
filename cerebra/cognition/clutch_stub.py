@@ -6,8 +6,9 @@ ClutchStubEngine: evaluates rules in order, first match wins, defaults to accept
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from cerebra.cognition.cycle_config import CycleConfig
@@ -94,7 +95,7 @@ class ClutchStubEngine:
     Defaults to accept if no rule matches.
     """
 
-    def __init__(self, cycle_config: "CycleConfig") -> None:
+    def __init__(self, cycle_config: CycleConfig) -> None:
         self.rules = cycle_config.clutch_rules
 
     def decide(self, context: ClutchContext) -> ClutchDecision:

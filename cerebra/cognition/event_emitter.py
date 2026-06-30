@@ -10,7 +10,7 @@ Handles:
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from cerebra.cognition._constants import LATTICE_SNAPSHOT_CADENCE
 from cerebra.storage.fossic_store import FossicStore
@@ -23,14 +23,14 @@ class EventEmitter:
         self.store = store
         self.session_id = session_id
         self.cycle_id = cycle_id
-        self._last_event_id: Optional[bytes] = None
+        self._last_event_id: bytes | None = None
 
     def emit_cycle_event(
         self,
         event_type: str,
         payload: dict[str, Any],
-        causation_id: Optional[bytes] = None,
-        indexed_tags: Optional[dict[str, Any]] = None,
+        causation_id: bytes | None = None,
+        indexed_tags: dict[str, Any] | None = None,
     ) -> bytes:
         """Emit an event on cerebra/agent-trace/<session_id>.
 
@@ -53,8 +53,8 @@ class EventEmitter:
         lineage_id: str,
         event_type: str,
         payload: dict[str, Any],
-        causation_id: Optional[bytes] = None,
-        indexed_tags: Optional[dict[str, Any]] = None,
+        causation_id: bytes | None = None,
+        indexed_tags: dict[str, Any] | None = None,
     ) -> bytes:
         """Emit an event on cerebra/lattice/<lineage_id>.
 

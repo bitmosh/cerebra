@@ -29,7 +29,6 @@ from cerebra.storage.embeddings import (
 from cerebra.storage.index_state import get_state, seed_index_state
 from cerebra.storage.migrations import run_migrations
 
-
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
 

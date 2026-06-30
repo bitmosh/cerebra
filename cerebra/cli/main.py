@@ -760,6 +760,8 @@ def context(
             from cerebra.cognition.truth_tower import TruthTower
             from cerebra.cognition.working_memory import (
                 get_active_session,
+            )
+            from cerebra.cognition.working_memory import (
                 new_session as _new_session,
             )
             with vault_lock(vault_path):
@@ -988,7 +990,6 @@ def _memory_vault_db(vault_flag: str | None) -> tuple[Path, Path]:
 )
 def memory_status(vault: str | None, output_format: str) -> None:
     """Show the contents of the active working memory session."""
-    import sys
 
     from cerebra.cognition._constants import SLOT_CAPACITIES
     from cerebra.cognition.truth_tower import TruthTower
@@ -1720,10 +1721,12 @@ def export_graph_cmd(vault: str | None, out_path: str | None, output_json: bool)
 # ── inspect ───────────────────────────────────────────────────────────────────
 
 from cerebra.cli.inspect import inspect as _inspect_cmd  # noqa: E402
+
 cli.add_command(_inspect_cmd)
 
 
 # ── serve (daemon) ────────────────────────────────────────────────────────────
 
 from cerebra.cli.daemon import serve as _serve_cmd  # noqa: E402
+
 cli.add_command(_serve_cmd)

@@ -29,6 +29,7 @@ class TestContextCliAgainstVault:
     def test_leeway_network_packet_generated(self, vault_root: Path) -> None:
         """cerebra context 'leeway network' exits 0 and outputs a ContextPacket."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -41,6 +42,7 @@ class TestContextCliAgainstVault:
     def test_leeway_network_trace_written(self, vault_root: Path) -> None:
         """Running context creates a retrieval_traces row with context_packet_id set."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.storage.db import connect
 
@@ -65,6 +67,7 @@ class TestContextCliAgainstVault:
     def test_leeway_network_selected_memory_references_real_records(self, vault_root: Path) -> None:
         """selected_memory items have record_ids that exist in memory_records."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.storage.db import connect
 
@@ -89,6 +92,7 @@ class TestContextCliAgainstVault:
     def test_context_json_output_schema(self, vault_root: Path) -> None:
         """JSON output matches the ContextPacket §5 schema (required fields present)."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -114,6 +118,7 @@ class TestContextCliAgainstVault:
     def test_out_file_writes_valid_json(self, vault_root: Path) -> None:
         """--out FILE writes a valid JSON ContextPacket to disk."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
@@ -137,6 +142,7 @@ class TestContextCliAgainstVault:
     def test_selected_memory_source_paths_not_absolute(self, vault_root: Path) -> None:
         """source_path in JSON output is vault-relative (no leading slash)."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(

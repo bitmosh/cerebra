@@ -52,6 +52,7 @@ class TestContextT1AgainstVault:
     ) -> None:
         """Running cerebra context with a normal query populates T1."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         before = _t1_count(vault_root, clean_session)
@@ -69,6 +70,7 @@ class TestContextT1AgainstVault:
     ) -> None:
         """A second distinct query adds items to T1 (cumulative)."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         # Ensure first query has run (leeway_network test runs first in module order)
@@ -90,6 +92,7 @@ class TestContextT1AgainstVault:
     ) -> None:
         """--no-promote does not change T1 even though retrieval runs."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         before = _t1_count(vault_root, clean_session)
@@ -107,6 +110,7 @@ class TestContextT1AgainstVault:
     ) -> None:
         """--floor 0.99 forces abstention; T1 must not change."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         before = _t1_count(vault_root, clean_session)
@@ -124,6 +128,7 @@ class TestContextT1AgainstVault:
     ) -> None:
         """Text output contains both 'Selected memory' and 'Truth Tower' sections."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -140,6 +145,7 @@ class TestContextT1AgainstVault:
     ) -> None:
         """JSON output includes truth_tower field when tower is non-empty."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(

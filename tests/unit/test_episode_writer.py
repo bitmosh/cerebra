@@ -12,8 +12,11 @@ import pytest
 from cerebra.cognition.episode_writer import EpisodeRecord, EpisodeWriter, _now_ms
 from cerebra.cognition.session import SessionManager
 from cerebra.storage.fossic_store import FossicStore
-from cerebra.storage.migrations import ALL_MIGRATIONS, Migration016_CycleEpisodeRecords, run_migrations
-
+from cerebra.storage.migrations import (
+    ALL_MIGRATIONS,
+    Migration016_CycleEpisodeRecords,
+    run_migrations,
+)
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 

@@ -11,7 +11,6 @@ import pytest
 
 from cerebra._primitives.bandit import ArmStats, Bandit
 
-
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 ARMS = ["explore", "refine", "stop"]

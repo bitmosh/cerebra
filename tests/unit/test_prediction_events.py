@@ -34,7 +34,7 @@ def _composer() -> EvaluationComposer:
 
 
 def _fake_evaluation(step_id: str, composite: float) -> EvaluationPacket:
-    per_signal = {name: composite for name in SIGNAL_NAMES}
+    per_signal = dict.fromkeys(SIGNAL_NAMES, composite)
     return EvaluationPacket(
         evaluation_id=f"eval_{next(_SEQ)}",
         session_id="sess_001",

@@ -22,7 +22,6 @@ from cerebra.config import VaultNotFoundError, resolve_vault
 from cerebra.storage.db import connect
 from cerebra.storage.migrations import run_migrations
 
-
 # ── shared helpers ────────────────────────────────────────────────────────────
 
 
@@ -229,7 +228,7 @@ def session_show(
     if r.get("final_outcome"):
         click.echo(f"Final outcome:{r['final_outcome']}")
     click.echo(f"Events:       {len(fossic_evs)} (FossicStore stream)")
-    click.echo(f"\nUse --events to list all events for this session.")
+    click.echo("\nUse --events to list all events for this session.")
 
 
 # ── inspect cycle ─────────────────────────────────────────────────────────────
@@ -373,7 +372,7 @@ def cycle_show(
         avg = sum(scores) / len(scores) if scores else None
         avg_str = f"{avg:.4f}" if avg is not None else "—"
         click.echo(f"  Avg signal:   {avg_str}  ({len(signal_evs)} signals evaluated)")
-    click.echo(f"\nUse --signals, --clutch, or --steps for detail views.")
+    click.echo("\nUse --signals, --clutch, or --steps for detail views.")
 
 
 # ── inspect memory ────────────────────────────────────────────────────────────
@@ -486,7 +485,7 @@ def memory_show(
     if len(content) > 200:
         preview += "…"
     click.echo(f"\n{preview}")
-    click.echo(f"\nUse --history for event trail, --graph for knowledge graph neighbors.")
+    click.echo("\nUse --history for event trail, --graph for knowledge graph neighbors.")
 
 
 # ── inspect retrieval ─────────────────────────────────────────────────────────
@@ -585,7 +584,7 @@ def retrieval_show(
             )
 
     if not show_path and not scores:
-        click.echo(f"\nUse --path for traversal steps, --scores for candidate list.")
+        click.echo("\nUse --path for traversal steps, --scores for candidate list.")
 
 
 # ── inspect leeway ────────────────────────────────────────────────────────────

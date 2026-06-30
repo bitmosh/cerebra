@@ -14,15 +14,14 @@ import hashlib
 import json
 import os
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from cerebra.graph.model import ExportStats
 from cerebra.inspector.event import make_event
 from cerebra.inspector.sqlite_log import SQLiteEventLog
 from cerebra.storage.db import connect
-
-from cerebra.graph.model import ExportStats
 
 # ── Lookup tables ─────────────────────────────────────────────────────────────
 
@@ -53,7 +52,7 @@ _MAX_NODES = 2000
 def _ts_to_iso(ts: int | None) -> str | None:
     if ts is None:
         return None
-    return datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.fromtimestamp(ts, tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _source_cluster(detected_type: str) -> str:
@@ -124,7 +123,7 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
     except Exception:
         cerebra_version = "unknown"
 
-    generated_at = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    generated_at = datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     with connect(db_path) as conn:
         # ── Sources ───────────────────────────────────────────────────────────
@@ -445,7 +444,7 @@ def _emit_snapshot_available(
     *,
     out_path: Path,
     vault_path: Path,
-    stats: "ExportStats",
+    stats: ExportStats,
     hub_store: Any,
     triggered_by: str | None,
 ) -> None:

@@ -119,8 +119,8 @@ def _make_scored(
     sku_address: str | None = None,
     created_at: int | None = None,
 ):
-    from cerebra.retrieval.scorer import ScoredCandidate
     from cerebra._primitives.score_composer import CompositeScore
+    from cerebra.retrieval.scorer import ScoredCandidate
     return ScoredCandidate(
         record_id=record_id,
         step_surfaced="vector",

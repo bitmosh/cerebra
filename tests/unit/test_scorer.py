@@ -11,7 +11,6 @@ from pathlib import Path
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Helpers that replicate the normalization formulas from §4 of the design doc.
 # These are tested here so that when scorer.py lands it can import them
@@ -270,7 +269,7 @@ class TestScoreCandidates:
             db.unlink(missing_ok=True)
 
     def test_returns_scored_candidates(self) -> None:
-        from cerebra.retrieval.scorer import score_candidates, ScoredCandidate
+        from cerebra.retrieval.scorer import ScoredCandidate, score_candidates
         from cerebra.storage.db import connect
         db = _migrated_db()
         try:
@@ -396,8 +395,8 @@ class TestScoreCandidates:
             db.unlink(missing_ok=True)
 
     def test_salience_event_emitted(self) -> None:
-        from cerebra.retrieval.scorer import score_candidates
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+        from cerebra.retrieval.scorer import score_candidates
         from cerebra.storage.db import connect
         db = _migrated_db()
         now = 1_720_000_000

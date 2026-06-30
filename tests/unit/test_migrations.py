@@ -190,12 +190,11 @@ class TestMigration007:
         db = self._fresh_db()
         try:
             # Apply migrations up to 006 only, then insert records, then apply 007
+            import sqlite3 as _sq3
+
             from cerebra.storage.migrations import (
                 ALL_MIGRATIONS,
-                Migration001_InitSchema,
-                Migration006_Phase3Schema,
             )
-            import sqlite3 as _sq3
             conn = _sq3.connect(db)
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS applied_migrations"
@@ -263,8 +262,9 @@ class TestMigration007:
         """archived / tombstoned records must not be queued by Migration007."""
         db = self._fresh_db()
         try:
-            from cerebra.storage.migrations import ALL_MIGRATIONS
             import sqlite3 as _sq3
+
+            from cerebra.storage.migrations import ALL_MIGRATIONS
             conn = _sq3.connect(db)
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS applied_migrations"

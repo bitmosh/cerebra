@@ -12,7 +12,6 @@ from cerebra.cognition.clutch_stub import (
 )
 from cerebra.cognition.cycle_config import _parse_config
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 
@@ -204,7 +203,13 @@ class TestClutchStubEngine:
         ])
         # The "always" rule fires so default_no_match won't be hit; test the fallback
         # by building a config where NO rule would match:
-        from cerebra.cognition.cycle_config import CycleConfig, CycleStep, StepPromptTemplate, ClutchRule, StopCondition
+        from cerebra.cognition.cycle_config import (
+            ClutchRule,
+            CycleConfig,
+            CycleStep,
+            StepPromptTemplate,
+            StopCondition,
+        )
         cfg = CycleConfig(
             name="x", version=1, description="",
             steps=[CycleStep("s", "", StepPromptTemplate("{{ goal }}", "free_form"))],

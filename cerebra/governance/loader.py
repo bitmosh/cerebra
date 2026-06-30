@@ -91,7 +91,7 @@ def load_constitutional_rules(constitutional_dir: Path) -> list[ConstitutionalRu
     return rules
 
 
-def load_pre_action_gate(vault_path: Path) -> "LeewayPreActionGate":
+def load_pre_action_gate(vault_path: Path) -> LeewayPreActionGate:
     """Construct a LeewayPreActionGate from rules in the vault.
 
     Reads vault/leeway/*.yaml and vault/constitutional/*.yaml. If either

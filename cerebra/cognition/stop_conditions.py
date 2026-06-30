@@ -32,7 +32,7 @@ class StopConditionEvaluator:
     the config's stop_conditions list.
     """
 
-    def __init__(self, config: "CycleConfig") -> None:
+    def __init__(self, config: CycleConfig) -> None:
         self.config = config
 
     def check(self, state: CycleState) -> tuple[bool, str | None]:
@@ -42,7 +42,7 @@ class StopConditionEvaluator:
                 return True, cond.name
         return False, None
 
-    def _evaluate(self, cond: "StopCondition", state: CycleState) -> bool:
+    def _evaluate(self, cond: StopCondition, state: CycleState) -> bool:
         if cond.type == "max_steps_reached":
             return state.steps_run >= self.config.max_steps
 

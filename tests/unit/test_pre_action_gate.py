@@ -8,7 +8,6 @@ from cerebra.governance.models import ConstitutionalRule, LeewayRule
 from cerebra.governance.pre_action_gate import LeewayPreActionGate
 from cerebra.governance.types import ProposedAction
 
-
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 

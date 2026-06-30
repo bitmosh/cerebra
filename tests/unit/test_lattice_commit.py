@@ -18,7 +18,6 @@ from pathlib import Path
 import pytest
 
 from cerebra.cognition.lattice import (
-    LatticeDecision,
     build_sibling_record_id,
     evaluate_lattice,
     new_lineage_id,
@@ -27,7 +26,6 @@ from cerebra.cognition.llm_adapter import ClassificationError, ClassificationRes
 from cerebra.cognition.sku_categories import D1Category
 from cerebra.cognition.sku_classifier import SKUClassifier
 from cerebra.storage.sqlite_store import SQLiteStore
-
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -76,7 +74,7 @@ class MockAdapter(LLMAdapter):
         if self._raise_error:
             raise ClassificationError("Mock failure")
         quadrant = self._QUADRANT_MAP.get(self._result.primary, "EMPIRICAL")
-        q_scores = {k: 0.05 for k in ("EMPIRICAL", "GENERATIVE", "NORMATIVE", "RELATIONAL")}
+        q_scores = dict.fromkeys(("EMPIRICAL", "GENERATIVE", "NORMATIVE", "RELATIONAL"), 0.05)
         q_scores[quadrant] = 0.85
         return ClassificationResult(
             scores=q_scores,

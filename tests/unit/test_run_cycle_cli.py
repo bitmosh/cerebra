@@ -16,7 +16,6 @@ from cerebra.cli.main import cli
 from cerebra.cognition.llm_adapter import ClassificationResult, LLMAdapter
 from cerebra.storage.migrations import run_migrations
 
-
 # ── Stub LLM ─────────────────────────────────────────────────────────────────
 
 

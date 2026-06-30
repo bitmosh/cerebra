@@ -47,7 +47,7 @@ def _baseline_input(step_id: str = "step_001") -> PredictionInput:
 
 
 def _prior_input(n_prior: int = 1, step_id: str = "step_002") -> PredictionInput:
-    prior_per_signal = {name: 0.72 for name in SIGNAL_NAMES}
+    prior_per_signal = dict.fromkeys(SIGNAL_NAMES, 0.72)
     prior_composites = [0.72] * n_prior
     return PredictionInput(
         session_id="sess_test",
@@ -64,7 +64,7 @@ def _fake_evaluation(
     per_signal: dict[str, float] | None = None,
 ) -> EvaluationPacket:
     if per_signal is None:
-        per_signal = {name: composite for name in SIGNAL_NAMES}
+        per_signal = dict.fromkeys(SIGNAL_NAMES, composite)
     return EvaluationPacket(
         evaluation_id=f"eval_{next(_SEQ)}",
         session_id="sess_test",
@@ -124,7 +124,7 @@ class TestPredictionBasisSelection:
         assert abs(rec.expected_composite_score - expected) < 1e-9
 
     def test_cycle_config_default_basis(self) -> None:
-        defaults = {name: 0.80 for name in SIGNAL_NAMES}
+        defaults = dict.fromkeys(SIGNAL_NAMES, 0.8)
         inp = PredictionInput(
             session_id="s", cycle_id="c", step_id="step_cfg",
             prior_step_composites=[],
@@ -150,7 +150,7 @@ class TestPredictionBasisSelection:
         assert rec.confidence == 0.8
 
     def test_prior_trajectory_uses_prior_per_signal(self) -> None:
-        prior_per_signal = {name: 0.55 for name in SIGNAL_NAMES}
+        prior_per_signal = dict.fromkeys(SIGNAL_NAMES, 0.55)
         inp = PredictionInput(
             session_id="s", cycle_id="c", step_id="step_t",
             prior_step_composites=[0.55],
@@ -162,8 +162,8 @@ class TestPredictionBasisSelection:
             assert abs(rec.expected_per_signal[name] - 0.55) < 1e-9
 
     def test_prior_trajectory_beats_cycle_defaults(self) -> None:
-        prior_per_signal = {name: 0.72 for name in SIGNAL_NAMES}
-        defaults = {name: 0.80 for name in SIGNAL_NAMES}
+        prior_per_signal = dict.fromkeys(SIGNAL_NAMES, 0.72)
+        defaults = dict.fromkeys(SIGNAL_NAMES, 0.8)
         inp = PredictionInput(
             session_id="s", cycle_id="c", step_id="step_both",
             prior_step_composites=[0.72],
@@ -229,7 +229,7 @@ class TestPredictionResolve:
     def test_per_signal_error_computed(self) -> None:
         pipeline = PredictionPipeline(_composer())
         pred = pipeline.predict(_baseline_input("step_sig"))
-        per_signal = {name: 0.9 for name in SIGNAL_NAMES}
+        per_signal = dict.fromkeys(SIGNAL_NAMES, 0.9)
         ev = _fake_evaluation("step_sig", 0.9, per_signal=per_signal)
         out = pipeline.resolve(pred, ev)
         assert set(out.per_signal_error.keys()) == SIGNAL_NAMES

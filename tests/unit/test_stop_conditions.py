@@ -2,17 +2,14 @@
 
 from __future__ import annotations
 
-import pytest
-
 from cerebra.cognition.cycle_config import (
+    ClutchRule,
     CycleConfig,
     CycleStep,
-    ClutchRule,
     StepPromptTemplate,
     StopCondition,
 )
 from cerebra.cognition.stop_conditions import CycleState, StopConditionEvaluator
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 

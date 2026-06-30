@@ -22,7 +22,6 @@ from cerebra.cognition.working_memory import WorkingMemory, new_session
 from cerebra.storage.db import connect
 from cerebra.storage.migrations import run_migrations
 
-
 # ── DB seeding helpers ────────────────────────────────────────────────────────
 
 def _seed_memory_record(db_path: Path, record_id: str) -> None:

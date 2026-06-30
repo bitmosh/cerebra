@@ -26,6 +26,9 @@ def vault_db() -> Path:
 class TestContextPacketAgainstVault:
     def test_leeway_network_packet_shape(self, vault_db: Path) -> None:
         """Full pipeline: query → plan → traverse → score → packet; verify shape."""
+        import json
+        import time
+
         from cerebra.inspector.sqlite_log import SQLiteEventLog
         from cerebra.retrieval.context_packet import build_context_packet
         from cerebra.retrieval.planner import query_plan
@@ -33,8 +36,6 @@ class TestContextPacketAgainstVault:
         from cerebra.retrieval.trace import TraceData, write_trace
         from cerebra.retrieval.traversal import run_traversal
         from cerebra.storage.migrations import run_migrations
-        import json
-        import time
 
         run_migrations(vault_db)
         event_log = SQLiteEventLog(vault_db)
@@ -72,13 +73,14 @@ class TestContextPacketAgainstVault:
 
     def test_packet_selected_memory_item_fields(self, vault_db: Path) -> None:
         """Each selected_memory item has the required §5 fields."""
+        import time
+
         from cerebra.retrieval.context_packet import build_context_packet
         from cerebra.retrieval.planner import query_plan
         from cerebra.retrieval.scorer import score_candidates
         from cerebra.retrieval.trace import TraceData, write_trace
         from cerebra.retrieval.traversal import run_traversal
         from cerebra.storage.migrations import run_migrations
-        import time
 
         run_migrations(vault_db)
 
@@ -112,13 +114,14 @@ class TestContextPacketAgainstVault:
 
     def test_packet_source_paths_are_strings(self, vault_db: Path) -> None:
         """source_path values are non-empty strings."""
+        import time
+
         from cerebra.retrieval.context_packet import build_context_packet
         from cerebra.retrieval.planner import query_plan
         from cerebra.retrieval.scorer import score_candidates
         from cerebra.retrieval.trace import TraceData, write_trace
         from cerebra.retrieval.traversal import run_traversal
         from cerebra.storage.migrations import run_migrations
-        import time
 
         run_migrations(vault_db)
 
@@ -142,6 +145,8 @@ class TestContextPacketAgainstVault:
 
     def test_packet_trace_row_updated(self, vault_db: Path) -> None:
         """retrieval_traces.context_packet_id is set after build."""
+        import time
+
         from cerebra.retrieval.context_packet import build_context_packet
         from cerebra.retrieval.planner import query_plan
         from cerebra.retrieval.scorer import score_candidates
@@ -149,7 +154,6 @@ class TestContextPacketAgainstVault:
         from cerebra.retrieval.traversal import run_traversal
         from cerebra.storage.db import connect
         from cerebra.storage.migrations import run_migrations
-        import time
 
         run_migrations(vault_db)
 
@@ -175,13 +179,15 @@ class TestContextPacketAgainstVault:
 
     def test_packet_to_dict_json_serializable(self, vault_db: Path) -> None:
         """to_dict() output is fully JSON-serializable."""
+        import json
+        import time
+
         from cerebra.retrieval.context_packet import build_context_packet
         from cerebra.retrieval.planner import query_plan
         from cerebra.retrieval.scorer import score_candidates
         from cerebra.retrieval.trace import TraceData, write_trace
         from cerebra.retrieval.traversal import run_traversal
         from cerebra.storage.migrations import run_migrations
-        import json, time
 
         run_migrations(vault_db)
 

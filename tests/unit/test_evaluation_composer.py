@@ -12,7 +12,11 @@ from cerebra.cognition._constants import (
     SIGNAL_DEFAULT_WEIGHTS,
     SIGNAL_NAMES,
 )
-from cerebra.cognition.evaluation import EvaluationComposer, EvaluationPacket, emit_evaluation_events
+from cerebra.cognition.evaluation import (
+    EvaluationComposer,
+    EvaluationPacket,
+    emit_evaluation_events,
+)
 from cerebra.cognition.event_emitter import EventEmitter
 from cerebra.cognition.signals import SignalScore
 from cerebra.storage.fossic_store import FossicStore
@@ -63,7 +67,7 @@ class TestEvaluationComposerWeights:
         assert set(composer.weights.keys()) == SIGNAL_NAMES
 
     def test_custom_weights_accepted(self) -> None:
-        custom = {k: 1.0 / 6 for k in SIGNAL_NAMES}
+        custom = dict.fromkeys(SIGNAL_NAMES, 1.0 / 6)
         composer = EvaluationComposer(weights=custom)
         assert abs(sum(composer.weights.values()) - 1.0) < 0.01
 
