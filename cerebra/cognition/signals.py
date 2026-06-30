@@ -99,7 +99,9 @@ class SignalEvaluator:
 
         raw_score_val = response.get("overall_score", None)
         try:
-            raw_float = float(raw_score_val)
+            # None is caught by the TypeError branch below; mypy can't see that.
+            # arg-type fires on mypy >=1.20; unused-ignore keeps 1.10 happy.
+            raw_float = float(raw_score_val)  # type: ignore[arg-type, unused-ignore]
         except (TypeError, ValueError):
             raw_float = 0.5
             clamped = True
