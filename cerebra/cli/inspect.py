@@ -15,7 +15,10 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from cerebra.storage.fossic_store import FossicStore
 
 import click
 
@@ -105,7 +108,7 @@ def _render_fossic_event_brief(ev: dict[str, Any]) -> None:
     click.echo(f"  {etype:<36}  cycle={cycle}  step={step}")
 
 
-def _fossic_store_for(vault_path: Path):  # type: ignore[return]
+def _fossic_store_for(vault_path: Path) -> FossicStore | None:
     """Return FossicStore for vault, or None if fossic db not present."""
     from cerebra.storage.fossic_store import FossicStore
 

@@ -5,6 +5,8 @@ Maps to Thread 3 (Productive Tension): does the output advance understanding?
 
 from __future__ import annotations
 
+from typing import Any
+
 PROMPT_VERSION = "generativity_v1"
 
 PROMPT_TEMPLATE = """\
@@ -50,5 +52,5 @@ overall_score must be a float between 0.0 (no generative value) and 1.0 (highly 
 """
 
 
-def render(output: str, context: dict | None = None) -> str:
+def render(output: str, context: dict[str, Any] | None = None) -> str:
     return PROMPT_TEMPLATE.format(output=output, context=context or {})

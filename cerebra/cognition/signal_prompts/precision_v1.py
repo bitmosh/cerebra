@@ -5,6 +5,8 @@ Maps to Thread 5 (Clarity of Distinction): does the output keep distinct what sh
 
 from __future__ import annotations
 
+from typing import Any
+
 PROMPT_VERSION = "precision_v1"
 
 PROMPT_TEMPLATE = """\
@@ -47,5 +49,5 @@ overall_score must be a float between 0.0 (very imprecise) and 1.0 (highly preci
 """
 
 
-def render(output: str, context: dict | None = None) -> str:
+def render(output: str, context: dict[str, Any] | None = None) -> str:
     return PROMPT_TEMPLATE.format(output=output, context=context or {})

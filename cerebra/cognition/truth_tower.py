@@ -19,7 +19,7 @@ import time
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from cerebra.cognition._constants import TOWER_CAPACITIES
 from cerebra.inspector.event import make_event
@@ -116,7 +116,7 @@ class TruthTower:
             "WHERE session_id = ? AND tier = ? AND evicted_at IS NULL",
             (self.session_id, tier),
         ).fetchone()
-        return row[0] if row else 0
+        return cast(int, row[0]) if row else 0
 
     def _is_first_t1_ever(self, conn: sqlite3.Connection) -> bool:
         """True if no T1 items of any state have ever been promoted in this session."""
@@ -124,7 +124,7 @@ class TruthTower:
             "SELECT COUNT(*) FROM truth_tower_items WHERE session_id = ? AND tier = 1",
             (self.session_id,),
         ).fetchone()
-        return (row[0] if row else 0) == 0
+        return cast(bool, (row[0] if row else 0) == 0)
 
     def _is_record_in_active_t1(self, conn: sqlite3.Connection, record_id: str) -> bool:
         row = conn.execute(

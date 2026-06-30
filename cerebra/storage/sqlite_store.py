@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from cerebra.storage.db import connect
 
@@ -203,7 +203,7 @@ class SQLiteStore:
                 "SELECT COUNT(*) FROM memory_records WHERE source_id = ? AND lifecycle_state = 'active'",
                 (source_id,),
             ).fetchone()
-        return row[0] if row else 0
+        return cast(int, row[0]) if row else 0
 
     # ── SKU assignments ───────────────────────────────────────────────────────
 
@@ -266,7 +266,7 @@ class SQLiteStore:
                 """,
                 (d1, d2, d3, d4, d5, d6, d9, d10),
             ).fetchone()
-        return row[0] if row else 0
+        return cast(int, row[0]) if row else 0
 
     def insert_lattice_record(self, record: dict[str, Any]) -> None:
         """Insert a single lattice sibling record (includes lattice columns)."""

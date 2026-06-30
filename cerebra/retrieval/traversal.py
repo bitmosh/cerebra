@@ -24,6 +24,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from cerebra.inspector.event import make_event
 from cerebra.inspector.sqlite_log import SQLiteEventLog
@@ -238,7 +239,7 @@ def run_traversal(
 
     # Accumulator: record_id → {step_name, lexical_score, semantic_score, steps_list}
     # First occurrence of a record_id wins `step_surfaced`.
-    candidates: dict[str, dict] = {}
+    candidates: dict[str, dict[str, Any]] = {}
 
     def _add(
         record_id: str,

@@ -20,6 +20,7 @@ import math
 import random
 from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -135,7 +136,7 @@ class Bandit:
         """
         return self.arms.get(arm_id, ArmStats())
 
-    def explain(self, arm_ids: Iterable[str], total_steps: int) -> list[dict]:
+    def explain(self, arm_ids: Iterable[str], total_steps: int) -> list[dict[str, Any]]:
         """Return per-arm scoring trace for inspector."""
         self.ensure_arms(arm_ids)
         trace = []
@@ -159,7 +160,7 @@ class Bandit:
             )
         return trace
 
-    def to_state(self) -> dict:
+    def to_state(self) -> dict[str, Any]:
         """Serialize bandit state for persistence."""
         return {
             "exploration_weight": self.exploration_weight,
@@ -174,7 +175,7 @@ class Bandit:
         }
 
     @classmethod
-    def from_state(cls, state: dict, rng: random.Random | None = None) -> "Bandit":
+    def from_state(cls, state: dict[str, Any], rng: random.Random | None = None) -> "Bandit":
         """Deserialize bandit from persisted state."""
         bandit = cls(
             exploration_weight=state.get("exploration_weight", 1.4),

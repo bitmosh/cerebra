@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 
 def dedup_siblings(
     scored: list[ScoredCandidate],
-    query_d1: str | None,
+    query_d1: int | None,
     db_path: Path,
     trace_id: str,
     event_log: SQLiteEventLog | None = None,
@@ -224,12 +224,16 @@ def dedup_memory_items(
 
 def _pick_winner_scored(
     group: list[ScoredCandidate],
-    query_d1: str | None,
+    query_d1: int | None,
 ) -> tuple[ScoredCandidate, str]:
     """Apply D2 routing rules; return (winner, routing_basis)."""
+    # TODO: sku_address uses '.' not '::' — comparison is dead. See issue #2.
     if query_d1 is not None:
         d1_matches = [
-            c for c in group if c.sku_address and c.sku_address.split("::")[0] == query_d1
+            c
+            for c in group
+            if c.sku_address
+            and c.sku_address.split("::")[0] == query_d1  # type: ignore[comparison-overlap]
         ]
         if len(d1_matches) == 1:
             return d1_matches[0], "sku_match"

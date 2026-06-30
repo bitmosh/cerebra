@@ -21,6 +21,7 @@ import math
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from cerebra._primitives.score_composer import CompositeScore, compose
 from cerebra.inspector.event import make_event
@@ -120,7 +121,7 @@ def score_candidates(
             record_ids,
         ).fetchall()
 
-    meta: dict[str, dict] = {row["record_id"]: dict(row) for row in rows}
+    meta: dict[str, dict[str, Any]] = {row["record_id"]: dict(row) for row in rows}
 
     # ── Lexical normalization: collect all raw ranks in the candidate set ─────
     lex_ranks = [c.lexical_score for c in candidates if c.lexical_score is not None]

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     from cerebra.cognition.cycle_config import CycleConfig
@@ -172,7 +172,7 @@ def _prior_step_action_was(ctx: ClutchContext, params: dict[str, Any]) -> bool:
     """
     if not ctx.cycle_state.prior_clutch_decisions:
         return False
-    return ctx.cycle_state.prior_clutch_decisions[-1].action == params["action"]
+    return cast(bool, ctx.cycle_state.prior_clutch_decisions[-1].action == params["action"])
 
 
 def _step_at(ctx: ClutchContext, params: dict[str, Any]) -> bool:
@@ -186,7 +186,7 @@ def _step_at(ctx: ClutchContext, params: dict[str, Any]) -> bool:
     steps = ctx.cycle_config.steps
     if ctx.step_index < 0 or ctx.step_index >= len(steps):
         return False
-    return steps[ctx.step_index].name == params["step_name"]
+    return cast(bool, steps[ctx.step_index].name == params["step_name"])
 
 
 def _catalyst_was_invoked(ctx: ClutchContext, _params: dict[str, Any]) -> bool:

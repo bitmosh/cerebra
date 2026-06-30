@@ -30,7 +30,7 @@ from __future__ import annotations
 import hashlib
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from cerebra.inspector.event import make_event
 from cerebra.inspector.sqlite_log import SQLiteEventLog
@@ -73,7 +73,7 @@ def embed(texts: list[str]) -> np.ndarray:
     import numpy as np
 
     arr = _get_model().encode(texts, normalize_embeddings=True, convert_to_numpy=True)
-    return np.asarray(arr, dtype=np.float32)
+    return cast(np.ndarray, np.asarray(arr, dtype=np.float32))
 
 
 def _embedding_id(record_id: str) -> str:

@@ -22,6 +22,7 @@ import json
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from cerebra.inspector.event import make_event
 from cerebra.inspector.sqlite_log import SQLiteEventLog
@@ -54,7 +55,7 @@ class TraceData:
     started_at: int
     finished_at: int
     duration_ms: int
-    step_events: list[dict] = field(default_factory=list)
+    step_events: list[dict[str, Any]] = field(default_factory=list)
 
 
 def write_trace(
