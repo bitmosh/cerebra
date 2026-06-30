@@ -75,6 +75,7 @@ cycles/            — built-in cycle configs (YAML)
 docs/
   CEREBRA_CLASSIC.md   — development arc, current state, architecture rationale
   ARCHITECTURE.md      — technical reference (subsystems, migrations, event types)
+  KNOWN_ISSUES.md      — tracked defects acknowledged in the archive
   archive/             — historical design docs and development logs
 examples/docs/     — demo vault documents
 tests/             — unit + integration test suite
