@@ -105,9 +105,7 @@ class TestOpenSessionReturnsTuple:
         assert isinstance(result, tuple)
         assert len(result) == 2
 
-    def test_first_element_is_runtime_session(
-        self, manager: SessionManager, vault: Path
-    ) -> None:
+    def test_first_element_is_runtime_session(self, manager: SessionManager, vault: Path) -> None:
         session, _ = manager.open_session(
             goal="test goal",
             cycle_config="d3.test.v0",
@@ -115,9 +113,7 @@ class TestOpenSessionReturnsTuple:
         )
         assert isinstance(session, RuntimeSession)
 
-    def test_second_element_is_bytes(
-        self, manager: SessionManager, vault: Path
-    ) -> None:
+    def test_second_element_is_bytes(self, manager: SessionManager, vault: Path) -> None:
         _, event_id = manager.open_session(
             goal="test goal",
             cycle_config="d3.test.v0",
@@ -125,9 +121,7 @@ class TestOpenSessionReturnsTuple:
         )
         assert isinstance(event_id, bytes)
 
-    def test_event_id_is_nonempty(
-        self, manager: SessionManager, vault: Path
-    ) -> None:
+    def test_event_id_is_nonempty(self, manager: SessionManager, vault: Path) -> None:
         _, event_id = manager.open_session(
             goal="test goal",
             cycle_config="d3.test.v0",
@@ -138,12 +132,8 @@ class TestOpenSessionReturnsTuple:
     def test_different_sessions_different_event_ids(
         self, manager: SessionManager, vault: Path
     ) -> None:
-        _, eid1 = manager.open_session(
-            goal="goal 1", cycle_config="d3.test.v0", vault_path=vault
-        )
-        _, eid2 = manager.open_session(
-            goal="goal 2", cycle_config="d3.test.v0", vault_path=vault
-        )
+        _, eid1 = manager.open_session(goal="goal 1", cycle_config="d3.test.v0", vault_path=vault)
+        _, eid2 = manager.open_session(goal="goal 2", cycle_config="d3.test.v0", vault_path=vault)
         assert eid1 != eid2
 
 

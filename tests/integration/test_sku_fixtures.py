@@ -170,7 +170,9 @@ def _print_report(results: list[FixtureResult]) -> None:
     print(f"SKU D1 CALIBRATION REPORT ({total} fixtures)")
     print("=" * 60)
     print(f"\nStrict accuracy:         {strict_correct}/{total} = {strict_acc:.0%}")
-    print(f"Partial-credit accuracy: {partial_sum:.1f}/{total} = {partial_acc:.0%}  (0.5 credit on {ambiguous_half_credit} ambiguous matches)")
+    print(
+        f"Partial-credit accuracy: {partial_sum:.1f}/{total} = {partial_acc:.0%}  (0.5 credit on {ambiguous_half_credit} ambiguous matches)"
+    )
     print(
         f"Clear-case accuracy:     {sum(1 for r in clear_results if r.correct)}/{len(clear_results)} = {clear_acc:.0%}"
     )
@@ -178,7 +180,9 @@ def _print_report(results: list[FixtureResult]) -> None:
         f"Hard-case accuracy:      {sum(1 for r in hard_results if r.correct)}/{len(hard_results)} = {hard_acc:.0%}"
     )
     ambig_acc = sum(r.partial_credit for r in ambiguous_results) / max(len(ambiguous_results), 1)
-    print(f"Ambiguous-case accuracy: {sum(r.partial_credit for r in ambiguous_results):.1f}/{len(ambiguous_results)} = {ambig_acc:.0%} (partial-credit)")
+    print(
+        f"Ambiguous-case accuracy: {sum(r.partial_credit for r in ambiguous_results):.1f}/{len(ambiguous_results)} = {ambig_acc:.0%} (partial-credit)"
+    )
     print("\n4-Quadrant Breakdown:")
     print(f"  High-conf correct: {len(hc_correct):2d}  ← target")
     print(f"  High-conf WRONG:   {len(hc_wrong):2d}  ← investigate these")
@@ -224,8 +228,12 @@ def test_clear_case_accuracy_higher_than_hard(tmp_path: Path) -> None:
     vault = init_vault(tmp_path / "vault")
     results = _run_calibration(vault)
 
-    clear_acc = sum(1 for r in results if r.fixture.difficulty == "clear" and r.correct) / len(CLEAR_FIXTURES)
-    hard_acc = sum(1 for r in results if r.fixture.difficulty == "hard" and r.correct) / len(HARD_FIXTURES)
+    clear_acc = sum(1 for r in results if r.fixture.difficulty == "clear" and r.correct) / len(
+        CLEAR_FIXTURES
+    )
+    hard_acc = sum(1 for r in results if r.fixture.difficulty == "hard" and r.correct) / len(
+        HARD_FIXTURES
+    )
 
     assert clear_acc >= hard_acc, (
         f"Clear accuracy ({clear_acc:.0%}) should exceed hard accuracy ({hard_acc:.0%}). "

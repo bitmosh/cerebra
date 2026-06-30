@@ -170,10 +170,10 @@ class CycleRuntime:
         clutch_engine = ClutchEngine(self.config)
         clutch_cycle_state = ClutchCycleState()
 
-        current_step_pos = 0        # position in config.steps (advances on accept)
-        total_steps_run = 0         # total LLM executions
+        current_step_pos = 0  # position in config.steps (advances on accept)
+        total_steps_run = 0  # total LLM executions
         step_pos_outputs: dict[int, str] = {}  # accepted output by step position
-        recent_composites: list[float] = []   # all composites in order
+        recent_composites: list[float] = []  # all composites in order
         within_cycle_composites: list[float] = []
         last_per_signal: dict[str, float] | None = None
         last_clutch_action: str | None = None
@@ -231,9 +231,7 @@ class CycleRuntime:
             )
 
             # ── ContextPacket ─────────────────────────────────────────────────
-            packet = self._build_context_packet(
-                current_step_pos, step_pos_outputs
-            )
+            packet = self._build_context_packet(current_step_pos, step_pos_outputs)
             context_built_id = emitter.emit_cycle_event(
                 "ContextPacketBuilt",
                 {
@@ -267,9 +265,7 @@ class CycleRuntime:
             emit_prediction_made(emitter, prediction, step_started_id)
 
             # ── Prompt rendering ──────────────────────────────────────────────
-            prior_steps_list = [
-                step_pos_outputs.get(i, "") for i in range(current_step_pos)
-            ]
+            prior_steps_list = [step_pos_outputs.get(i, "") for i in range(current_step_pos)]
             prior_step_output = prior_steps_list[-1] if prior_steps_list else None
             tpl_context: dict[str, Any] = {
                 "goal": self.session.goal,
@@ -377,12 +373,8 @@ class CycleRuntime:
                 "goal": self.session.goal,
                 "step_name": step.name,
             }
-            signal_scores = self._signal_evaluator.evaluate_all(
-                output_text, signal_context
-            )
-            eval_packet = self._eval_composer.compose(
-                signal_scores, session_id, cycle_id, step_id
-            )
+            signal_scores = self._signal_evaluator.evaluate_all(output_text, signal_context)
+            eval_packet = self._eval_composer.compose(signal_scores, session_id, cycle_id, step_id)
             eval_composed_id = emit_evaluation_events(
                 emitter, signal_scores, eval_packet, step_executed_id
             )
@@ -390,9 +382,7 @@ class CycleRuntime:
             # ── Outcome recording ─────────────────────────────────────────────
             outcome_record = self._pred_pipeline.resolve(prediction, eval_packet)
             write_outcome(self.db_path, outcome_record)
-            outcome_event_id, _ = emit_outcome_recorded(
-                emitter, outcome_record, eval_composed_id
-            )
+            outcome_event_id, _ = emit_outcome_recorded(emitter, outcome_record, eval_composed_id)
 
             composite_score = eval_packet.composite_score
             recent_composites.append(composite_score)
@@ -676,6 +666,7 @@ class CycleRuntime:
         outputs won't use the exact citation format in v0.1.
         """
         import re
+
         return re.findall(r"\brec_[0-9a-f]{12}\b", output_text)
 
     def _boost_salience_for_cited(
@@ -692,6 +683,7 @@ class CycleRuntime:
             return
 
         import sqlite3 as _sqlite3
+
         wm = WorkingMemory(self.db_path, wm_session_id)
         conn = _sqlite3.connect(self.db_path)
         conn.row_factory = _sqlite3.Row
@@ -833,6 +825,7 @@ class CycleRuntime:
 
         # Spawn child session
         from cerebra.cognition.session import SessionManager
+
         sm = SessionManager(self.db_path, self.store)
         child_session, child_opened_event_id = sm.open_session(
             goal=self.session.goal,

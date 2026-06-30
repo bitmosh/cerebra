@@ -47,11 +47,11 @@ class TestClassifyD1:
     def test_goal_keywords_hit(self) -> None:
         # Avoid "what is" (hits 0x3); use multiple 0xa keywords to dominate
         d1 = _classify_d1("our goal and objective for Phase 4 is retrieval")
-        assert d1 == 0xa, f"Expected GOAL (0xA), got {hex(d1) if d1 is not None else None}"
+        assert d1 == 0xA, f"Expected GOAL (0xA), got {hex(d1) if d1 is not None else None}"
 
     def test_context_keyword_hit(self) -> None:
         d1 = _classify_d1("what is the scope of the project")
-        assert d1 == 0xe, f"Expected CONTEXT (0xE), got {hex(d1) if d1 is not None else None}"
+        assert d1 == 0xE, f"Expected CONTEXT (0xE), got {hex(d1) if d1 is not None else None}"
 
     def test_no_match_returns_none(self) -> None:
         d1 = _classify_d1("hello")
@@ -262,6 +262,7 @@ class TestQueryPlan:
 
     def test_events_emitted_with_event_log(self) -> None:
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             log = SQLiteEventLog(db)
@@ -277,6 +278,7 @@ class TestQueryPlan:
         import json
 
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             log = SQLiteEventLog(db)
@@ -289,6 +291,7 @@ class TestQueryPlan:
 
     def test_no_events_without_event_log(self) -> None:
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             query_plan("architecture design plan", db, event_log=None)

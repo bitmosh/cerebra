@@ -9,6 +9,7 @@ Event sources:
   retrieval_traces (cerebra.db)     — one row per retrieval query.
   memory_records (cerebra.db)       — ingested memory records + SKU.
 """
+
 from __future__ import annotations
 
 import json
@@ -185,9 +186,7 @@ def session_list(vault: str | None, limit: int, output_json: bool) -> None:
 @click.option("--vault", default=None, help="Vault path.")
 @click.option("--events", is_flag=True, default=False, help="Show full event list.")
 @click.option("--json", "output_json", is_flag=True, default=False)
-def session_show(
-    session_id: str, vault: str | None, events: bool, output_json: bool
-) -> None:
+def session_show(session_id: str, vault: str | None, events: bool, output_json: bool) -> None:
     """Show summary (or events) for SESSION_ID."""
     import sys
 
@@ -205,7 +204,11 @@ def session_show(
 
     if events:
         if output_json:
-            click.echo(json.dumps([e["payload"] | {"event_type": e["event_type"]} for e in fossic_evs], indent=2))
+            click.echo(
+                json.dumps(
+                    [e["payload"] | {"event_type": e["event_type"]} for e in fossic_evs], indent=2
+                )
+            )
             return
         click.echo(f"Events for session {session_id}  ({len(fossic_evs)} total):")
         for ev in fossic_evs:
@@ -295,18 +298,23 @@ def cycle_show(
     completed_p = completed_evs[0]["payload"] if completed_evs else {}
 
     if output_json:
-        click.echo(json.dumps({
-            "cycle_id": cycle_id,
-            "session_id": session_id,
-            "cycle_config": started_p.get("cycle_config"),
-            "started_at_ms": started_p.get("started_at"),
-            "completed_at_ms": completed_p.get("completed_at"),
-            "outcome": completed_p.get("outcome"),
-            "total_steps": completed_p.get("total_steps"),
-            "signals": [e["payload"] for e in signal_evs],
-            "clutch_decisions": [e["payload"] for e in clutch_evs],
-            "step_trace": [e["payload"] for e in step_started + step_executed],
-        }, indent=2))
+        click.echo(
+            json.dumps(
+                {
+                    "cycle_id": cycle_id,
+                    "session_id": session_id,
+                    "cycle_config": started_p.get("cycle_config"),
+                    "started_at_ms": started_p.get("started_at"),
+                    "completed_at_ms": completed_p.get("completed_at"),
+                    "outcome": completed_p.get("outcome"),
+                    "total_steps": completed_p.get("total_steps"),
+                    "signals": [e["payload"] for e in signal_evs],
+                    "clutch_decisions": [e["payload"] for e in clutch_evs],
+                    "step_trace": [e["payload"] for e in step_started + step_executed],
+                },
+                indent=2,
+            )
+        )
         return
 
     if signals:
@@ -336,7 +344,9 @@ def cycle_show(
             depth = p.get("cascade_depth", 0)
             escalate = p.get("escalate_to_catalyst", False)
             esc_note = "  [→catalyst]" if escalate else ""
-            click.echo(f"  {p.get('step_id', '?'):<14}  {action:<12}  rule={rule}  depth={depth}{esc_note}")
+            click.echo(
+                f"  {p.get('step_id', '?'):<14}  {action:<12}  rule={rule}  depth={depth}{esc_note}"
+            )
         return
 
     if steps:
@@ -368,7 +378,11 @@ def cycle_show(
         click.echo(f"  Total steps:  {completed_p['total_steps']}")
     click.echo(f"  Events:       {len(evs)} total")
     if signal_evs:
-        scores = [e["payload"].get("signal_score") for e in signal_evs if e["payload"].get("signal_score") is not None]
+        scores = [
+            e["payload"].get("signal_score")
+            for e in signal_evs
+            if e["payload"].get("signal_score") is not None
+        ]
         avg = sum(scores) / len(scores) if scores else None
         avg_str = f"{avg:.4f}" if avg is not None else "—"
         click.echo(f"  Avg signal:   {avg_str}  ({len(signal_evs)} signals evaluated)")
@@ -420,6 +434,7 @@ def memory_show(
 
     if history:
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         log = SQLiteEventLog(db_path)
         evs = log.query_by_subject(memory_id)
         if output_json:
@@ -438,7 +453,11 @@ def memory_show(
         with open(graph_path) as f:
             g = json.load(f)
         node_id = f"record:{memory_id}"
-        edges = [e for e in g.get("edges", []) if e.get("source") == node_id or e.get("target") == node_id]
+        edges = [
+            e
+            for e in g.get("edges", [])
+            if e.get("source") == node_id or e.get("target") == node_id
+        ]
         neighbor_ids = {(e["target"] if e["source"] == node_id else e["source"]) for e in edges}
         if output_json:
             click.echo(json.dumps({"node_id": node_id, "edges": edges}, indent=2))
@@ -476,11 +495,12 @@ def memory_show(
         s = dict(sku_row)
         try:
             from cerebra.cognition.sku_categories import D1Category
+
             d1_name = D1Category(s["d1"]).name
         except Exception:
             d1_name = str(s.get("d1"))
         click.echo(f"D1:             {d1_name}  (conf={s.get('d1_confidence', 0):.3f})")
-    content = (r.get("content") or "")
+    content = r.get("content") or ""
     preview = content[:200].replace("\n", " ")
     if len(content) > 200:
         preview += "…"
@@ -545,11 +565,16 @@ def retrieval_show(
     t = dict(trace)
 
     if output_json:
-        click.echo(json.dumps({
-            "trace": t,
-            "steps": [dict(s) for s in steps],
-            "candidates": [dict(c) for c in candidates],
-        }, indent=2))
+        click.echo(
+            json.dumps(
+                {
+                    "trace": t,
+                    "steps": [dict(s) for s in steps],
+                    "candidates": [dict(c) for c in candidates],
+                },
+                indent=2,
+            )
+        )
         return
 
     click.echo(f"Retrieval trace:  {retrieval_id}")
@@ -625,7 +650,9 @@ def leeway_active(vault: str | None, output_json: bool) -> None:
         decision = p.get("final_decision", "?")
         grants = p.get("grants_applied", [])
         grants_str = ", ".join(grants) if isinstance(grants, list) else str(grants)
-        click.echo(f"  [{decision}]  session={session}  cycle={cycle}  action={action}  grants=[{grants_str}]")
+        click.echo(
+            f"  [{decision}]  session={session}  cycle={cycle}  action={action}  grants=[{grants_str}]"
+        )
 
 
 @inspect_leeway.command("history")
@@ -637,13 +664,21 @@ def leeway_history(session_id: str, vault: str | None, output_json: bool) -> Non
     vault_path, _ = _get_db(vault)
     all_evs = _session_events_from_fossic(vault_path, session_id)
     leeway_types = {
-        "LeewayGrantApplied", "LeewayGrantDenied", "LeewayRevocationFired",
-        "ConstitutionalBlock", "LeewayRuleLoaded", "LeewayRuleExpired",
+        "LeewayGrantApplied",
+        "LeewayGrantDenied",
+        "LeewayRevocationFired",
+        "ConstitutionalBlock",
+        "LeewayRuleLoaded",
+        "LeewayRuleExpired",
     }
     evs = [e for e in all_evs if e["event_type"] in leeway_types]
 
     if output_json:
-        click.echo(json.dumps([{"event_type": e["event_type"], "payload": e["payload"]} for e in evs], indent=2))
+        click.echo(
+            json.dumps(
+                [{"event_type": e["event_type"], "payload": e["payload"]} for e in evs], indent=2
+            )
+        )
         return
 
     click.echo(f"Leeway events for session {session_id}  ({len(evs)} events):")
@@ -667,7 +702,9 @@ def leeway_revocations(vault: str | None, output_json: bool) -> None:
         click.echo("No FossicStore found. Run at least one cognitive cycle first.")
         return
 
-    evs = store.read_events(stream_pattern="cerebra/agent-trace/*", event_type="LeewayRevocationFired")
+    evs = store.read_events(
+        stream_pattern="cerebra/agent-trace/*", event_type="LeewayRevocationFired"
+    )
 
     if output_json:
         click.echo(json.dumps([e["payload"] for e in evs], indent=2))
@@ -735,31 +772,51 @@ def _query_inspector_events(
 @click.option("--vault", default=None, help="Vault path.")
 @click.option("--event-type", "event_type", default=None, help="Filter by event type.")
 @click.option(
-    "--signal-low", "signal_low", default=None, metavar="SIGNAL",
+    "--signal-low",
+    "signal_low",
+    default=None,
+    metavar="SIGNAL",
     help="Signal name to filter low scores (e.g. GROUNDEDNESS). Queries FossicStore.",
 )
 @click.option(
-    "--threshold", type=float, default=0.5, show_default=True,
+    "--threshold",
+    type=float,
+    default=0.5,
+    show_default=True,
     help="Score threshold for --signal-low.",
 )
 @click.option(
-    "--severe-misses", "severe_misses", is_flag=True, default=False,
+    "--severe-misses",
+    "severe_misses",
+    is_flag=True,
+    default=False,
     help="Show PredictionSevereMiss events (FossicStore).",
 )
 @click.option(
-    "--last", "last_window", default=None, metavar="WINDOW",
+    "--last",
+    "last_window",
+    default=None,
+    metavar="WINDOW",
     help="Time window, e.g. '1h', '24h', '7d'.",
 )
 @click.option(
-    "--cycle", "cycle_id", default=None, metavar="CYCLE_ID",
+    "--cycle",
+    "cycle_id",
+    default=None,
+    metavar="CYCLE_ID",
     help="Filter to a specific cycle.",
 )
 @click.option(
-    "--filter", "extra_filter", default=None, metavar="KEY=VALUE",
+    "--filter",
+    "extra_filter",
+    default=None,
+    metavar="KEY=VALUE",
     help="Filter on data_json field, e.g. 'action=escalate'.",
 )
 @click.option(
-    "--tail", is_flag=True, default=False,
+    "--tail",
+    is_flag=True,
+    default=False,
     help="Tail new events (SQLite inspector_events only).",
 )
 @click.option("--limit", default=50, show_default=True, help="Max events to return.")
@@ -807,7 +864,8 @@ def inspect_query(
                 event_type="SignalEvaluated",
             )
             matched = [
-                e for e in all_evs
+                e
+                for e in all_evs
                 if e["payload"].get("signal_name", "").upper() == signal_low.upper()
                 and (e["payload"].get("signal_score") or 1.0) < threshold
             ]
@@ -815,8 +873,7 @@ def inspect_query(
                 matched = [e for e in matched if e["payload"].get("cycle_id") == cycle_id]
             if since_ts is not None:
                 matched = [
-                    e for e in matched
-                    if (e["payload"].get("evaluated_at") or 0) >= since_ts * 1000
+                    e for e in matched if (e["payload"].get("evaluated_at") or 0) >= since_ts * 1000
                 ]
             matched = matched[-limit:]
         elif severe_misses:
@@ -829,17 +886,18 @@ def inspect_query(
                 matched = [e for e in matched if e["payload"].get("cycle_id") == cycle_id]
             if since_ts is not None:
                 matched = [
-                    e for e in matched
-                    if (e["payload"].get("recorded_at") or 0) >= since_ts * 1000
+                    e for e in matched if (e["payload"].get("recorded_at") or 0) >= since_ts * 1000
                 ]
             matched = matched[-limit:]
         else:
             matched = []
 
         if output_json:
-            click.echo(json.dumps(
-                [{"event_type": e["event_type"], **e["payload"]} for e in matched], indent=2
-            ))
+            click.echo(
+                json.dumps(
+                    [{"event_type": e["event_type"], **e["payload"]} for e in matched], indent=2
+                )
+            )
             return
 
         if not matched:
@@ -884,7 +942,9 @@ def inspect_query(
             for r in rows:
                 click.echo(json.dumps({k: v for k, v in r.items() if k != "_rowid"}))
         else:
-            click.echo(f"Showing {len(rows)} recent event(s). Tailing for new events... (Ctrl+C to stop)")
+            click.echo(
+                f"Showing {len(rows)} recent event(s). Tailing for new events... (Ctrl+C to stop)"
+            )
             for r in reversed(rows):
                 _render_event_brief(r)
 

@@ -22,6 +22,7 @@ from cerebra.storage.migrations import run_migrations
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
+
 def _score(composite: float) -> CompositeScore:
     return CompositeScore(composite=composite, components={}, weights={})
 
@@ -87,9 +88,19 @@ def _seed_record(
         " is_lattice_member, lattice_lineage_id, created_at, schema_version) "
         "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (
-            record_id, "source_chunk", src_id, doc_id, chunk_id,
-            f"content for {record_id}", "hr0", 5, "active",
-            is_lattice_member, lattice_lineage_id, now, 1,
+            record_id,
+            "source_chunk",
+            src_id,
+            doc_id,
+            chunk_id,
+            f"content for {record_id}",
+            "hr0",
+            5,
+            "active",
+            is_lattice_member,
+            lattice_lineage_id,
+            now,
+            1,
         ),
     )
 
@@ -127,6 +138,7 @@ def db(tmp_path: Path) -> Path:
 
 # ── 1. No lattice members → passthrough ──────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestNoLatticeMembers:
     def test_passthrough_unchanged(self, db: Path) -> None:
@@ -149,6 +161,7 @@ class TestNoLatticeMembers:
 
 # ── 2. Single-member lineage → passthrough ───────────────────────────────────
 
+
 @pytest.mark.unit
 class TestSingleMemberLineage:
     def test_single_sibling_passthrough(self, db: Path) -> None:
@@ -170,6 +183,7 @@ class TestSingleMemberLineage:
 
 
 # ── 3. Two siblings, no query D1 → highest composite wins ────────────────────
+
 
 @pytest.mark.unit
 class TestTwoSiblingsNoQueryD1:
@@ -207,8 +221,7 @@ class TestTwoSiblingsNoQueryD1:
         conn = connect(db)
         try:
             row = conn.execute(
-                "SELECT exclusion_reason FROM retrieval_candidates "
-                "WHERE candidate_id = ?",
+                "SELECT exclusion_reason FROM retrieval_candidates " "WHERE candidate_id = ?",
                 ("cand_trace_ex_rec_l2",),
             ).fetchone()
         finally:
@@ -219,15 +232,18 @@ class TestTwoSiblingsNoQueryD1:
 
 # ── 4. query_d1 exact match → sku_match ──────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestSKUMatchRouting:
     def test_sku_match_picks_matching_sibling(self, db: Path) -> None:
         """Exactly one sibling matches query_d1 → routing_basis=sku_match."""
         conn = connect(db)
-        _seed_record(conn, "rec_ma", is_lattice_member=1, lattice_lineage_id="lin_004",
-                     created_at=1000)
-        _seed_record(conn, "rec_mb", is_lattice_member=1, lattice_lineage_id="lin_004",
-                     created_at=1001)
+        _seed_record(
+            conn, "rec_ma", is_lattice_member=1, lattice_lineage_id="lin_004", created_at=1000
+        )
+        _seed_record(
+            conn, "rec_mb", is_lattice_member=1, lattice_lineage_id="lin_004", created_at=1001
+        )
         _seed_trace(conn, "trace_sk")
         _seed_candidate(conn, "trace_sk", "rec_ma", 0.70)
         _seed_candidate(conn, "trace_sk", "rec_mb", 0.90)  # higher score but wrong D1
@@ -274,6 +290,7 @@ class TestSKUMatchRouting:
 
 # ── 5. No D1 match → composite_score ─────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestNoD1Match:
     def test_no_match_uses_composite(self, db: Path) -> None:
@@ -296,6 +313,7 @@ class TestNoD1Match:
 
 
 # ── 6. Multiple D1 matches → sku_match_multi ─────────────────────────────────
+
 
 @pytest.mark.unit
 class TestSKUMatchMulti:
@@ -331,15 +349,18 @@ class TestSKUMatchMulti:
 
 # ── 7. Tiebreak by created_at ─────────────────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestTiebreakByCreatedAt:
     def test_earlier_created_at_wins_on_tie(self, db: Path) -> None:
         """Equal composite scores → earliest created_at wins; basis=earliest_promotion."""
         conn = connect(db)
-        _seed_record(conn, "rec_early", is_lattice_member=1, lattice_lineage_id="lin_008",
-                     created_at=500)
-        _seed_record(conn, "rec_late", is_lattice_member=1, lattice_lineage_id="lin_008",
-                     created_at=9999)
+        _seed_record(
+            conn, "rec_early", is_lattice_member=1, lattice_lineage_id="lin_008", created_at=500
+        )
+        _seed_record(
+            conn, "rec_late", is_lattice_member=1, lattice_lineage_id="lin_008", created_at=9999
+        )
         _seed_trace(conn, "trace_tie")
         _seed_candidate(conn, "trace_tie", "rec_early", 0.75)
         _seed_candidate(conn, "trace_tie", "rec_late", 0.75)
@@ -366,6 +387,7 @@ class TestTiebreakByCreatedAt:
 
 # ── 8. Non-lattice candidates preserved ──────────────────────────────────────
 
+
 @pytest.mark.unit
 class TestNonLatticeCandidatesPreserved:
     def test_mix_lattice_and_non_lattice(self, db: Path) -> None:
@@ -389,13 +411,14 @@ class TestNonLatticeCandidatesPreserved:
         result = dedup_siblings(candidates, None, db, "trace_mix")
 
         record_ids = {c.record_id for c in result}
-        assert "rec_lat1" in record_ids   # winner
+        assert "rec_lat1" in record_ids  # winner
         assert "rec_lat2" not in record_ids  # loser
-        assert "rec_norm" in record_ids   # non-lattice preserved
+        assert "rec_norm" in record_ids  # non-lattice preserved
         assert len(result) == 2
 
 
 # ── 9. LatticeSiblingResolved event emission ──────────────────────────────────
+
 
 @pytest.mark.unit
 class TestEventEmission:

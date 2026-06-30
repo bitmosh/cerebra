@@ -25,6 +25,7 @@ def _migrated_db() -> Path:
 
 def _make_plan(trace_id: str = "trace_test000001", query_d1: int | None = 5):
     from cerebra.retrieval.planner import QueryPlan
+
     return QueryPlan(
         trace_id=trace_id,
         raw_query="test retrieval query",
@@ -45,15 +46,22 @@ def _make_scored(
 ) -> ScoredCandidate:
     from cerebra._primitives.score_composer import CompositeScore
     from cerebra.retrieval.scorer import ScoredCandidate
+
     score = CompositeScore(
         composite=composite,
         components={
-            "semantic": 0.80, "lexical": 0.50,
-            "sku_match": 1.0, "recency": 0.90, "lifecycle": 1.0,
+            "semantic": 0.80,
+            "lexical": 0.50,
+            "sku_match": 1.0,
+            "recency": 0.90,
+            "lifecycle": 1.0,
         },
         weights={
-            "semantic": 0.40, "lexical": 0.25,
-            "sku_match": 0.15, "recency": 0.10, "lifecycle": 0.10,
+            "semantic": 0.40,
+            "lexical": 0.25,
+            "sku_match": 0.15,
+            "recency": 0.10,
+            "lifecycle": 0.10,
         },
     )
     return ScoredCandidate(
@@ -97,8 +105,12 @@ def _six_step_events(trace_id: str, candidate_count: int = 5) -> list[dict]:
         _make_step_event(trace_id, 1, "query_sku_construction", 0, 0),
         _make_step_event(trace_id, 2, "exact_sku", 5, 5),
         _make_step_event(trace_id, 3, "partial_sku", 5, 0),
-        _make_step_event(trace_id, 4, "sibling_traversal", 5, 0, skipped=True, skip_reason="single-pointer v0.1"),
-        _make_step_event(trace_id, 5, "vector_fallback", candidate_count, max(0, candidate_count - 5)),
+        _make_step_event(
+            trace_id, 4, "sibling_traversal", 5, 0, skipped=True, skip_reason="single-pointer v0.1"
+        ),
+        _make_step_event(
+            trace_id, 5, "vector_fallback", candidate_count, max(0, candidate_count - 5)
+        ),
         _make_step_event(trace_id, 6, "trace_annotation", candidate_count, 0),
     ]
 
@@ -158,10 +170,12 @@ class TestWriteTrace:
             td = _make_trace_data("trace_fields01", scored=scored, floor=0.35)
             write_trace(td, db)
             with connect(db) as conn:
-                row = dict(conn.execute(
-                    "SELECT * FROM retrieval_traces WHERE trace_id = ?",
-                    ("trace_fields01",),
-                ).fetchone())
+                row = dict(
+                    conn.execute(
+                        "SELECT * FROM retrieval_traces WHERE trace_id = ?",
+                        ("trace_fields01",),
+                    ).fetchone()
+                )
             assert row["query"] == "test retrieval query"
             assert row["mode"] == "hybrid"
             assert row["candidate_count"] == 2
@@ -250,8 +264,7 @@ class TestTraceStepRows:
                 rows = {
                     row["step_name"]: row["step_number"]
                     for row in conn.execute(
-                        "SELECT step_name, step_number FROM retrieval_steps "
-                        "WHERE trace_id = ?",
+                        "SELECT step_name, step_number FROM retrieval_steps " "WHERE trace_id = ?",
                         ("trace_steps0003",),
                     ).fetchall()
                 }
@@ -271,7 +284,9 @@ class TestTraceStepRows:
                 _make_step_event(trace_id, 1, "query_sku_construction"),
                 _make_step_event(trace_id, 2, "exact_sku"),
                 _make_step_event(trace_id, 3, "partial_sku"),
-                _make_step_event(trace_id, 4, "sibling_traversal", skipped=True, skip_reason="v0.1"),
+                _make_step_event(
+                    trace_id, 4, "sibling_traversal", skipped=True, skip_reason="v0.1"
+                ),
                 _make_step_event(trace_id, 5, "lexical_search", 3, 3),
                 _make_step_event(trace_id, 5, "vector_fallback", 8, 5),
                 _make_step_event(trace_id, 6, "trace_annotation"),
@@ -424,41 +439,40 @@ class TestTraceTransactional:
     def test_fk_rejects_orphan_step(self) -> None:
         """retrieval_steps row with a non-existent trace_id must be rejected."""
         import sqlite3
+
         db = _migrated_db()
         try:
             with connect(db) as conn, pytest.raises(sqlite3.IntegrityError):
-                conn.execute(
-                    """
+                conn.execute("""
                         INSERT INTO retrieval_steps
                         (step_id, trace_id, step_number, step_name,
                          candidate_count, new_candidates, duration_ms, skipped)
                         VALUES ('s1', 'trace_nonexistent', 1, 'exact_sku', 0, 0, 0, 0)
-                        """
-                )
+                        """)
         finally:
             db.unlink(missing_ok=True)
 
     def test_fk_rejects_orphan_candidate(self) -> None:
         """retrieval_candidates row with a non-existent trace_id must be rejected."""
         import sqlite3
+
         db = _migrated_db()
         try:
             with connect(db) as conn, pytest.raises(sqlite3.IntegrityError):
-                conn.execute(
-                    """
+                conn.execute("""
                         INSERT INTO retrieval_candidates
                         (candidate_id, trace_id, record_id, step_surfaced,
                          retrieval_path, salience_score, score_json, selected)
                         VALUES ('c1', 'trace_nonexistent', 'rec_001', 'vector_fallback',
                                 'vector_fallback', 0.75, '{}', 1)
-                        """
-                )
+                        """)
         finally:
             db.unlink(missing_ok=True)
 
     def test_duplicate_trace_id_raises(self) -> None:
         """Writing the same trace_id twice must raise (PRIMARY KEY constraint)."""
         import sqlite3
+
         db = _migrated_db()
         try:
             td = _make_trace_data("trace_dup000001")
@@ -476,6 +490,7 @@ class TestTraceTransactional:
 class TestTraceWrittenEvent:
     def test_trace_written_event_emitted(self) -> None:
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             log = SQLiteEventLog(db)
@@ -488,6 +503,7 @@ class TestTraceWrittenEvent:
 
     def test_trace_written_event_has_trace_id(self) -> None:
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             log = SQLiteEventLog(db)
@@ -501,6 +517,7 @@ class TestTraceWrittenEvent:
 
     def test_trace_written_event_has_candidate_count(self) -> None:
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             log = SQLiteEventLog(db)
@@ -515,6 +532,7 @@ class TestTraceWrittenEvent:
 
     def test_no_event_without_log(self) -> None:
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             td = _make_trace_data("trace_evt00004")

@@ -32,27 +32,28 @@ def vault_root() -> Path:
 @pytest.fixture(scope="module")
 def clean_session(vault_root: Path) -> str:
     from cerebra.cognition.working_memory import new_session
+
     db = vault_root / "data" / "cerebra.db"
     return new_session(db, str(vault_root))
 
 
 def _get_t1_items(vault_root: Path, session_id: str) -> list:
     from cerebra.cognition.truth_tower import TruthTower
+
     db = vault_root / "data" / "cerebra.db"
     return TruthTower(db, session_id).load_tier(1)
 
 
 def _get_t2_items(vault_root: Path, session_id: str) -> list:
     from cerebra.cognition.truth_tower import TruthTower
+
     db = vault_root / "data" / "cerebra.db"
     return TruthTower(db, session_id).load_tier(2)
 
 
 @pytest.mark.integration
 class TestMemoryPromoteT2AgainstVault:
-    def test_full_flow_context_then_t2_promote(
-        self, vault_root: Path, clean_session: str
-    ) -> None:
+    def test_full_flow_context_then_t2_promote(self, vault_root: Path, clean_session: str) -> None:
         """context populates T1 → memory promote --tier 2 --cite → T2 visible in tower."""
         from click.testing import CliRunner
 
@@ -83,8 +84,17 @@ class TestMemoryPromoteT2AgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["memory", "promote", wm_id, "--tier", "2", "--cite", t1_id,
-             "--vault", str(vault_root)],
+            [
+                "memory",
+                "promote",
+                wm_id,
+                "--tier",
+                "2",
+                "--cite",
+                t1_id,
+                "--vault",
+                str(vault_root),
+            ],
         )
         assert result.exit_code == 0, result.output
         assert "Promoted to T2:" in result.output
@@ -93,9 +103,7 @@ class TestMemoryPromoteT2AgainstVault:
         t2_after = len(_get_t2_items(vault_root, clean_session))
         assert t2_after > t2_before
 
-    def test_born_stale_rejection(
-        self, vault_root: Path, clean_session: str
-    ) -> None:
+    def test_born_stale_rejection(self, vault_root: Path, clean_session: str) -> None:
         """Evict the T1, then try to cite it for T2 → exit 2 with clear error."""
         from click.testing import CliRunner
 
@@ -131,8 +139,17 @@ class TestMemoryPromoteT2AgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["memory", "promote", wm_items[0].item_id, "--tier", "2", "--cite", t1_id,
-             "--vault", str(vault_root)],
+            [
+                "memory",
+                "promote",
+                wm_items[0].item_id,
+                "--tier",
+                "2",
+                "--cite",
+                t1_id,
+                "--vault",
+                str(vault_root),
+            ],
         )
         assert result.exit_code == 2
         assert "Error:" in result.output

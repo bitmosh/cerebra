@@ -57,14 +57,24 @@ def _make_emitter(vault: Path, cycle_id: str = "cycle_001") -> EventEmitter:
 def _emit_stub_event(emitter: EventEmitter) -> bytes:
     return emitter.emit_cycle_event(
         event_type="StepStarted",
-        payload={"session_id": "sess_001", "cycle_id": "cycle_001", "step_id": "step_001", "_seq": next(_SEQ)},
+        payload={
+            "session_id": "sess_001",
+            "cycle_id": "cycle_001",
+            "step_id": "step_001",
+            "_seq": next(_SEQ),
+        },
     )
 
 
 def _emit_eval_event(emitter: EventEmitter, causation_id: bytes) -> bytes:
     return emitter.emit_cycle_event(
         event_type="EvaluationComposed",
-        payload={"session_id": "sess_001", "cycle_id": "cycle_001", "step_id": "step_001", "_seq": next(_SEQ)},
+        payload={
+            "session_id": "sess_001",
+            "cycle_id": "cycle_001",
+            "step_id": "step_001",
+            "_seq": next(_SEQ),
+        },
         causation_id=causation_id,
     )
 
@@ -80,8 +90,11 @@ class TestEmitPredictionMade:
         pipeline = PredictionPipeline(_composer())
         step_event_id = _emit_stub_event(emitter)
         inp = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_001", step_id="step_001",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_001",
+            step_id="step_001",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         pred = pipeline.predict(inp)
         event_id = emit_prediction_made(emitter, pred, step_event_id)
@@ -95,8 +108,11 @@ class TestEmitPredictionMade:
         pipeline = PredictionPipeline(_composer())
         step_event_id = _emit_stub_event(emitter)
         inp = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_emit", step_id="step_001",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_emit",
+            step_id="step_001",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         pred = pipeline.predict(inp)
         emit_prediction_made(emitter, pred, step_event_id)
@@ -104,6 +120,7 @@ class TestEmitPredictionMade:
         # Read events from the stream and find PredictionMade
         stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
+
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         pm_events = [e for e in events if e.event_type == "PredictionMade"]
         assert len(pm_events) == 1
@@ -124,14 +141,18 @@ class TestEmitPredictionMade:
         pipeline = PredictionPipeline(_composer())
         step_event_id = _emit_stub_event(emitter)
         inp = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_tags", step_id="step_001",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_tags",
+            step_id="step_001",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         pred = pipeline.predict(inp)
         emit_prediction_made(emitter, pred, step_event_id)
 
         stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
+
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         pm_events = [e for e in events if e.event_type == "PredictionMade"]
         tags = pm_events[0].indexed_tags()
@@ -144,14 +165,18 @@ class TestEmitPredictionMade:
         pipeline = PredictionPipeline(_composer())
         step_event_id = _emit_stub_event(emitter)
         inp = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_cause", step_id="step_001",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_cause",
+            step_id="step_001",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         pred = pipeline.predict(inp)
         emit_prediction_made(emitter, pred, step_event_id)
 
         stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
+
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         pm_events = [e for e in events if e.event_type == "PredictionMade"]
         assert pm_events[0].causation_id is not None
@@ -166,12 +191,18 @@ class TestEmitPredictionMade:
         step_id1 = _emit_stub_event(emitter)
 
         inp1 = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_two", step_id="step_a",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_two",
+            step_id="step_a",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         inp2 = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_two", step_id="step_b",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_two",
+            step_id="step_b",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         pred1 = pipeline.predict(inp1)
         pred2 = pipeline.predict(inp2)
@@ -181,6 +212,7 @@ class TestEmitPredictionMade:
 
         stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
+
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         pm_events = [e for e in events if e.event_type == "PredictionMade"]
         assert len(pm_events) == 2
@@ -199,8 +231,11 @@ class TestEmitOutcomeRecorded:
         step_event_id = _emit_stub_event(emitter)
         eval_event_id = _emit_eval_event(emitter, step_event_id)
         inp = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_nonsevere", step_id="step_001",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_nonsevere",
+            step_id="step_001",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         pred = pipeline.predict(inp)
         ev = _fake_evaluation("step_001", 0.70)  # close to baseline ~0.65 → noise
@@ -218,8 +253,11 @@ class TestEmitOutcomeRecorded:
         step_event_id = _emit_stub_event(emitter)
         eval_event_id = _emit_eval_event(emitter, step_event_id)
         inp = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_severe", step_id="step_001",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_severe",
+            step_id="step_001",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         pred = pipeline.predict(inp)
         # baseline expected ~0.65; actual 0.1 → |err| ~0.55 → severe
@@ -233,6 +271,7 @@ class TestEmitOutcomeRecorded:
 
         stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
+
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         severe_events = [e for e in events if e.event_type == "PredictionSevereMiss"]
         assert len(severe_events) == 1
@@ -245,8 +284,11 @@ class TestEmitOutcomeRecorded:
         step_event_id = _emit_stub_event(emitter)
         eval_event_id = _emit_eval_event(emitter, step_event_id)
         inp = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_smiss", step_id="step_001",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_smiss",
+            step_id="step_001",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         pred = pipeline.predict(inp)
         ev = _fake_evaluation("step_001", 0.10)
@@ -255,6 +297,7 @@ class TestEmitOutcomeRecorded:
 
         stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
+
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         severe = [e for e in events if e.event_type == "PredictionSevereMiss"][0]
         payload = severe.payload()
@@ -272,8 +315,11 @@ class TestEmitOutcomeRecorded:
         step_event_id = _emit_stub_event(emitter)
         eval_event_id = _emit_eval_event(emitter, step_event_id)
         inp = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_scause", step_id="step_001",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_scause",
+            step_id="step_001",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         pred = pipeline.predict(inp)
         ev = _fake_evaluation("step_001", 0.10)
@@ -282,6 +328,7 @@ class TestEmitOutcomeRecorded:
 
         stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
+
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         severe = [e for e in events if e.event_type == "PredictionSevereMiss"][0]
         # Severe miss must chain to OutcomeRecorded, not EvaluationComposed
@@ -296,8 +343,11 @@ class TestEmitOutcomeRecorded:
         step_event_id = _emit_stub_event(emitter)
         eval_event_id = _emit_eval_event(emitter, step_event_id)
         inp = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_orcause", step_id="step_001",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_orcause",
+            step_id="step_001",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         pred = pipeline.predict(inp)
         ev = _fake_evaluation("step_001", 0.70)
@@ -306,6 +356,7 @@ class TestEmitOutcomeRecorded:
 
         stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
+
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         or_events = [e for e in events if e.event_type == "OutcomeRecorded"]
         assert len(or_events) == 1
@@ -320,8 +371,11 @@ class TestEmitOutcomeRecorded:
         step_event_id = _emit_stub_event(emitter)
         eval_event_id = _emit_eval_event(emitter, step_event_id)
         inp = PredictionInput(
-            session_id="sess_001", cycle_id="cycle_ortags", step_id="step_001",
-            prior_step_composites=[], prior_step_per_signal=None,
+            session_id="sess_001",
+            cycle_id="cycle_ortags",
+            step_id="step_001",
+            prior_step_composites=[],
+            prior_step_per_signal=None,
         )
         pred = pipeline.predict(inp)
         ev = _fake_evaluation("step_001", 0.70)
@@ -330,6 +384,7 @@ class TestEmitOutcomeRecorded:
 
         stream_id = "cerebra/agent-trace/sess_001"
         from fossic import ReadQuery
+
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         or_events = [e for e in events if e.event_type == "OutcomeRecorded"]
         tags = or_events[0].indexed_tags()

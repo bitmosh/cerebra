@@ -217,8 +217,9 @@ class TestRetrieval:
         from cerebra.retrieval.traversal import run_traversal
 
         event_log = SQLiteEventLog(db_path)
-        plan = query_plan("event sourcing trade-offs", db_path, max_candidates=20,
-                          event_log=event_log)
+        plan = query_plan(
+            "event sourcing trade-offs", db_path, max_candidates=20, event_log=event_log
+        )
         raw = run_traversal(plan, db_path, event_log=event_log)
         scored = score_candidates(raw, plan, db_path, event_log=event_log)
 

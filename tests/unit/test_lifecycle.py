@@ -51,9 +51,14 @@ def _insert_record(
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1700000000000)
         """,
         (
-            record_id, record_type,
-            SYNTHETIC_SOURCE_ID, SYNTHETIC_DOCUMENT_ID, SYNTHETIC_CHUNK_ID,
-            content, "deadbeef00000000", len(content.split()),
+            record_id,
+            record_type,
+            SYNTHETIC_SOURCE_ID,
+            SYNTHETIC_DOCUMENT_ID,
+            SYNTHETIC_CHUNK_ID,
+            content,
+            "deadbeef00000000",
+            len(content.split()),
             lifecycle_state,
         ),
     )
@@ -144,6 +149,7 @@ class TestInvalidTransitions:
         _insert_record(db_path, "rec_014", lifecycle_state="active")
         mgr = LifecycleManager(db_path)
         from cerebra.memory.lifecycle import LifecycleError
+
         with pytest.raises(LifecycleError):
             mgr.transition("rec_014", "warm")
 
@@ -218,14 +224,13 @@ class TestReingestionBlock:
         from cerebra.storage.sqlite_store import SQLiteStore
 
         _insert_record(
-            db_path, "rec_050",
+            db_path,
+            "rec_050",
             lifecycle_state="tombstoned",
         )
         # Manually set source_id to something we can target.
         conn = sqlite3.connect(db_path)
-        conn.execute(
-            "UPDATE memory_records SET source_id = 'src_test' WHERE record_id = 'rec_050'"
-        )
+        conn.execute("UPDATE memory_records SET source_id = 'src_test' WHERE record_id = 'rec_050'")
         conn.commit()
         conn.close()
 
@@ -258,21 +263,25 @@ class TestReingestionBlock:
         _insert_record(db_path, "rec_052", lifecycle_state="tombstoned")
 
         store = SQLiteStore(db_path)
-        store.insert_records_batch([{
-            "record_id": "rec_052",
-            "record_type": "source_chunk",
-            "source_id": SYNTHETIC_SOURCE_ID,
-            "document_id": SYNTHETIC_DOCUMENT_ID,
-            "chunk_id": SYNTHETIC_CHUNK_ID,
-            "content": "new content that should be ignored",
-            "content_hash": "newnewhash00000",
-            "token_estimate": 5,
-            "sku_address": None,
-            "sku_assigned_at": None,
-            "lifecycle_state": "active",
-            "created_at": 1800000000000,
-            "schema_version": 1,
-        }])
+        store.insert_records_batch(
+            [
+                {
+                    "record_id": "rec_052",
+                    "record_type": "source_chunk",
+                    "source_id": SYNTHETIC_SOURCE_ID,
+                    "document_id": SYNTHETIC_DOCUMENT_ID,
+                    "chunk_id": SYNTHETIC_CHUNK_ID,
+                    "content": "new content that should be ignored",
+                    "content_hash": "newnewhash00000",
+                    "token_estimate": 5,
+                    "sku_address": None,
+                    "sku_assigned_at": None,
+                    "lifecycle_state": "active",
+                    "created_at": 1800000000000,
+                    "schema_version": 1,
+                }
+            ]
+        )
 
         assert _get_state(db_path, "rec_052") == "tombstoned"
         # Content was not overwritten.
@@ -290,10 +299,12 @@ class TestReingestionBlock:
 class TestFTSSync:
     def _build_fts(self, db_path: Path) -> None:
         from cerebra.storage.lexical import build_fts_index
+
         build_fts_index(db_path)
 
     def _fts_count(self, db_path: Path, record_id: str) -> int:
         from cerebra.storage.lexical import FTS_TABLE
+
         conn = sqlite3.connect(db_path)
         # FTS5 external content: query the FTS table for the rowid of the record.
         rowid_row = conn.execute(
@@ -327,8 +338,12 @@ class TestFTSSync:
         assert self._fts_count(db_path, "rec_061") == 0
 
     def test_restore_readds_to_fts(self, db_path: Path) -> None:
-        _insert_record(db_path, "rec_062", lifecycle_state="archived",
-                       content="unique restore fts test content")
+        _insert_record(
+            db_path,
+            "rec_062",
+            lifecycle_state="archived",
+            content="unique restore fts test content",
+        )
         self._build_fts(db_path)
         # Archived record is not in FTS (build_fts_index only indexes active).
         assert self._fts_count(db_path, "rec_062") == 0

@@ -87,9 +87,7 @@ def _make_config_with_rules(rules: list[dict], composite_floor: float = 0.3) -> 
             }
             for i in range(3)
         ],
-        "stop_conditions": [
-            {"name": "cap", "type": "max_steps_reached", "parameters": {}}
-        ],
+        "stop_conditions": [{"name": "cap", "type": "max_steps_reached", "parameters": {}}],
         "clutch_rules": rules,
     }
     return _parse_config(d)
@@ -249,10 +247,12 @@ class TestPriorStepActionWas:
         assert BUILTIN_PREDICATES["prior_step_action_was"](ctx, {"action": "refine"})
 
     def test_true_reads_last_decision(self) -> None:
-        state = ClutchCycleState(prior_clutch_decisions=[
-            self._decision("accept"),
-            self._decision("refine"),
-        ])
+        state = ClutchCycleState(
+            prior_clutch_decisions=[
+                self._decision("accept"),
+                self._decision("refine"),
+            ]
+        )
         ctx = _ctx(cycle_state=state)
         assert BUILTIN_PREDICATES["prior_step_action_was"](ctx, {"action": "refine"})
 
@@ -324,25 +324,55 @@ class TestCascadeDepth:
         return ClutchEngine(cfg)  # type: ignore[arg-type]
 
     def test_cascade_depth_zero_for_first_rule(self) -> None:
-        engine = self._engine([
-            {"name": "r0", "description": "", "predicate_name": "always", "action": "accept", "parameters": {}},
-            {"name": "r1", "description": "", "predicate_name": "always", "action": "stop", "parameters": {}},
-        ])
+        engine = self._engine(
+            [
+                {
+                    "name": "r0",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "accept",
+                    "parameters": {},
+                },
+                {
+                    "name": "r1",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "stop",
+                    "parameters": {},
+                },
+            ]
+        )
         decision = engine.decide(_ctx())
         assert decision.cascade_depth == 0
 
     def test_cascade_depth_one_for_second_rule(self) -> None:
-        engine = self._engine([
-            {"name": "r0", "description": "", "predicate_name": "first_step", "action": "stop", "parameters": {}},
-            {"name": "r1", "description": "", "predicate_name": "always", "action": "accept", "parameters": {}},
-        ])
+        engine = self._engine(
+            [
+                {
+                    "name": "r0",
+                    "description": "",
+                    "predicate_name": "first_step",
+                    "action": "stop",
+                    "parameters": {},
+                },
+                {
+                    "name": "r1",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "accept",
+                    "parameters": {},
+                },
+            ]
+        )
         # step_index=2 so first_step is False → second rule fires
         decision = engine.decide(_ctx(step_index=2))
         assert decision.cascade_depth == 1
 
     def test_cascade_depth_equals_rule_count_when_no_match(self) -> None:
         cfg = CycleConfig(
-            name="x", version=1, description="",
+            name="x",
+            version=1,
+            description="",
             steps=[CycleStep("s", "", StepPromptTemplate("{{ goal }}", "free_form"))],
             max_steps=5,
             stop_conditions=[StopCondition("cap", "max_steps_reached", {})],
@@ -369,15 +399,25 @@ class TestEscalateToCatalyst:
         return ClutchEngine(cfg)  # type: ignore[arg-type]
 
     def test_escalate_false_when_rule_matches(self) -> None:
-        engine = self._engine([
-            {"name": "r", "description": "", "predicate_name": "always", "action": "accept", "parameters": {}},
-        ])
+        engine = self._engine(
+            [
+                {
+                    "name": "r",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "accept",
+                    "parameters": {},
+                },
+            ]
+        )
         decision = engine.decide(_ctx())
         assert decision.escalate_to_catalyst is False
 
     def test_escalate_true_when_no_rule_matches(self) -> None:
         cfg = CycleConfig(
-            name="x", version=1, description="",
+            name="x",
+            version=1,
+            description="",
             steps=[CycleStep("s", "", StepPromptTemplate("{{ goal }}", "free_form"))],
             max_steps=5,
             stop_conditions=[StopCondition("cap", "max_steps_reached", {})],
@@ -393,7 +433,9 @@ class TestEscalateToCatalyst:
 
     def test_no_match_action_is_accept_safe_default(self) -> None:
         cfg = CycleConfig(
-            name="x", version=1, description="",
+            name="x",
+            version=1,
+            description="",
             steps=[CycleStep("s", "", StepPromptTemplate("{{ goal }}", "free_form"))],
             max_steps=5,
             stop_conditions=[StopCondition("cap", "max_steps_reached", {})],
@@ -410,15 +452,32 @@ class TestEscalateToCatalyst:
 
 class TestCompositeFLoor:
     def test_default_is_0_3(self) -> None:
-        cfg = _make_config_with_rules([
-            {"name": "r", "description": "", "predicate_name": "always", "action": "accept", "parameters": {}},
-        ])
+        cfg = _make_config_with_rules(
+            [
+                {
+                    "name": "r",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "accept",
+                    "parameters": {},
+                },
+            ]
+        )
         assert cfg.composite_floor == 0.3  # type: ignore[union-attr]
 
     def test_custom_floor_from_yaml(self) -> None:
-        cfg = _make_config_with_rules([
-            {"name": "r", "description": "", "predicate_name": "always", "action": "accept", "parameters": {}},
-        ], composite_floor=0.5)
+        cfg = _make_config_with_rules(
+            [
+                {
+                    "name": "r",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "accept",
+                    "parameters": {},
+                },
+            ],
+            composite_floor=0.5,
+        )
         assert cfg.composite_floor == 0.5  # type: ignore[union-attr]
 
     def test_old_configs_without_floor_still_parse(self) -> None:
@@ -427,9 +486,26 @@ class TestCompositeFLoor:
             "version": 1,
             "description": "",
             "max_steps": 5,
-            "steps": [{"name": "s", "description": "", "prompt_template": {"template": "{{ goal }}", "expected_output_format": "free_form"}}],
+            "steps": [
+                {
+                    "name": "s",
+                    "description": "",
+                    "prompt_template": {
+                        "template": "{{ goal }}",
+                        "expected_output_format": "free_form",
+                    },
+                }
+            ],
             "stop_conditions": [{"name": "cap", "type": "max_steps_reached", "parameters": {}}],
-            "clutch_rules": [{"name": "r", "description": "", "predicate_name": "always", "action": "accept", "parameters": {}}],
+            "clutch_rules": [
+                {
+                    "name": "r",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "accept",
+                    "parameters": {},
+                }
+            ],
             # NOTE: no composite_floor key
         }
         cfg = _parse_config(d)
@@ -470,6 +546,7 @@ class TestClutchCycleState:
 class TestSimplePlanningV0Regression:
     def _load_engine(self) -> ClutchEngine:
         from cerebra.cognition.cycle_config import CycleConfigLoader
+
         cfg = CycleConfigLoader().load("simple.planning.v0")
         return ClutchEngine(cfg)
 
@@ -516,11 +593,16 @@ class TestSimplePlanningV0Regression:
     def test_new_predicate_names_valid_in_config(self) -> None:
         """Verify expanded BUILTIN_PREDICATE_NAMES accepts new names."""
         from cerebra.cognition._constants import BUILTIN_PREDICATE_NAMES
+
         new_predicates = [
-            "prediction_severe_miss", "prediction_notable_miss",
-            "signal_below_threshold", "signal_above_threshold",
-            "consecutive_steps_below_floor", "prior_step_action_was",
-            "step_at", "catalyst_was_invoked",
+            "prediction_severe_miss",
+            "prediction_notable_miss",
+            "signal_below_threshold",
+            "signal_above_threshold",
+            "consecutive_steps_below_floor",
+            "prior_step_action_was",
+            "step_at",
+            "catalyst_was_invoked",
         ]
         for name in new_predicates:
             assert name in BUILTIN_PREDICATE_NAMES, f"{name} missing from BUILTIN_PREDICATE_NAMES"

@@ -45,9 +45,9 @@ VALID_TRANSITIONS: frozenset[tuple[str, str]] = frozenset(
 
 # Human-readable operation names for error messages and events.
 _TRANSITION_NAMES: dict[tuple[str, str], str] = {
-    ("active", "archived"):    "archive",
-    ("active", "tombstoned"):  "tombstone",
-    ("archived", "active"):    "restore",
+    ("active", "archived"): "archive",
+    ("active", "tombstoned"): "tombstone",
+    ("archived", "active"): "restore",
     ("archived", "tombstoned"): "tombstone",
 }
 
@@ -118,9 +118,7 @@ class LifecycleManager:
                 raise InvalidTransitionError(
                     f"Cannot transition {record_id!r} from {current_state!r} to {target_state!r}. "
                     f"Valid transitions from {current_state!r}: "
-                    + ", ".join(
-                        t[1] for t in VALID_TRANSITIONS if t[0] == current_state
-                    )
+                    + ", ".join(t[1] for t in VALID_TRANSITIONS if t[0] == current_state)
                     or "none (terminal state)"
                 )
 
@@ -261,7 +259,7 @@ def _sync_fts(
 
 def _event_type_for_op(op: str) -> str:
     return {
-        "archive":   "MemoryRecordArchived",
+        "archive": "MemoryRecordArchived",
         "tombstone": "MemoryRecordTombstoned",
-        "restore":   "MemoryRecordRestored",
+        "restore": "MemoryRecordRestored",
     }[op]

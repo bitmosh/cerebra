@@ -25,6 +25,7 @@ from dataclasses import dataclass
 @dataclass
 class ArmStats:
     """Per-arm reward statistics."""
+
     count: int = 0
     total_reward: float = 0.0
     last_selected_step: int | None = None
@@ -37,12 +38,13 @@ class ArmStats:
 @dataclass
 class BanditSelection:
     """Result of a bandit selection, with full decision trace."""
+
     arm: str
-    selection_reason: str         # "forced_exploration" | "ucb_score"
-    ucb_score: float              # the score computed for the selected arm
-    mean_reward: float            # arm's mean reward at selection time
-    exploration_bonus: float      # the UCB bonus component
-    candidates_seen: int          # how many arms were evaluated
+    selection_reason: str  # "forced_exploration" | "ucb_score"
+    ucb_score: float  # the score computed for the selected arm
+    mean_reward: float  # arm's mean reward at selection time
+    exploration_bonus: float  # the UCB bonus component
+    candidates_seen: int  # how many arms were evaluated
 
 
 class Bandit:
@@ -97,9 +99,7 @@ class Bandit:
         for arm_id in arm_list:
             arm = self.arms[arm_id]
             mean = arm.mean_reward
-            bonus = self.exploration_weight * math.sqrt(
-                math.log(total_steps + 1) / arm.count
-            )
+            bonus = self.exploration_weight * math.sqrt(math.log(total_steps + 1) / arm.count)
             score = mean + bonus
 
             if score > best_score:
@@ -146,17 +146,17 @@ class Bandit:
                 bonus = float("inf")
                 score = float("inf")
             else:
-                bonus = self.exploration_weight * math.sqrt(
-                    math.log(total_steps + 1) / arm.count
-                )
+                bonus = self.exploration_weight * math.sqrt(math.log(total_steps + 1) / arm.count)
                 score = mean + bonus
-            trace.append({
-                "arm": arm_id,
-                "count": arm.count,
-                "mean_reward": mean,
-                "exploration_bonus": bonus,
-                "ucb_score": score,
-            })
+            trace.append(
+                {
+                    "arm": arm_id,
+                    "count": arm.count,
+                    "mean_reward": mean,
+                    "exploration_bonus": bonus,
+                    "ucb_score": score,
+                }
+            )
         return trace
 
     def to_state(self) -> dict:

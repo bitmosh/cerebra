@@ -10,7 +10,9 @@ from pathlib import Path
 
 import pytest
 
-numpy = pytest.importorskip("numpy", reason="numpy not available — skipping context packet vault tests")
+numpy = pytest.importorskip(
+    "numpy", reason="numpy not available — skipping context packet vault tests"
+)
 
 _VAULT_DB = Path.home() / "cerebra-vaults" / "dev" / "data" / "cerebra.db"
 
@@ -53,8 +55,12 @@ class TestContextPacketAgainstVault:
             for e in event_log.query_by_subject(plan.trace_id, "TraversalStepCompleted")
         ]
         td = TraceData(
-            plan=plan, scored_all=scored_all, floor=floor,
-            started_at=now - 1, finished_at=now, duration_ms=0,
+            plan=plan,
+            scored_all=scored_all,
+            floor=floor,
+            started_at=now - 1,
+            finished_at=now,
+            duration_ms=0,
             step_events=step_events,
         )
         write_trace(td, vault_db, event_log=event_log)
@@ -95,8 +101,12 @@ class TestContextPacketAgainstVault:
 
         now = int(time.time())
         td = TraceData(
-            plan=plan, scored_all=scored_all, floor=floor,
-            started_at=now - 1, finished_at=now, duration_ms=0,
+            plan=plan,
+            scored_all=scored_all,
+            floor=floor,
+            started_at=now - 1,
+            finished_at=now,
+            duration_ms=0,
         )
         write_trace(td, vault_db)
 
@@ -135,8 +145,14 @@ class TestContextPacketAgainstVault:
             pytest.skip("No candidates above floor")
 
         now = int(time.time())
-        td = TraceData(plan=plan, scored_all=scored_all, floor=floor,
-                      started_at=now - 1, finished_at=now, duration_ms=0)
+        td = TraceData(
+            plan=plan,
+            scored_all=scored_all,
+            floor=floor,
+            started_at=now - 1,
+            finished_at=now,
+            duration_ms=0,
+        )
         write_trace(td, vault_db)
         pkt = build_context_packet(td, above_floor, vault_db, limit=5)
 
@@ -165,8 +181,14 @@ class TestContextPacketAgainstVault:
         above_floor = [c for c in scored_all if c.score.composite >= floor]
 
         now = int(time.time())
-        td = TraceData(plan=plan, scored_all=scored_all, floor=floor,
-                      started_at=now - 1, finished_at=now, duration_ms=0)
+        td = TraceData(
+            plan=plan,
+            scored_all=scored_all,
+            floor=floor,
+            started_at=now - 1,
+            finished_at=now,
+            duration_ms=0,
+        )
         write_trace(td, vault_db)
         pkt = build_context_packet(td, above_floor, vault_db)
 
@@ -198,8 +220,14 @@ class TestContextPacketAgainstVault:
         floor = 0.35
         above_floor = [c for c in scored_all if c.score.composite >= floor]
         now = int(time.time())
-        td = TraceData(plan=plan, scored_all=scored_all, floor=floor,
-                      started_at=now - 1, finished_at=now, duration_ms=0)
+        td = TraceData(
+            plan=plan,
+            scored_all=scored_all,
+            floor=floor,
+            started_at=now - 1,
+            finished_at=now,
+            duration_ms=0,
+        )
         write_trace(td, vault_db)
         pkt = build_context_packet(td, above_floor, vault_db, limit=5)
 

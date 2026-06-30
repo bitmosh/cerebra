@@ -70,9 +70,7 @@ class EventEmitter:
             indexed_tags=indexed_tags,
         )
 
-    def trigger_lattice_snapshots_at_cycle_boundary(
-        self, touched_lineages: set[str]
-    ) -> None:
+    def trigger_lattice_snapshots_at_cycle_boundary(self, touched_lineages: set[str]) -> None:
         """At CycleCompleted, snapshot lattice streams that have accumulated
         >= LATTICE_SNAPSHOT_CADENCE events since their last snapshot.
 

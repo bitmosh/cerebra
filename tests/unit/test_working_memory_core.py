@@ -91,8 +91,19 @@ def _seed_memory_record(db_path: Path, record_id: str = "rec_test") -> str:
             " content, content_hash, token_estimate, lifecycle_state, "
             " created_at, schema_version) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (record_id, "source_chunk", src_id, doc_id, chk_id,
-             "content", "hr0", 5, "active", now, 1),
+            (
+                record_id,
+                "source_chunk",
+                src_id,
+                doc_id,
+                chk_id,
+                "content",
+                "hr0",
+                5,
+                "active",
+                now,
+                1,
+            ),
         )
         conn.commit()
     finally:
@@ -139,9 +150,9 @@ class TestWorkingMemoryItemDataclass:
             promoted_at=1000,
             evicted_at=None,
         )
-        assert not hasattr(item, "is_tower_cited"), (
-            "is_tower_cited must not be a stored field — it is computed via JOIN"
-        )
+        assert not hasattr(
+            item, "is_tower_cited"
+        ), "is_tower_cited must not be a stored field — it is computed via JOIN"
 
     def test_to_dict_roundtrip(self) -> None:
         item = WorkingMemoryItem(
@@ -165,15 +176,27 @@ class TestWorkingMemoryItemDataclass:
 
     def test_to_dict_keys(self) -> None:
         item = WorkingMemoryItem(
-            item_id="x", session_id="y", slot_type="goal",
-            record_id=None, content_summary="c", salience_score=0.1,
-            is_pinned=False, promoted_at=1, evicted_at=None,
+            item_id="x",
+            session_id="y",
+            slot_type="goal",
+            record_id=None,
+            content_summary="c",
+            salience_score=0.1,
+            is_pinned=False,
+            promoted_at=1,
+            evicted_at=None,
         )
         keys = set(item.to_dict().keys())
         expected = {
-            "item_id", "session_id", "slot_type", "record_id",
-            "content_summary", "salience_score", "is_pinned",
-            "promoted_at", "evicted_at",
+            "item_id",
+            "session_id",
+            "slot_type",
+            "record_id",
+            "content_summary",
+            "salience_score",
+            "is_pinned",
+            "promoted_at",
+            "evicted_at",
         }
         assert keys == expected
 
@@ -288,9 +311,7 @@ class TestEvictionPolicy:
         db_path, session_id = _fresh_db()
         wm = _wm(db_path, session_id)
         # capacity=2 for contradiction
-        pinned = wm.promote(
-            "contradiction", None, "pinned low", salience_score=0.1, is_pinned=True
-        )
+        pinned = wm.promote("contradiction", None, "pinned low", salience_score=0.1, is_pinned=True)
         other = wm.promote("contradiction", None, "other mid", salience_score=0.5)
         # Promote a 3rd → must evict `other` (pinned is protected)
         _third = wm.promote("contradiction", None, "new high", salience_score=0.9)
@@ -560,8 +581,7 @@ class TestEventEmission:
         conn = connect(db_path)
         try:
             count = conn.execute(
-                "SELECT COUNT(*) FROM inspector_events "
-                "WHERE event_type = 'AttentionItemEvicted'"
+                "SELECT COUNT(*) FROM inspector_events " "WHERE event_type = 'AttentionItemEvicted'"
             ).fetchone()[0]
         finally:
             conn.close()

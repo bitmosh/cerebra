@@ -43,21 +43,20 @@ class EvaluationPacket:
 
 class EvaluationComposer:
     def __init__(self, weights: dict[str, float] | None = None) -> None:
-        self.weights: dict[str, float] = weights if weights is not None else dict(SIGNAL_DEFAULT_WEIGHTS)
+        self.weights: dict[str, float] = (
+            weights if weights is not None else dict(SIGNAL_DEFAULT_WEIGHTS)
+        )
         self._validate_weights()
 
     def _validate_weights(self) -> None:
         total = sum(self.weights.values())
         if not (0.95 <= total <= 1.05):
-            raise ValueError(
-                f"Signal weights must sum to ~1.0 ± 0.05; got {total:.4f}"
-            )
+            raise ValueError(f"Signal weights must sum to ~1.0 ± 0.05; got {total:.4f}")
         if set(self.weights.keys()) != SIGNAL_NAMES:
             missing = SIGNAL_NAMES - set(self.weights.keys())
             extra = set(self.weights.keys()) - SIGNAL_NAMES
             raise ValueError(
-                f"Weights must cover exactly SIGNAL_NAMES. "
-                f"Missing: {missing}. Extra: {extra}."
+                f"Weights must cover exactly SIGNAL_NAMES. " f"Missing: {missing}. Extra: {extra}."
             )
 
     def compose(
@@ -76,9 +75,7 @@ class EvaluationComposer:
             )
 
         per_signal = {s.signal_name: s.score for s in signal_scores}
-        composite = sum(
-            per_signal[name] * weight for name, weight in self.weights.items()
-        )
+        composite = sum(per_signal[name] * weight for name, weight in self.weights.items())
         composite = max(0.0, min(1.0, composite))
 
         return EvaluationPacket(

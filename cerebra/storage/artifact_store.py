@@ -26,10 +26,11 @@ from cerebra.inspector.sqlite_log import SQLiteEventLog
 @dataclass(frozen=True)
 class ArtifactResult:
     """Returned by write_artifact."""
-    artifact_path: Path   # absolute path to the artifact file
+
+    artifact_path: Path  # absolute path to the artifact file
     size_bytes: int
-    content_hash: str     # sha256 hex of the content
-    written: bool         # True = written or overwritten; False = identical, skipped
+    content_hash: str  # sha256 hex of the content
+    written: bool  # True = written or overwritten; False = identical, skipped
 
 
 def write_artifact(

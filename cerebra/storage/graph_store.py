@@ -41,7 +41,7 @@ LIFECYCLE_STATES = frozenset({"active", "archived", "tombstoned", "stale"})
 # Edge types that define upward traversal in walk_parent_chain.
 # A node's "parent" is reachable by following these edge types from it.
 _PARENT_OUTBOUND_TYPES = frozenset({"DERIVED_FROM", "PART_OF"})  # outbound: node → parent
-_PARENT_INBOUND_TYPES = frozenset({"CONTAINS"})                  # inbound: parent → node
+_PARENT_INBOUND_TYPES = frozenset({"CONTAINS"})  # inbound: parent → node
 
 
 # ── ID generation ─────────────────────────────────────────────────────────────
@@ -110,15 +110,11 @@ def upsert_node(db_path: Path, node: dict[str, Any]) -> str:
 def get_node(db_path: Path, node_id: str) -> dict[str, Any] | None:
     """Return the node row for node_id, or None."""
     with connect(db_path) as conn:
-        row = conn.execute(
-            "SELECT * FROM graph_nodes WHERE node_id = ?", (node_id,)
-        ).fetchone()
+        row = conn.execute("SELECT * FROM graph_nodes WHERE node_id = ?", (node_id,)).fetchone()
     return dict(row) if row else None
 
 
-def get_node_for_entity(
-    db_path: Path, entity_id: str, entity_table: str
-) -> dict[str, Any] | None:
+def get_node_for_entity(db_path: Path, entity_id: str, entity_table: str) -> dict[str, Any] | None:
     """Return the node for a given entity, or None if not yet in the graph."""
     with connect(db_path) as conn:
         row = conn.execute(
@@ -206,9 +202,7 @@ def upsert_edge(db_path: Path, edge: dict[str, Any]) -> str:
 def get_edge(db_path: Path, edge_id: str) -> dict[str, Any] | None:
     """Return the edge row for edge_id, or None."""
     with connect(db_path) as conn:
-        row = conn.execute(
-            "SELECT * FROM graph_edges WHERE edge_id = ?", (edge_id,)
-        ).fetchone()
+        row = conn.execute("SELECT * FROM graph_edges WHERE edge_id = ?", (edge_id,)).fetchone()
     return dict(row) if row else None
 
 
@@ -266,12 +260,18 @@ def get_neighbors(
     elif direction == "both":
         # Recurse: union of both directions
         outbound = get_neighbors(
-            db_path, node_id,
-            direction="outbound", edge_type=edge_type, lifecycle_state=lifecycle_state
+            db_path,
+            node_id,
+            direction="outbound",
+            edge_type=edge_type,
+            lifecycle_state=lifecycle_state,
         )
         inbound = get_neighbors(
-            db_path, node_id,
-            direction="inbound", edge_type=edge_type, lifecycle_state=lifecycle_state
+            db_path,
+            node_id,
+            direction="inbound",
+            edge_type=edge_type,
+            lifecycle_state=lifecycle_state,
         )
         seen: set[str] = set()
         result: list[dict[str, Any]] = []
@@ -373,21 +373,21 @@ def walk_parent_chain(
         for cid in current_ids:
             # Outbound: DERIVED_FROM, PART_OF → target is the parent
             outbound_parents = get_neighbors(
-                db_path, cid,
-                direction="outbound", lifecycle_state=lifecycle_state
+                db_path, cid, direction="outbound", lifecycle_state=lifecycle_state
             )
             outbound_parents = [
-                n for n in outbound_parents
+                n
+                for n in outbound_parents
                 if n["node_id"] not in visited
                 and _edge_type_between(db_path, cid, n["node_id"]) in _PARENT_OUTBOUND_TYPES
             ]
             # Inbound: CONTAINS → source is the parent
             inbound_parents = get_neighbors(
-                db_path, cid,
-                direction="inbound", lifecycle_state=lifecycle_state
+                db_path, cid, direction="inbound", lifecycle_state=lifecycle_state
             )
             inbound_parents = [
-                n for n in inbound_parents
+                n
+                for n in inbound_parents
                 if n["node_id"] not in visited
                 and _edge_type_between(db_path, n["node_id"], cid) in _PARENT_INBOUND_TYPES
             ]

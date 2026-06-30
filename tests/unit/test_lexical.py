@@ -54,8 +54,7 @@ def _insert_record(
                 created_at, schema_version
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (src_id, f"/fake/{record_id}.md", content_hash, 100,
-             "markdown", 1.0, "active", now, 1),
+            (src_id, f"/fake/{record_id}.md", content_hash, 100, "markdown", 1.0, "active", now, 1),
         )
         conn.execute(
             """
@@ -74,8 +73,21 @@ def _insert_record(
                 lifecycle_state, created_at, schema_version
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (chk_id, doc_id, src_id, "", 0, 0, content, content_hash,
-             len(content.split()), "fixed", "active", now, 1),
+            (
+                chk_id,
+                doc_id,
+                src_id,
+                "",
+                0,
+                0,
+                content,
+                content_hash,
+                len(content.split()),
+                "fixed",
+                "active",
+                now,
+                1,
+            ),
         )
         conn.execute(
             """
@@ -85,9 +97,19 @@ def _insert_record(
                 created_at, schema_version
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (record_id, "source_chunk", src_id, doc_id, chk_id,
-             content, content_hash, len(content.split()),
-             lifecycle_state, now, 1),
+            (
+                record_id,
+                "source_chunk",
+                src_id,
+                doc_id,
+                chk_id,
+                content,
+                content_hash,
+                len(content.split()),
+                lifecycle_state,
+                now,
+                1,
+            ),
         )
     return record_id
 
@@ -248,7 +270,9 @@ class TestSearch:
 
     def test_filters_archived_records(self, db: Path) -> None:
         _insert_record(db, record_id="rec_active", content="hello world")
-        _insert_record(db, record_id="rec_archived", content="hello world", lifecycle_state="archived")
+        _insert_record(
+            db, record_id="rec_archived", content="hello world", lifecycle_state="archived"
+        )
         build_fts_index(db)
         results = search(db, "hello")
         ids = [r[0] for r in results]
@@ -321,7 +345,10 @@ class TestIsLexicalStale:
         # Archived record with future timestamp should NOT trigger staleness
         future_ts = int(time.time()) + 3600
         _insert_record(
-            db, record_id="rec_archived", content="archived",
-            lifecycle_state="archived", created_at=future_ts,
+            db,
+            record_id="rec_archived",
+            content="archived",
+            lifecycle_state="archived",
+            created_at=future_ts,
         )
         assert is_lexical_stale(db) is False

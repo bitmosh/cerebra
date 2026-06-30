@@ -7,6 +7,7 @@ Strategy:
     temp vaults with FossicStore writes.
   - Tail mode: test the query-building path without the infinite loop.
 """
+
 from __future__ import annotations
 
 import json
@@ -50,8 +51,14 @@ def _insert_runtime_session(
             cycles_run, steps_run, state)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
         (
-            session_id, cycle_config, goal, "/tmp/vault",
-            opened_at or int(time.time()), cycles_run, steps_run, state,
+            session_id,
+            cycle_config,
+            goal,
+            "/tmp/vault",
+            opened_at or int(time.time()),
+            cycles_run,
+            steps_run,
+            state,
         ),
     )
 
@@ -75,7 +82,10 @@ def _insert_inspector_event(
             f"evt_{uuid.uuid4().hex[:12]}",
             event_type,
             ts or int(time.time()),
-            session_id, cycle_id, subject_id, summary,
+            session_id,
+            cycle_id,
+            subject_id,
+            summary,
             json.dumps(data or {}),
         ),
     )
@@ -222,7 +232,9 @@ class TestSessionList:
             for i in range(5):
                 _insert_runtime_session(conn, f"sess_{i:04d}")
         runner = CliRunner()
-        result = runner.invoke(inspect_group, ["session", "list", "--limit", "2"], env=_make_env(vault))
+        result = runner.invoke(
+            inspect_group, ["session", "list", "--limit", "2"], env=_make_env(vault)
+        )
         assert result.exit_code == 0
         # Only 2 data rows in output (plus header)
         lines = [ln for ln in result.output.strip().splitlines() if ln.startswith("  sess_")]
@@ -236,7 +248,9 @@ class TestSessionShow:
     def test_session_not_found(self, tmp_path):
         vault, _ = _make_vault(tmp_path)
         runner = CliRunner()
-        result = runner.invoke(inspect_group, ["session", "show", "sess_nope"], env=_make_env(vault))
+        result = runner.invoke(
+            inspect_group, ["session", "show", "sess_nope"], env=_make_env(vault)
+        )
         assert result.exit_code == 2
 
     def test_shows_session_info(self, tmp_path):
@@ -244,7 +258,9 @@ class TestSessionShow:
         with connect(db_path) as conn:
             _insert_runtime_session(conn, "sess_show1", goal="inspect me")
         runner = CliRunner()
-        result = runner.invoke(inspect_group, ["session", "show", "sess_show1"], env=_make_env(vault))
+        result = runner.invoke(
+            inspect_group, ["session", "show", "sess_show1"], env=_make_env(vault)
+        )
         assert result.exit_code == 0
         assert "sess_show1" in result.output
         assert "inspect me" in result.output
@@ -447,7 +463,8 @@ class TestInspectQuery:
             _insert_inspector_event(conn, "SKUAssigned", "recent event", ts=recent_ts)
         runner = CliRunner()
         result = runner.invoke(
-            inspect_group, ["query", "--event-type", "SKUAssigned", "--last", "1h"],
+            inspect_group,
+            ["query", "--event-type", "SKUAssigned", "--last", "1h"],
             env=_make_env(vault),
         )
         assert result.exit_code == 0
@@ -474,12 +491,16 @@ class TestInspectQuery:
         vault, db_path = _make_vault(tmp_path)
         with connect(db_path) as conn:
             _insert_inspector_event(
-                conn, "ClutchDecisionMade", "clutch escalate",
-                data={"action": "escalate", "cycle_id": "cyc_001"}
+                conn,
+                "ClutchDecisionMade",
+                "clutch escalate",
+                data={"action": "escalate", "cycle_id": "cyc_001"},
             )
             _insert_inspector_event(
-                conn, "ClutchDecisionMade", "clutch accept",
-                data={"action": "accept", "cycle_id": "cyc_001"}
+                conn,
+                "ClutchDecisionMade",
+                "clutch accept",
+                data={"action": "accept", "cycle_id": "cyc_001"},
             )
         runner = CliRunner()
         result = runner.invoke(
@@ -508,9 +529,7 @@ class TestInspectQuery:
     def test_severe_misses_no_fossic(self, tmp_path):
         vault, _ = _make_vault(tmp_path)
         runner = CliRunner()
-        result = runner.invoke(
-            inspect_group, ["query", "--severe-misses"], env=_make_env(vault)
-        )
+        result = runner.invoke(inspect_group, ["query", "--severe-misses"], env=_make_env(vault))
         assert result.exit_code == 0
         assert "No FossicStore found" in result.output
 
@@ -562,24 +581,29 @@ class TestLeewayCommands:
 class TestParseLast:
     def test_hours(self):
         from cerebra.cli.inspect import _parse_last
+
         assert _parse_last("1h") == 3600
         assert _parse_last("24h") == 86400
 
     def test_days(self):
         from cerebra.cli.inspect import _parse_last
+
         assert _parse_last("7d") == 7 * 86400
 
     def test_minutes(self):
         from cerebra.cli.inspect import _parse_last
+
         assert _parse_last("30m") == 1800
 
     def test_none_returns_none(self):
         from cerebra.cli.inspect import _parse_last
+
         assert _parse_last(None) is None
 
     def test_invalid_raises(self):
         import click
 
         from cerebra.cli.inspect import _parse_last
+
         with pytest.raises(click.BadParameter):
             _parse_last("bogus")

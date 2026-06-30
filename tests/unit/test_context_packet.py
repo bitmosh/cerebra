@@ -33,6 +33,7 @@ def _migrated_db() -> Path:
 
 def _make_plan(trace_id: str = "trace_test000001", mode: str = "hybrid"):
     from cerebra.retrieval.planner import QueryPlan
+
     return QueryPlan(
         trace_id=trace_id,
         raw_query="plan the retrieval architecture",
@@ -55,15 +56,22 @@ def _make_scored(
 ) -> ScoredCandidate:
     from cerebra._primitives.score_composer import CompositeScore
     from cerebra.retrieval.scorer import ScoredCandidate
+
     score = CompositeScore(
         composite=composite,
         components={
-            "semantic": 0.80, "lexical": 0.50,
-            "sku_match": 1.0, "recency": 0.90, "lifecycle": 1.0,
+            "semantic": 0.80,
+            "lexical": 0.50,
+            "sku_match": 1.0,
+            "recency": 0.90,
+            "lifecycle": 1.0,
         },
         weights={
-            "semantic": 0.40, "lexical": 0.25,
-            "sku_match": 0.15, "recency": 0.10, "lifecycle": 0.10,
+            "semantic": 0.40,
+            "lexical": 0.25,
+            "sku_match": 0.15,
+            "recency": 0.10,
+            "lifecycle": 0.10,
         },
     )
     return ScoredCandidate(
@@ -91,9 +99,19 @@ def _insert_trace(db: Path, trace_id: str, mode: str = "hybrid") -> None:
                 candidate_count, selected_count, abstained, schema_version
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1)
             """,
-            (trace_id, "plan the retrieval architecture", mode,
-             5, "0x5", '{"raw_query": "plan the retrieval architecture"}',
-             now - 1, now, 500, 3, 1),
+            (
+                trace_id,
+                "plan the retrieval architecture",
+                mode,
+                5,
+                "0x5",
+                '{"raw_query": "plan the retrieval architecture"}',
+                now - 1,
+                now,
+                500,
+                3,
+                1,
+            ),
         )
 
 
@@ -104,6 +122,7 @@ def _make_trace_data(
     mode: str = "hybrid",
 ):
     from cerebra.retrieval.trace import TraceData
+
     _scored = scored if scored is not None else [_make_scored()]
     now = int(time.time())
     return TraceData(
@@ -130,9 +149,17 @@ class TestContextPacketSchema:
             above = [c for c in td.scored_all if c.score.composite >= td.floor]
             pkt = build_context_packet(td, above, db)
             required = {
-                "context_packet_id", "packet_version", "created_at", "query",
-                "mode", "is_abstained", "retrieval_trace_id", "selected_memory",
-                "token_estimate", "selected_count", "candidate_count",
+                "context_packet_id",
+                "packet_version",
+                "created_at",
+                "query",
+                "mode",
+                "is_abstained",
+                "retrieval_trace_id",
+                "selected_memory",
+                "token_estimate",
+                "selected_count",
+                "candidate_count",
             }
             d = pkt.to_dict()
             for field in required:
@@ -407,6 +434,7 @@ class TestProvenanceFields:
     def test_origin_event_ids_contains_built_id(self) -> None:
         """Last entry in origin_event_ids is the ContextPacketBuilt event_id."""
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             _insert_trace(db, "trace_prov002")
@@ -426,16 +454,27 @@ class TestProvenanceFields:
         """QueryReceived and QueryPlanned event_ids are collected when present."""
         from cerebra.inspector.event import make_event
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             _insert_trace(db, "trace_prov003")
             log = SQLiteEventLog(db)
             trace_id = "trace_prov003"
             # Manually insert QueryReceived and QueryPlanned events
-            qr = make_event("QueryReceived", "retrieval", "q received",
-                            data={"query": "test"}, subject_id=trace_id)
-            qp = make_event("QueryPlanned", "retrieval.planner", "q planned",
-                            data={"mode": "hybrid"}, subject_id=trace_id)
+            qr = make_event(
+                "QueryReceived",
+                "retrieval",
+                "q received",
+                data={"query": "test"},
+                subject_id=trace_id,
+            )
+            qp = make_event(
+                "QueryPlanned",
+                "retrieval.planner",
+                "q planned",
+                data={"mode": "hybrid"},
+                subject_id=trace_id,
+            )
             log.write(qr)
             log.write(qp)
             td = _make_trace_data("trace_prov003")
@@ -499,6 +538,7 @@ class TestPersistence:
 
     def test_context_packet_built_event_emitted(self) -> None:
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             _insert_trace(db, "trace_persist03")
@@ -552,18 +592,35 @@ class TestPathRendering:
     def test_render_text_uses_source_path_as_is(self) -> None:
         """render_text emits item.source_path directly; builder must supply relative paths."""
         item = MemoryItem(
-            record_id="rec_001", source_id="src_001", chunk_id="chk_001",
-            content_excerpt="Test content.", source_path="runtime/CEREBRA.md",
-            sku_address=None, score=0.73, score_components={}, retrieval_path="vector_fallback",
+            record_id="rec_001",
+            source_id="src_001",
+            chunk_id="chk_001",
+            content_excerpt="Test content.",
+            source_path="runtime/CEREBRA.md",
+            sku_address=None,
+            score=0.73,
+            score_components={},
+            retrieval_path="vector_fallback",
             rank=1,
         )
         pkt = ContextPacket(
-            context_packet_id="ctxpkt_abc", packet_version=1, schema_version=1,
-            created_at=int(time.time()), query="test query", mode="hybrid",
-            is_abstained=False, abstention_rationale=None, best_score_seen=None,
-            retrieval_trace_id="trace_001", origin_event_ids=[],
-            selected_memory=[item], token_estimate=3, selected_count=1,
-            candidate_count=1, uncertainties=[], excluded_candidate_count=0,
+            context_packet_id="ctxpkt_abc",
+            packet_version=1,
+            schema_version=1,
+            created_at=int(time.time()),
+            query="test query",
+            mode="hybrid",
+            is_abstained=False,
+            abstention_rationale=None,
+            best_score_seen=None,
+            retrieval_trace_id="trace_001",
+            origin_event_ids=[],
+            selected_memory=[item],
+            token_estimate=3,
+            selected_count=1,
+            candidate_count=1,
+            uncertainties=[],
+            excluded_candidate_count=0,
         )
         rendered = render_text(pkt)
         assert "runtime/CEREBRA.md" in rendered
@@ -577,27 +634,39 @@ class TestRenderText:
     def _make_packet(self, n_items: int = 2, is_abstained: bool = False) -> ContextPacket:
         items = [
             MemoryItem(
-                record_id=f"rec_{i}", source_id=f"src_{i}", chunk_id=f"chk_{i}",
+                record_id=f"rec_{i}",
+                source_id=f"src_{i}",
+                chunk_id=f"chk_{i}",
                 content_excerpt=f"Content for record {i}.",
                 source_path=f"/home/user/docs/project/FILE_{i}.md",
-                sku_address=None, score=0.80 - i * 0.05,
+                sku_address=None,
+                score=0.80 - i * 0.05,
                 score_components={"semantic": 0.80},
-                retrieval_path="vector_fallback", rank=i + 1,
+                retrieval_path="vector_fallback",
+                rank=i + 1,
             )
             for i in range(n_items)
         ]
         return ContextPacket(
             context_packet_id="ctxpkt_testtest01",
-            packet_version=1, schema_version=1,
-            created_at=int(time.time()), query="test query", mode="hybrid",
+            packet_version=1,
+            schema_version=1,
+            created_at=int(time.time()),
+            query="test query",
+            mode="hybrid",
             is_abstained=is_abstained,
-            abstention_rationale="No candidates above floor 0.35; best score was 0.20" if is_abstained else None,
+            abstention_rationale=(
+                "No candidates above floor 0.35; best score was 0.20" if is_abstained else None
+            ),
             best_score_seen=0.20 if is_abstained else None,
-            retrieval_trace_id="trace_test000001", origin_event_ids=[],
+            retrieval_trace_id="trace_test000001",
+            origin_event_ids=[],
             selected_memory=[] if is_abstained else items,
             token_estimate=0 if is_abstained else 10,
             selected_count=0 if is_abstained else n_items,
-            candidate_count=n_items, uncertainties=[], excluded_candidate_count=0,
+            candidate_count=n_items,
+            uncertainties=[],
+            excluded_candidate_count=0,
         )
 
     def test_render_includes_packet_id(self) -> None:
@@ -622,18 +691,35 @@ class TestRenderText:
 
     def test_render_truncates_long_excerpts(self) -> None:
         item = MemoryItem(
-            record_id="rec_x", source_id="s", chunk_id="c",
-            content_excerpt="A" * 200, source_path="/home/user/docs/project/F.md",
-            sku_address=None, score=0.7, score_components={},
-            retrieval_path="vector_fallback", rank=1,
+            record_id="rec_x",
+            source_id="s",
+            chunk_id="c",
+            content_excerpt="A" * 200,
+            source_path="/home/user/docs/project/F.md",
+            sku_address=None,
+            score=0.7,
+            score_components={},
+            retrieval_path="vector_fallback",
+            rank=1,
         )
         pkt = ContextPacket(
-            context_packet_id="ctxpkt_x", packet_version=1, schema_version=1,
-            created_at=0, query="q", mode="hybrid", is_abstained=False,
-            abstention_rationale=None, best_score_seen=None,
-            retrieval_trace_id="t", origin_event_ids=[],
-            selected_memory=[item], token_estimate=50, selected_count=1,
-            candidate_count=1, uncertainties=[], excluded_candidate_count=0,
+            context_packet_id="ctxpkt_x",
+            packet_version=1,
+            schema_version=1,
+            created_at=0,
+            query="q",
+            mode="hybrid",
+            is_abstained=False,
+            abstention_rationale=None,
+            best_score_seen=None,
+            retrieval_trace_id="t",
+            origin_event_ids=[],
+            selected_memory=[item],
+            token_estimate=50,
+            selected_count=1,
+            candidate_count=1,
+            uncertainties=[],
+            excluded_candidate_count=0,
         )
         rendered = render_text(pkt)
         lines = [l for l in rendered.split("\n") if "AAA" in l]

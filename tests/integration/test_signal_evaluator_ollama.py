@@ -107,17 +107,18 @@ _GROUNDED_OUTPUT = (
     "These sources are peer-reviewed and current as of 2023."
 )
 
+
 @pytest.mark.integration
 @_SKIP_OLLAMA
 class TestSemanticSignalBehavior:
     def test_coherence_low_for_contradictions(self, evaluator: SignalEvaluator) -> None:
         score = evaluator.evaluate("COHERENCE", _CONTRADICTORY_OUTPUT)
-        assert score.score < 0.5, (
-            f"Contradictory output should score < 0.5 on COHERENCE; got {score.score:.3f}"
-        )
+        assert (
+            score.score < 0.5
+        ), f"Contradictory output should score < 0.5 on COHERENCE; got {score.score:.3f}"
 
     def test_groundedness_high_for_cited_output(self, evaluator: SignalEvaluator) -> None:
         score = evaluator.evaluate("GROUNDEDNESS", _GROUNDED_OUTPUT)
-        assert score.score > 0.6, (
-            f"Well-sourced output should score > 0.6 on GROUNDEDNESS; got {score.score:.3f}"
-        )
+        assert (
+            score.score > 0.6
+        ), f"Well-sourced output should score > 0.6 on GROUNDEDNESS; got {score.score:.3f}"

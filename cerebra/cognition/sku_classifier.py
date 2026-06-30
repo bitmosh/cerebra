@@ -311,9 +311,7 @@ class SKUClassifier:
         self._store.update_record_sku(record_id, primary_sku.to_hex_string(), now)
 
         event_type = "SKUReclassified" if is_reclassification else "SKUAssigned"
-        extra: dict[str, object] = (
-            {"old_sku_address": existing["sku_address"]} if existing else {}
-        )
+        extra: dict[str, object] = {"old_sku_address": existing["sku_address"]} if existing else {}
         self._emit(
             event_type,
             "sku_classifier",
@@ -528,20 +526,22 @@ class SKUClassifier:
                     raise
 
         # Build combined result — pass2 primary is the D1 answer
-        combined_scores = _json.dumps({
-            "pass1": {
-                "scores": pass1.scores,
-                "confidence": pass1.confidence,
-                "primary_quadrant": pass1.primary,
-            },
-            "pass2": {
-                "quadrant": quadrant,
-                "scores": pass2.scores,
-                "confidence": pass2.confidence,
-                "primary": pass2.primary,
-                "reasoning": pass2.reasoning,
+        combined_scores = _json.dumps(
+            {
+                "pass1": {
+                    "scores": pass1.scores,
+                    "confidence": pass1.confidence,
+                    "primary_quadrant": pass1.primary,
+                },
+                "pass2": {
+                    "quadrant": quadrant,
+                    "scores": pass2.scores,
+                    "confidence": pass2.confidence,
+                    "primary": pass2.primary,
+                    "reasoning": pass2.reasoning,
+                },
             }
-        })
+        )
 
         # Return a ClassificationResult using pass2's D1 category
         return ClassificationResult(

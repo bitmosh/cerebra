@@ -163,9 +163,7 @@ class TestPredictInputFromSession:
         assert pi.prior_step_composites == []
 
     def test_prior_composites_propagated(self) -> None:
-        pi = predict_input_from_session(
-            self._make_state(composites=[0.5, 0.6]), "c", "s"
-        )
+        pi = predict_input_from_session(self._make_state(composites=[0.5, 0.6]), "c", "s")
         assert pi.prior_step_composites == [0.5, 0.6]
 
     def test_per_signal_none_step1(self) -> None:

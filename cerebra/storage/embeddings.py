@@ -56,6 +56,7 @@ def _get_model() -> SentenceTransformer:
     global _model
     if _model is None:
         from sentence_transformers import SentenceTransformer
+
         _model = SentenceTransformer(_MODEL_NAME)
     return _model
 
@@ -70,6 +71,7 @@ def embed(texts: list[str]) -> np.ndarray:
     The returned array has L2-normalized rows (suitable for dot-product cosine).
     """
     import numpy as np
+
     arr = _get_model().encode(texts, normalize_embeddings=True, convert_to_numpy=True)
     return np.asarray(arr, dtype=np.float32)
 
@@ -106,9 +108,7 @@ def queue_for_embedding(db_path: Path, record_ids: list[str]) -> int:
 def pending_count(db_path: Path) -> int:
     """Return number of records waiting for embedding."""
     with connect(db_path) as conn:
-        return int(
-            conn.execute("SELECT COUNT(*) FROM pending_embeddings").fetchone()[0]
-        )
+        return int(conn.execute("SELECT COUNT(*) FROM pending_embeddings").fetchone()[0])
 
 
 # ── Drain ─────────────────────────────────────────────────────────────────────
@@ -178,8 +178,7 @@ def drain_pending(
                          vector_bytes, dimensions, created_at, schema_version)
                     VALUES (?, ?, ?, ?, ?, ?, ?, 1)
                     """,
-                    (emb_id, record_id, _MODEL_NAME, _MODEL_VERSION,
-                     vector_bytes, dims, now),
+                    (emb_id, record_id, _MODEL_NAME, _MODEL_VERSION, vector_bytes, dims, now),
                 )
                 conn.execute(
                     "DELETE FROM pending_embeddings WHERE record_id = ?",

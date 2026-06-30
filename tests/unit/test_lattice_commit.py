@@ -33,7 +33,7 @@ from cerebra.storage.sqlite_store import SQLiteStore
 def _low_scores(exclude: list[str] | None = None) -> dict[str, float]:
     """All categories at 0.05, with named exceptions set to 0.0."""
     scores = {c.name: 0.05 for c in D1Category}
-    for name in (exclude or []):
+    for name in exclude or []:
         scores[name] = 0.0
     return scores
 
@@ -47,14 +47,22 @@ def _scores_with(**kwargs: float) -> dict[str, float]:
 
 class MockAdapter(LLMAdapter):
     _QUADRANT_MAP: dict[str, str] = {
-        "OBSERVATION": "EMPIRICAL", "PATTERN": "EMPIRICAL",
-        "MECHANISM": "EMPIRICAL", "PHENOMENON": "EMPIRICAL",
-        "TECHNIQUE": "GENERATIVE", "DESIGN": "GENERATIVE",
-        "CREATION": "GENERATIVE", "TOOL": "GENERATIVE",
-        "PRINCIPLE": "NORMATIVE", "JUDGMENT": "NORMATIVE",
-        "GOAL": "NORMATIVE", "CONSTRAINT": "NORMATIVE",
-        "EVENT": "RELATIONAL", "AGENT": "RELATIONAL",
-        "CONTEXT": "RELATIONAL", "RELATION": "RELATIONAL",
+        "OBSERVATION": "EMPIRICAL",
+        "PATTERN": "EMPIRICAL",
+        "MECHANISM": "EMPIRICAL",
+        "PHENOMENON": "EMPIRICAL",
+        "TECHNIQUE": "GENERATIVE",
+        "DESIGN": "GENERATIVE",
+        "CREATION": "GENERATIVE",
+        "TOOL": "GENERATIVE",
+        "PRINCIPLE": "NORMATIVE",
+        "JUDGMENT": "NORMATIVE",
+        "GOAL": "NORMATIVE",
+        "CONSTRAINT": "NORMATIVE",
+        "EVENT": "RELATIONAL",
+        "AGENT": "RELATIONAL",
+        "CONTEXT": "RELATIONAL",
+        "RELATION": "RELATIONAL",
     }
 
     def __init__(
@@ -108,7 +116,9 @@ def vault(tmp_path: Path) -> Path:
     return init_vault(tmp_path / "vault")
 
 
-def _make_classifier(vault: Path, adapter: LLMAdapter | None = None) -> tuple[SKUClassifier, SQLiteStore]:
+def _make_classifier(
+    vault: Path, adapter: LLMAdapter | None = None
+) -> tuple[SKUClassifier, SQLiteStore]:
     from cerebra.inspector.ndjson_log import NDJSONEventLog
     from cerebra.inspector.sqlite_log import SQLiteEventLog
 
@@ -116,7 +126,9 @@ def _make_classifier(vault: Path, adapter: LLMAdapter | None = None) -> tuple[SK
     store = SQLiteStore(db_path)
     event_log = SQLiteEventLog(db_path)
     ndjson = NDJSONEventLog(vault / "events" / "test.ndjson")
-    clf = SKUClassifier(store=store, event_log=event_log, ndjson=ndjson, adapter=adapter or MockAdapter())
+    clf = SKUClassifier(
+        store=store, event_log=event_log, ndjson=ndjson, adapter=adapter or MockAdapter()
+    )
     return clf, store
 
 
@@ -130,6 +142,7 @@ def _seed_record(vault: Path) -> str:
     ingest_path(vault, docs)
 
     from cerebra.storage.sqlite_store import SQLiteStore as _Store
+
     store = _Store(vault / "data" / "cerebra.db")
     records = store.get_records_needing_classification("1.0.0", "2.0.0")
     assert records, "No records seeded"
@@ -238,9 +251,11 @@ class TestClassifyRecordLattice:
         """One category above threshold → [record_id], no LatticeCommit event."""
         record_id = _seed_record(vault)
         scores = _scores_with(MECHANISM=0.80)
-        adapter = MockAdapter(ClassificationResult(
-            scores=scores, confidence=0.80, primary="MECHANISM", reasoning="single"
-        ))
+        adapter = MockAdapter(
+            ClassificationResult(
+                scores=scores, confidence=0.80, primary="MECHANISM", reasoning="single"
+            )
+        )
         clf, _ = _make_classifier(vault, adapter)
         result = clf.classify_record_lattice(record_id, "test content", "markdown")
         assert result == [record_id]
@@ -250,9 +265,11 @@ class TestClassifyRecordLattice:
         """Two categories above threshold → primary + sibling returned."""
         record_id = _seed_record(vault)
         scores = _scores_with(MECHANISM=0.85, PATTERN=0.70)
-        adapter = MockAdapter(ClassificationResult(
-            scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
-        ))
+        adapter = MockAdapter(
+            ClassificationResult(
+                scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
+            )
+        )
         clf, store = _make_classifier(vault, adapter)
         result = clf.classify_record_lattice(record_id, "test content", "markdown")
         assert len(result) == 2
@@ -263,9 +280,11 @@ class TestClassifyRecordLattice:
         """Sibling record exists in memory_records with is_lattice_member=1."""
         record_id = _seed_record(vault)
         scores = _scores_with(MECHANISM=0.85, PATTERN=0.70)
-        adapter = MockAdapter(ClassificationResult(
-            scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
-        ))
+        adapter = MockAdapter(
+            ClassificationResult(
+                scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
+            )
+        )
         clf, store = _make_classifier(vault, adapter)
         all_ids = clf.classify_record_lattice(record_id, "test content", "markdown")
         sibling_id = all_ids[1]
@@ -279,9 +298,11 @@ class TestClassifyRecordLattice:
         """Primary record is also updated with is_lattice_member=1 on multi-commit."""
         record_id = _seed_record(vault)
         scores = _scores_with(MECHANISM=0.85, PATTERN=0.70)
-        adapter = MockAdapter(ClassificationResult(
-            scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
-        ))
+        adapter = MockAdapter(
+            ClassificationResult(
+                scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
+            )
+        )
         clf, store = _make_classifier(vault, adapter)
         clf.classify_record_lattice(record_id, "test content", "markdown")
 
@@ -293,15 +314,16 @@ class TestClassifyRecordLattice:
         """Primary and sibling share the same lattice_lineage_id."""
         record_id = _seed_record(vault)
         scores = _scores_with(MECHANISM=0.85, PATTERN=0.70)
-        adapter = MockAdapter(ClassificationResult(
-            scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
-        ))
+        adapter = MockAdapter(
+            ClassificationResult(
+                scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
+            )
+        )
         clf, store = _make_classifier(vault, adapter)
         all_ids = clf.classify_record_lattice(record_id, "test content", "markdown")
 
         lineages = {
-            store.get_record(rid)["lattice_lineage_id"]  # type: ignore[index]
-            for rid in all_ids
+            store.get_record(rid)["lattice_lineage_id"] for rid in all_ids  # type: ignore[index]
         }
         assert len(lineages) == 1  # all share the same lineage_id
         assert list(lineages)[0] is not None
@@ -311,9 +333,11 @@ class TestClassifyRecordLattice:
         """ONE LatticeCommit event per chunk, not per sibling."""
         record_id = _seed_record(vault)
         scores = _scores_with(MECHANISM=0.85, PATTERN=0.70, DESIGN=0.66)
-        adapter = MockAdapter(ClassificationResult(
-            scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
-        ))
+        adapter = MockAdapter(
+            ClassificationResult(
+                scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
+            )
+        )
         clf, _ = _make_classifier(vault, adapter)
         clf.classify_record_lattice(record_id, "test content", "markdown")
         assert _count_events(vault, "LatticeCommit") == 1
@@ -326,9 +350,11 @@ class TestClassifyRecordLattice:
 
         record_id = _seed_record(vault)
         scores = _scores_with(MECHANISM=0.85, PATTERN=0.70)
-        adapter = MockAdapter(ClassificationResult(
-            scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
-        ))
+        adapter = MockAdapter(
+            ClassificationResult(
+                scores=scores, confidence=0.85, primary="MECHANISM", reasoning="multi"
+            )
+        )
         clf, _ = _make_classifier(vault, adapter)
         all_ids = clf.classify_record_lattice(record_id, "test content", "markdown")
 
@@ -350,9 +376,11 @@ class TestClassifyRecordLattice:
         """All categories below 0.65 → no commit, returns []."""
         record_id = _seed_record(vault)
         scores = _low_scores()
-        adapter = MockAdapter(ClassificationResult(
-            scores=scores, confidence=0.30, primary="MECHANISM", reasoning="low"
-        ))
+        adapter = MockAdapter(
+            ClassificationResult(
+                scores=scores, confidence=0.30, primary="MECHANISM", reasoning="low"
+            )
+        )
         clf, _ = _make_classifier(vault, adapter)
         result = clf.classify_record_lattice(record_id, "test content", "markdown", threshold=0.65)
         assert result == []
@@ -368,12 +396,14 @@ class TestClassifyRecordLattice:
     def test_idempotency_single_commit(self, vault: Path) -> None:
         """Calling classify_record_lattice twice returns same record_id (idempotent)."""
         record_id = _seed_record(vault)
-        adapter = MockAdapter(ClassificationResult(
-            scores=_scores_with(MECHANISM=0.80),
-            confidence=0.80,
-            primary="MECHANISM",
-            reasoning="idem",
-        ))
+        adapter = MockAdapter(
+            ClassificationResult(
+                scores=_scores_with(MECHANISM=0.80),
+                confidence=0.80,
+                primary="MECHANISM",
+                reasoning="idem",
+            )
+        )
         clf, _ = _make_classifier(vault, adapter)
         first = clf.classify_record_lattice(record_id, "test content", "markdown")
         second = clf.classify_record_lattice(record_id, "test content", "markdown")

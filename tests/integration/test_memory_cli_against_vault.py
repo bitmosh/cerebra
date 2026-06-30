@@ -19,6 +19,8 @@ from cerebra.storage.db import connect
 
 _VAULT_ROOT = Path.home() / "cerebra-vaults" / "dev"
 _VAULT_DB = _VAULT_ROOT / "data" / "cerebra.db"
+
+
 @pytest.fixture(scope="module")
 def vault_root() -> Path:
     if not _VAULT_DB.exists():
@@ -86,11 +88,17 @@ class TestMemoryCliVaultIntegration:
 
     def test_promote_cli_persists_item(self, vault_root: Path, fresh_session: tuple) -> None:
         db, sid = fresh_session
-        r = _invoke([
-            "memory", "promote",
-            "--text", "cli promotion test",
-            "--slot", "hypothesis",
-        ] + _vault_args(vault_root))
+        r = _invoke(
+            [
+                "memory",
+                "promote",
+                "--text",
+                "cli promotion test",
+                "--slot",
+                "hypothesis",
+            ]
+            + _vault_args(vault_root)
+        )
         assert r.exit_code == 0
 
         wm = WorkingMemory(db, sid)
@@ -99,12 +107,18 @@ class TestMemoryCliVaultIntegration:
 
     def test_promote_pinned_shows_in_status(self, vault_root: Path, fresh_session: tuple) -> None:
         _db, _sid = fresh_session
-        _invoke([
-            "memory", "promote",
-            "--text", "pinned integration item",
-            "--slot", "goal",
-            "--pin",
-        ] + _vault_args(vault_root))
+        _invoke(
+            [
+                "memory",
+                "promote",
+                "--text",
+                "pinned integration item",
+                "--slot",
+                "goal",
+                "--pin",
+            ]
+            + _vault_args(vault_root)
+        )
         r_status = _invoke(["memory", "status"] + _vault_args(vault_root))
         assert "[pinned]" in r_status.output
 
@@ -136,26 +150,33 @@ class TestMemoryCliVaultIntegration:
 
             result = subprocess.run(
                 [
-                    "cerebra", "memory", "promote",
-                    "--vault", str(vault_root),
-                    "--text", "should not arrive",
-                    "--slot", "goal",
+                    "cerebra",
+                    "memory",
+                    "promote",
+                    "--vault",
+                    str(vault_root),
+                    "--text",
+                    "should not arrive",
+                    "--slot",
+                    "goal",
                 ],
                 capture_output=True,
                 text=True,
                 timeout=10,
             )
-            assert result.returncode == 2, (
-                f"Expected exit 2, got {result.returncode}. stderr: {result.stderr!r}"
-            )
-            assert "locked" in result.stderr.lower(), (
-                f"Expected 'locked' in stderr: {result.stderr!r}"
-            )
+            assert (
+                result.returncode == 2
+            ), f"Expected exit 2, got {result.returncode}. stderr: {result.stderr!r}"
+            assert (
+                "locked" in result.stderr.lower()
+            ), f"Expected 'locked' in stderr: {result.stderr!r}"
         finally:
             fd.close()
             lp.unlink(missing_ok=True)
 
-    def test_working_memory_rendered_event_emitted(self, vault_root: Path, fresh_session: tuple) -> None:
+    def test_working_memory_rendered_event_emitted(
+        self, vault_root: Path, fresh_session: tuple
+    ) -> None:
         db, sid = fresh_session
         conn = connect(db)
         try:

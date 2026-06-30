@@ -61,7 +61,7 @@ def dedup_siblings(
         return scored
 
     record_ids = [c.record_id for c in scored]
-    lineage_map: dict[str, str] = {}   # record_id → lattice_lineage_id
+    lineage_map: dict[str, str] = {}  # record_id → lattice_lineage_id
 
     conn = connect(db_path)
     try:
@@ -108,24 +108,26 @@ def dedup_siblings(
             db_updates.append((n, winner.record_id, basis, exclusion, candidate_id))
 
         if event_log is not None:
-            event_log.write(make_event(
-                event_type="LatticeSiblingResolved",
-                actor="retrieval.lattice_dedup",
-                summary=(
-                    f"Sibling group resolved: {n} candidates "
-                    f"→ winner={winner.record_id} (basis={basis})"
-                ),
-                data={
-                    "lineage_id": lineage_id,
-                    "sibling_count": n,
-                    "winner_record_id": winner.record_id,
-                    "routing_basis": basis,
-                    "query_d1": query_d1,
-                    "sibling_record_ids": [c.record_id for c in group],
-                    "trace_id": trace_id,
-                },
-                subject_id=trace_id,
-            ))
+            event_log.write(
+                make_event(
+                    event_type="LatticeSiblingResolved",
+                    actor="retrieval.lattice_dedup",
+                    summary=(
+                        f"Sibling group resolved: {n} candidates "
+                        f"→ winner={winner.record_id} (basis={basis})"
+                    ),
+                    data={
+                        "lineage_id": lineage_id,
+                        "sibling_count": n,
+                        "winner_record_id": winner.record_id,
+                        "routing_basis": basis,
+                        "query_d1": query_d1,
+                        "sibling_record_ids": [c.record_id for c in group],
+                        "trace_id": trace_id,
+                    },
+                    subject_id=trace_id,
+                )
+            )
 
     if db_updates:
         conn = connect(db_path)
@@ -227,8 +229,7 @@ def _pick_winner_scored(
     """Apply D2 routing rules; return (winner, routing_basis)."""
     if query_d1 is not None:
         d1_matches = [
-            c for c in group
-            if c.sku_address and c.sku_address.split("::")[0] == query_d1
+            c for c in group if c.sku_address and c.sku_address.split("::")[0] == query_d1
         ]
         if len(d1_matches) == 1:
             return d1_matches[0], "sku_match"

@@ -35,10 +35,23 @@ def _make_scored(
 ):
     from cerebra._primitives.score_composer import CompositeScore
     from cerebra.retrieval.scorer import ScoredCandidate
+
     score = CompositeScore(
         composite=composite,
-        components={"semantic": 0.80, "lexical": 0.50, "sku_match": 1.0, "recency": 0.90, "lifecycle": 1.0},
-        weights={"semantic": 0.40, "lexical": 0.25, "sku_match": 0.15, "recency": 0.10, "lifecycle": 0.10},
+        components={
+            "semantic": 0.80,
+            "lexical": 0.50,
+            "sku_match": 1.0,
+            "recency": 0.90,
+            "lifecycle": 1.0,
+        },
+        weights={
+            "semantic": 0.40,
+            "lexical": 0.25,
+            "sku_match": 0.15,
+            "recency": 0.10,
+            "lifecycle": 0.10,
+        },
     )
     return ScoredCandidate(
         record_id=record_id,
@@ -55,25 +68,43 @@ def _make_scored(
 
 def _mock_packet(packet_id: str = "ctxpkt_testtest01"):
     from cerebra.retrieval.context_packet import ContextPacket, MemoryItem
+
     item = MemoryItem(
-        record_id="rec_001", source_id="src_001", chunk_id="chk_001",
+        record_id="rec_001",
+        source_id="src_001",
+        chunk_id="chk_001",
         content_excerpt="Test memory excerpt.",
         source_path="docs/refined-runtime-model/EXAMPLE.md",
-        sku_address=None, score=0.75,
-        score_components={"semantic": 0.80, "lexical": 0.50, "sku_match": 1.0, "recency": 0.90, "lifecycle": 1.0},
-        retrieval_path="vector_fallback", rank=1,
+        sku_address=None,
+        score=0.75,
+        score_components={
+            "semantic": 0.80,
+            "lexical": 0.50,
+            "sku_match": 1.0,
+            "recency": 0.90,
+            "lifecycle": 1.0,
+        },
+        retrieval_path="vector_fallback",
+        rank=1,
     )
     return ContextPacket(
         context_packet_id=packet_id,
-        packet_version=1, schema_version=1,
+        packet_version=1,
+        schema_version=1,
         created_at=1_720_000_000,
-        query="test context query", mode="hybrid",
-        is_abstained=False, abstention_rationale=None, best_score_seen=None,
+        query="test context query",
+        mode="hybrid",
+        is_abstained=False,
+        abstention_rationale=None,
+        best_score_seen=None,
         retrieval_trace_id="trace_ctxtest001",
         origin_event_ids=["evt_aaa", "evt_bbb", "evt_ccc"],
         selected_memory=[item],
-        token_estimate=5, selected_count=1, candidate_count=10,
-        uncertainties=[], excluded_candidate_count=9,
+        token_estimate=5,
+        selected_count=1,
+        candidate_count=10,
+        uncertainties=[],
+        excluded_candidate_count=9,
     )
 
 
@@ -104,8 +135,10 @@ def _patched_runner(scored_list: list, plan: MagicMock | None = None, packet=Non
             patch("cerebra.cli.lockfile.vault_lock"),
             patch("cerebra.cognition.working_memory.get_active_session", return_value="sess_fake"),
             patch("cerebra.cognition.truth_tower.TruthTower", return_value=_tower_stub),
-            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
-                  side_effect=lambda scored, *a, **kw: scored),
+            patch(
+                "cerebra.retrieval.lattice_dedup.dedup_siblings",
+                side_effect=lambda scored, *a, **kw: scored,
+            ),
         ):
             yield
 
@@ -189,10 +222,14 @@ class TestContextExitCodes:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
-            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
-                  side_effect=lambda scored, *a, **kw: scored),
-            patch("cerebra.retrieval.context_packet.build_context_packet",
-                  side_effect=RuntimeError("packet failure")),
+            patch(
+                "cerebra.retrieval.lattice_dedup.dedup_siblings",
+                side_effect=lambda scored, *a, **kw: scored,
+            ),
+            patch(
+                "cerebra.retrieval.context_packet.build_context_packet",
+                side_effect=RuntimeError("packet failure"),
+            ),
         ):
             result = runner.invoke(cli, ["context", "test query"])
         assert result.exit_code == 2
@@ -272,9 +309,17 @@ class TestContextJsonOutput:
         with _patched_runner([_make_scored()]):
             result = runner.invoke(cli, ["context", "test query", "--format", "json"])
         parsed = json.loads(result.output)
-        for field in ("context_packet_id", "packet_version", "query", "mode",
-                      "is_abstained", "retrieval_trace_id", "token_estimate",
-                      "selected_count", "candidate_count"):
+        for field in (
+            "context_packet_id",
+            "packet_version",
+            "query",
+            "mode",
+            "is_abstained",
+            "retrieval_trace_id",
+            "token_estimate",
+            "selected_count",
+            "candidate_count",
+        ):
             assert field in parsed, f"Missing field: {field}"
 
     def test_json_source_paths_not_absolute(self) -> None:
@@ -357,10 +402,12 @@ class TestContextLimit:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
-            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
-                  side_effect=lambda s, *a, **kw: s),
-            patch("cerebra.retrieval.context_packet.build_context_packet",
-                  return_value=_mock_packet()) as mock_build,
+            patch(
+                "cerebra.retrieval.lattice_dedup.dedup_siblings", side_effect=lambda s, *a, **kw: s
+            ),
+            patch(
+                "cerebra.retrieval.context_packet.build_context_packet", return_value=_mock_packet()
+            ) as mock_build,
         ):
             runner.invoke(cli, ["context", "test query", "--limit", "3"])
         mock_build.assert_called_once()
@@ -378,10 +425,12 @@ class TestContextLimit:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
-            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
-                  side_effect=lambda s, *a, **kw: s),
-            patch("cerebra.retrieval.context_packet.build_context_packet",
-                  return_value=_mock_packet()) as mock_build,
+            patch(
+                "cerebra.retrieval.lattice_dedup.dedup_siblings", side_effect=lambda s, *a, **kw: s
+            ),
+            patch(
+                "cerebra.retrieval.context_packet.build_context_packet", return_value=_mock_packet()
+            ) as mock_build,
         ):
             runner.invoke(cli, ["context", "test query", "--limit", "999"])
         _, kwargs = mock_build.call_args
@@ -398,10 +447,12 @@ class TestContextLimit:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=[_make_scored()]),
             patch("cerebra.retrieval.trace.write_trace", return_value="t"),
-            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
-                  side_effect=lambda s, *a, **kw: s),
-            patch("cerebra.retrieval.context_packet.build_context_packet",
-                  return_value=_mock_packet()) as mock_build,
+            patch(
+                "cerebra.retrieval.lattice_dedup.dedup_siblings", side_effect=lambda s, *a, **kw: s
+            ),
+            patch(
+                "cerebra.retrieval.context_packet.build_context_packet", return_value=_mock_packet()
+            ) as mock_build,
         ):
             runner.invoke(cli, ["context", "test query"])
         _, kwargs = mock_build.call_args

@@ -71,9 +71,7 @@ class TestLeewayGateE2E:
 
         from fossic import ReadQuery
 
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/sess_e2e")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/sess_e2e"))
         lga_events = [e for e in events if e.event_type == "LeewayGrantApplied"]
         assert len(lga_events) == 1
 
@@ -89,7 +87,11 @@ class TestLeewayGateE2E:
 
         trigger_id = emitter.emit_cycle_event(
             event_type="ClutchDecisionMade",
-            payload={"session_id": "sess_e2e", "cycle_id": "cycle_gate_chain", "action": "end_cycle"},
+            payload={
+                "session_id": "sess_e2e",
+                "cycle_id": "cycle_gate_chain",
+                "action": "end_cycle",
+            },
         )
         action = ProposedAction(
             action_name="end_cycle",
@@ -102,9 +104,7 @@ class TestLeewayGateE2E:
 
         from fossic import ReadQuery
 
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/sess_e2e")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/sess_e2e"))
         lga = next(e for e in events if e.event_type == "LeewayGrantApplied")
         assert lga.causation_id is not None
         assert lga.causation_id.as_bytes() == trigger_id
@@ -120,16 +120,12 @@ class TestLeewayGateE2E:
             },
             causation_id=lga_event_id,
         )
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/sess_e2e")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/sess_e2e"))
         cycle_ended = next(e for e in events if e.event_type == "CycleEnded")
         assert cycle_ended.causation_id is not None
         assert cycle_ended.causation_id.as_bytes() == lga_event_id
 
-    def test_forbidden_decision_emits_lga_event(
-        self, store: FossicStore
-    ) -> None:
+    def test_forbidden_decision_emits_lga_event(self, store: FossicStore) -> None:
         from cerebra.governance.pre_action_gate import LeewayPreActionGate
 
         # Gate with empty leeway rules: all forbidden
@@ -138,7 +134,11 @@ class TestLeewayGateE2E:
 
         trigger_id = emitter.emit_cycle_event(
             event_type="ClutchDecisionMade",
-            payload={"session_id": "sess_e2e", "cycle_id": "cycle_gate_forb", "action": "end_cycle"},
+            payload={
+                "session_id": "sess_e2e",
+                "cycle_id": "cycle_gate_forb",
+                "action": "end_cycle",
+            },
         )
         action = ProposedAction(
             action_name="end_cycle",
@@ -153,9 +153,7 @@ class TestLeewayGateE2E:
 
         from fossic import ReadQuery
 
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/sess_e2e")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/sess_e2e"))
         lga_events = [e for e in events if e.event_type == "LeewayGrantApplied"]
         assert len(lga_events) == 1
         assert lga_events[0].payload()["final_decision"] == "forbidden"
@@ -170,7 +168,11 @@ class TestLeewayGateE2E:
 
         trigger_id = emitter.emit_cycle_event(
             event_type="ClutchDecisionMade",
-            payload={"session_id": "sess_e2e", "cycle_id": "cycle_gate_vocab", "action": "ask_user"},
+            payload={
+                "session_id": "sess_e2e",
+                "cycle_id": "cycle_gate_vocab",
+                "action": "ask_user",
+            },
         )
         action = ProposedAction(
             action_name="ask_user",
@@ -183,9 +185,7 @@ class TestLeewayGateE2E:
 
         from fossic import ReadQuery
 
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/sess_e2e")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/sess_e2e"))
         lga = next(e for e in events if e.event_type == "LeewayGrantApplied")
         payload = lga.payload()
 

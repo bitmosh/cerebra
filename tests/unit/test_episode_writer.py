@@ -61,6 +61,7 @@ def writer(db_path: Path) -> EpisodeWriter:
 class TestMigration016:
     def test_table_exists_after_migration(self, db_path: Path) -> None:
         import sqlite3
+
         conn = sqlite3.connect(db_path)
         row = conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='cycle_episode_records'"
@@ -70,6 +71,7 @@ class TestMigration016:
 
     def test_all_four_indexes_created(self, db_path: Path) -> None:
         import sqlite3
+
         conn = sqlite3.connect(db_path)
         indexes = {
             r[0]
@@ -98,31 +100,30 @@ class TestMigration016:
 
     def test_applied_version_recorded(self, db_path: Path) -> None:
         import sqlite3
+
         conn = sqlite3.connect(db_path)
-        row = conn.execute(
-            "SELECT version FROM applied_migrations WHERE version = 16"
-        ).fetchone()
+        row = conn.execute("SELECT version FROM applied_migrations WHERE version = 16").fetchone()
         conn.close()
         assert row is not None
 
     def test_fk_to_runtime_sessions_enforced(self, db_path: Path) -> None:
         import sqlite3
+
         conn = sqlite3.connect(db_path)
         conn.execute("PRAGMA foreign_keys = ON")
         with pytest.raises(sqlite3.IntegrityError):
-            conn.execute(
-                """
+            conn.execute("""
                 INSERT INTO cycle_episode_records
                 (record_id, runtime_session_id, cycle_id, step_id, step_name,
                  content, created_at)
                 VALUES ('ep_test', 'sess_doesnotexist', 'c1', 's1', 'step', 'x', 1)
-                """
-            )
+                """)
             conn.commit()
         conn.close()
 
     def test_nullable_working_memory_session(self, db_path: Path, runtime_session_id: str) -> None:
         import sqlite3
+
         conn = sqlite3.connect(db_path)
         conn.execute("PRAGMA foreign_keys = ON")
         conn.execute(
@@ -194,12 +195,16 @@ class TestEpisodeWriterWrite:
         assert isinstance(record_id, str)
         assert record_id.startswith("ep_")
 
-    def test_record_id_unique_per_call(self, writer: EpisodeWriter, runtime_session_id: str) -> None:
+    def test_record_id_unique_per_call(
+        self, writer: EpisodeWriter, runtime_session_id: str
+    ) -> None:
         r1 = writer.write("out1", runtime_session_id, "c1", "s1", "plan")
         r2 = writer.write("out2", runtime_session_id, "c1", "s2", "plan")
         assert r1 != r2
 
-    def test_write_with_null_wm_session(self, writer: EpisodeWriter, runtime_session_id: str) -> None:
+    def test_write_with_null_wm_session(
+        self, writer: EpisodeWriter, runtime_session_id: str
+    ) -> None:
         record_id = writer.write(
             content="output",
             runtime_session_id=runtime_session_id,
@@ -236,7 +241,9 @@ class TestEpisodeWriterWrite:
         assert loaded is not None
         assert loaded.step_name == "critique"
 
-    def test_content_summary_truncated_at_200(self, writer: EpisodeWriter, runtime_session_id: str) -> None:
+    def test_content_summary_truncated_at_200(
+        self, writer: EpisodeWriter, runtime_session_id: str
+    ) -> None:
         long = "x" * 300
         record_id = writer.write(long, runtime_session_id, "c1", "s1", "plan")
         loaded = writer.read(record_id)
@@ -244,14 +251,18 @@ class TestEpisodeWriterWrite:
         assert loaded.content_summary is not None
         assert len(loaded.content_summary) == 200
 
-    def test_content_summary_exact_for_short(self, writer: EpisodeWriter, runtime_session_id: str) -> None:
+    def test_content_summary_exact_for_short(
+        self, writer: EpisodeWriter, runtime_session_id: str
+    ) -> None:
         short = "hello"
         record_id = writer.write(short, runtime_session_id, "c1", "s1", "plan")
         loaded = writer.read(record_id)
         assert loaded is not None
         assert loaded.content_summary == "hello"
 
-    def test_cited_record_ids_roundtrip(self, writer: EpisodeWriter, runtime_session_id: str) -> None:
+    def test_cited_record_ids_roundtrip(
+        self, writer: EpisodeWriter, runtime_session_id: str
+    ) -> None:
         cited = ["rec_aabbccddeeff", "rec_112233445566"]
         record_id = writer.write(
             content="x",
@@ -279,7 +290,9 @@ class TestEpisodeWriterWrite:
         assert loaded is not None
         assert loaded.metadata == meta
 
-    def test_leeway_grant_event_id_roundtrip(self, writer: EpisodeWriter, runtime_session_id: str) -> None:
+    def test_leeway_grant_event_id_roundtrip(
+        self, writer: EpisodeWriter, runtime_session_id: str
+    ) -> None:
         event_id = b"\x01\x02\x03\x04\x05\x06\x07\x08"
         record_id = writer.write(
             content="x",
@@ -295,6 +308,7 @@ class TestEpisodeWriterWrite:
 
     def test_nonexistent_runtime_session_raises(self, writer: EpisodeWriter) -> None:
         import sqlite3
+
         with pytest.raises(sqlite3.IntegrityError):
             writer.write(
                 content="x",
@@ -312,12 +326,16 @@ class TestEpisodeWriterRead:
     def test_read_nonexistent_returns_none(self, writer: EpisodeWriter) -> None:
         assert writer.read("ep_doesnotexist") is None
 
-    def test_read_returns_episode_record(self, writer: EpisodeWriter, runtime_session_id: str) -> None:
+    def test_read_returns_episode_record(
+        self, writer: EpisodeWriter, runtime_session_id: str
+    ) -> None:
         record_id = writer.write("content", runtime_session_id, "c1", "s1", "plan")
         result = writer.read(record_id)
         assert isinstance(result, EpisodeRecord)
 
-    def test_read_runtime_session_id_matches(self, writer: EpisodeWriter, runtime_session_id: str) -> None:
+    def test_read_runtime_session_id_matches(
+        self, writer: EpisodeWriter, runtime_session_id: str
+    ) -> None:
         record_id = writer.write("content", runtime_session_id, "c1", "s1", "plan")
         result = writer.read(record_id)
         assert result is not None
@@ -328,7 +346,9 @@ class TestEpisodeWriterRead:
 
 
 class TestEpisodeWriterList:
-    def test_empty_session_returns_empty(self, writer: EpisodeWriter, runtime_session_id: str) -> None:
+    def test_empty_session_returns_empty(
+        self, writer: EpisodeWriter, runtime_session_id: str
+    ) -> None:
         assert writer.list_for_runtime_session(runtime_session_id) == []
 
     def test_lists_all_for_session(self, writer: EpisodeWriter, runtime_session_id: str) -> None:
@@ -338,7 +358,12 @@ class TestEpisodeWriterList:
         assert len(records) == 2
 
     def test_filters_to_session(
-        self, db_path: Path, store: FossicStore, vault: Path, writer: EpisodeWriter, runtime_session_id: str
+        self,
+        db_path: Path,
+        store: FossicStore,
+        vault: Path,
+        writer: EpisodeWriter,
+        runtime_session_id: str,
     ) -> None:
         mgr = SessionManager(db_path=db_path, store=store)
         other_session, _ = mgr.open_session("other goal", "test.v0", vault)
@@ -354,6 +379,7 @@ class TestEpisodeWriterList:
 
     def test_ordered_by_created_at(self, writer: EpisodeWriter, runtime_session_id: str) -> None:
         import sqlite3
+
         # Insert with explicit created_at to control ordering
         conn = sqlite3.connect(writer.db_path)
         conn.execute("PRAGMA foreign_keys = ON")
@@ -369,6 +395,4 @@ class TestEpisodeWriterList:
         conn.commit()
         conn.close()
         records = writer.list_for_runtime_session(runtime_session_id)
-        assert [r.created_at for r in records] == [
-            1000000000001, 1000000000002, 1000000000003
-        ]
+        assert [r.created_at for r in records] == [1000000000001, 1000000000002, 1000000000003]

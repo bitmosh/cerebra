@@ -63,7 +63,9 @@ class TestEmitLeewayGrantApplied:
     def test_returns_bytes_on_permitted(self) -> None:
         store, emitter = _make_store_and_emitter("cycle_perm")
         trigger_id = _stub_event(emitter, "cycle_perm")
-        decision = _gate_with_default_rules().evaluate(_action("retrieve_from_memory", "cycle_perm"))
+        decision = _gate_with_default_rules().evaluate(
+            _action("retrieve_from_memory", "cycle_perm")
+        )
         event_id = emit_leeway_grant_applied(emitter, decision, trigger_id)
         assert isinstance(event_id, bytes)
         assert len(event_id) > 0
@@ -100,7 +102,9 @@ class TestEmitLeewayGrantApplied:
 
         store, emitter = _make_store_and_emitter("cycle_grants")
         trigger_id = _stub_event(emitter, "cycle_grants")
-        decision = _gate_with_default_rules().evaluate(_action("retrieve_from_memory", "cycle_grants"))
+        decision = _gate_with_default_rules().evaluate(
+            _action("retrieve_from_memory", "cycle_grants")
+        )
         emit_leeway_grant_applied(emitter, decision, trigger_id)
 
         events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/sess_001"))
@@ -154,7 +158,9 @@ class TestEmitLeewayGrantApplied:
 
         store, emitter = _make_store_and_emitter("cycle_cause")
         trigger_id = _stub_event(emitter, "cycle_cause")
-        decision = _gate_with_default_rules().evaluate(_action("retrieve_from_memory", "cycle_cause"))
+        decision = _gate_with_default_rules().evaluate(
+            _action("retrieve_from_memory", "cycle_cause")
+        )
         emit_leeway_grant_applied(emitter, decision, trigger_id)
 
         events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/sess_001"))
@@ -167,7 +173,9 @@ class TestEmitLeewayGrantApplied:
 
         store, emitter = _make_store_and_emitter("cycle_tags")
         trigger_id = _stub_event(emitter, "cycle_tags")
-        decision = _gate_with_default_rules().evaluate(_action("retrieve_from_memory", "cycle_tags"))
+        decision = _gate_with_default_rules().evaluate(
+            _action("retrieve_from_memory", "cycle_tags")
+        )
         emit_leeway_grant_applied(emitter, decision, trigger_id)
 
         events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/sess_001"))
@@ -180,7 +188,9 @@ class TestEmitLeewayGrantApplied:
 
         store, emitter = _make_store_and_emitter("cycle_tagsfull")
         trigger_id = _stub_event(emitter, "cycle_tagsfull")
-        decision = _gate_with_default_rules().evaluate(_action("retrieve_from_memory", "cycle_tagsfull"))
+        decision = _gate_with_default_rules().evaluate(
+            _action("retrieve_from_memory", "cycle_tagsfull")
+        )
         emit_leeway_grant_applied(emitter, decision, trigger_id)
 
         events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/sess_001"))
@@ -195,7 +205,9 @@ class TestEmitLeewayGrantApplied:
 
         store, emitter = _make_store_and_emitter("cycle_time")
         trigger_id = _stub_event(emitter, "cycle_time")
-        decision = _gate_with_default_rules().evaluate(_action("retrieve_from_memory", "cycle_time"))
+        decision = _gate_with_default_rules().evaluate(
+            _action("retrieve_from_memory", "cycle_time")
+        )
         emit_leeway_grant_applied(emitter, decision, trigger_id, proposed_at_ms=99999)
 
         events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/sess_001"))

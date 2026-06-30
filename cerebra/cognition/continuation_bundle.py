@@ -46,10 +46,10 @@ class ContinuationBundle:
     distilled_goal: str
     summarized_prior_prompt: str
     truth_tower_projection: dict[str, Any]  # JSON TEXT in DB
-    cognitive_insights: list[str]            # JSON TEXT in DB
+    cognitive_insights: list[str]  # JSON TEXT in DB
     next_focus: str
-    open_questions: list[str]               # JSON TEXT in DB
-    constraints: list[str]                  # JSON TEXT in DB
+    open_questions: list[str]  # JSON TEXT in DB
+    constraints: list[str]  # JSON TEXT in DB
     recursion_depth: int
     voice_mode: str
     bundle_size_bytes: int
@@ -236,9 +236,7 @@ def read_bundle(db_path: Path, bundle_id: str) -> ContinuationBundle | None:
     return _row_to_bundle(row)
 
 
-def list_bundles_for_session(
-    db_path: Path, parent_session_id: str
-) -> list[ContinuationBundle]:
+def list_bundles_for_session(db_path: Path, parent_session_id: str) -> list[ContinuationBundle]:
     """Return all bundles for a given parent session, ordered by created_at ASC."""
     with _connect(db_path) as conn:
         rows = conn.execute(
@@ -261,12 +259,21 @@ def link_child_session(
 
 def _row_to_bundle(row: tuple[Any, ...]) -> ContinuationBundle:
     (
-        bundle_id, parent_session_id, child_session_id,
-        distilled_goal, summarized_prior_prompt,
-        truth_tower_projection_json, cognitive_insights_json,
-        next_focus, open_questions_json, constraints_json,
-        recursion_depth, voice_mode, bundle_size_bytes,
-        created_at, triggered_at,
+        bundle_id,
+        parent_session_id,
+        child_session_id,
+        distilled_goal,
+        summarized_prior_prompt,
+        truth_tower_projection_json,
+        cognitive_insights_json,
+        next_focus,
+        open_questions_json,
+        constraints_json,
+        recursion_depth,
+        voice_mode,
+        bundle_size_bytes,
+        created_at,
+        triggered_at,
     ) = row
     return ContinuationBundle(
         bundle_id=bundle_id,

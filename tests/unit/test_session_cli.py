@@ -44,6 +44,7 @@ class TestSessionShow:
     def test_show_with_active_session_text(self) -> None:
         vault, db = _make_vault()
         from cerebra.cognition.working_memory import new_session
+
         sid = new_session(db, str(vault))
 
         result = CliRunner().invoke(cli, ["session", "show", "--vault", str(vault)])
@@ -56,6 +57,7 @@ class TestSessionShow:
     def test_show_with_active_session_json(self) -> None:
         vault, db = _make_vault()
         from cerebra.cognition.working_memory import new_session
+
         sid = new_session(db, str(vault))
 
         result = CliRunner().invoke(
@@ -72,6 +74,7 @@ class TestSessionShow:
     def test_show_json_contains_required_fields(self) -> None:
         vault, db = _make_vault()
         from cerebra.cognition.working_memory import new_session
+
         new_session(db, str(vault))
 
         result = CliRunner().invoke(
@@ -79,9 +82,15 @@ class TestSessionShow:
         )
         data = json.loads(result.output)
         for field in (
-            "session_id", "vault_path", "status", "started_at",
-            "last_active_at", "wm_item_count", "wm_by_slot",
-            "t1_item_count", "t2_item_count",
+            "session_id",
+            "vault_path",
+            "status",
+            "started_at",
+            "last_active_at",
+            "wm_item_count",
+            "wm_by_slot",
+            "t1_item_count",
+            "t2_item_count",
         ):
             assert field in data, f"Missing field: {field}"
 
@@ -103,6 +112,7 @@ class TestSessionReset:
     def test_reset_closes_existing_session(self) -> None:
         vault, db = _make_vault()
         from cerebra.cognition.working_memory import new_session
+
         old_id = new_session(db, str(vault))
 
         result = CliRunner().invoke(cli, ["session", "reset", "--vault", str(vault)])
@@ -112,9 +122,7 @@ class TestSessionReset:
 
         # Confirm old session is closed in DB
         conn = sqlite3.connect(db)
-        row = conn.execute(
-            "SELECT status FROM sessions WHERE session_id=?", (old_id,)
-        ).fetchone()
+        row = conn.execute("SELECT status FROM sessions WHERE session_id=?", (old_id,)).fetchone()
         conn.close()
         assert row is not None
         assert row[0] == "closed"
@@ -125,12 +133,14 @@ class TestSessionReset:
         r2 = CliRunner().invoke(cli, ["session", "reset", "--vault", str(vault)])
         assert r1.exit_code == 0
         assert r2.exit_code == 0
+
         # Extract new session IDs — look for the word after "New session:"
         def _new_id(output: str) -> str:
             for line in output.splitlines():
                 if "New session:" in line:
                     return line.split("New session:")[-1].strip()
             raise AssertionError(f"No 'New session:' in output: {output!r}")
+
         id1 = _new_id(r1.output)
         id2 = _new_id(r2.output)
         assert id1 != id2

@@ -112,6 +112,7 @@ def render_template(template: str, context: dict[str, Any]) -> str:
             block_content = m.group(2)
             val = context.get(var_name)
             return block_content if val else ""
+
         return re.sub(
             r"\{%\s*if\s+(\w+)\s*%\}(.*?)\{%\s*endif\s*%\}",
             _replace_if,
@@ -161,9 +162,7 @@ def _validate_config(config: CycleConfig) -> None:
 
     # 4. At least one accept-action rule
     if not any(r.action == "accept" for r in config.clutch_rules):
-        raise CycleConfigValidationError(
-            "At least one clutch rule must have action='accept'"
-        )
+        raise CycleConfigValidationError("At least one clutch rule must have action='accept'")
 
     # 5. All predicate_names are built-ins
     for rule in config.clutch_rules:
@@ -323,9 +322,7 @@ class CycleConfigLoader:
         if vault_path is not None:
             searched.append(str(vault_path / "cycles" / filename))
         searched.append(str(builtin_file))
-        raise FileNotFoundError(
-            f"Cycle config '{name}' not found. Searched: {searched}"
-        )
+        raise FileNotFoundError(f"Cycle config '{name}' not found. Searched: {searched}")
 
     def _load_file(self, path: Path) -> CycleConfig:
         with open(path) as f:

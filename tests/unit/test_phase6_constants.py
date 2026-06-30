@@ -161,14 +161,10 @@ class TestPhase6EventTypes:
         assert isinstance(PHASE_6_EVENT_TYPES, frozenset)
 
     def test_contains_session_lifecycle(self) -> None:
-        assert {"SessionOpened", "CycleStarted", "CycleCompleted"}.issubset(
-            PHASE_6_EVENT_TYPES
-        )
+        assert {"SessionOpened", "CycleStarted", "CycleCompleted"}.issubset(PHASE_6_EVENT_TYPES)
 
     def test_contains_step_execution(self) -> None:
-        assert {"StepStarted", "ContextPacketBuilt", "StepExecuted"}.issubset(
-            PHASE_6_EVENT_TYPES
-        )
+        assert {"StepStarted", "ContextPacketBuilt", "StepExecuted"}.issubset(PHASE_6_EVENT_TYPES)
 
     def test_contains_prediction_evaluation(self) -> None:
         assert {
@@ -190,9 +186,7 @@ class TestPhase6EventTypes:
         assert "LeewayGrantApplied" in PHASE_6_EVENT_TYPES
 
     def test_contains_reinjection(self) -> None:
-        assert {"ContinuationBundleCreated", "ReinjectionTriggered"}.issubset(
-            PHASE_6_EVENT_TYPES
-        )
+        assert {"ContinuationBundleCreated", "ReinjectionTriggered"}.issubset(PHASE_6_EVENT_TYPES)
 
     def test_contains_memory_and_session_end(self) -> None:
         assert {"MemoryWriteFromCycle", "SessionFlushed"}.issubset(PHASE_6_EVENT_TYPES)

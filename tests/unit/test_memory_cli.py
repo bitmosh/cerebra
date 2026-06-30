@@ -55,8 +55,21 @@ def _seed_memory_record(db_path: Path, record_id: str = "rec_test") -> str:
             " depth, content, content_hash, token_estimate, chunk_strategy, "
             " lifecycle_state, created_at, schema_version) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (chk_id, doc_id, src_id, "", 0, 0, "test content here", "hc0", 5,
-             "fixed", "active", now, 1),
+            (
+                chk_id,
+                doc_id,
+                src_id,
+                "",
+                0,
+                0,
+                "test content here",
+                "hc0",
+                5,
+                "fixed",
+                "active",
+                now,
+                1,
+            ),
         )
         conn.execute(
             "INSERT OR IGNORE INTO memory_records "
@@ -64,8 +77,19 @@ def _seed_memory_record(db_path: Path, record_id: str = "rec_test") -> str:
             " content, content_hash, token_estimate, lifecycle_state, "
             " created_at, schema_version) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (record_id, "source_chunk", src_id, doc_id, chk_id,
-             "test content here", "hr0", 5, "active", now, 1),
+            (
+                record_id,
+                "source_chunk",
+                src_id,
+                doc_id,
+                chk_id,
+                "test content here",
+                "hr0",
+                5,
+                "active",
+                now,
+                1,
+            ),
         )
         conn.commit()
     finally:
@@ -113,6 +137,7 @@ class TestMemoryStatus:
         new_session(db, str(vault))
         result = _invoke(["memory", "status", "--vault", str(vault)])
         from cerebra.cognition._constants import SLOT_CAPACITIES
+
         for slot in SLOT_CAPACITIES:
             assert f"[{slot}]" in result.output, f"slot {slot!r} not in output"
 
@@ -204,12 +229,18 @@ class TestMemoryPromote:
     def test_promote_text_item_success(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
-        result = _invoke([
-            "memory", "promote",
-            "--vault", str(vault),
-            "--text", "my synthetic goal",
-            "--slot", "goal",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "--vault",
+                str(vault),
+                "--text",
+                "my synthetic goal",
+                "--slot",
+                "goal",
+            ]
+        )
         assert result.exit_code == 0
         assert "Promoted:" in result.output
         assert "goal" in result.output
@@ -218,11 +249,17 @@ class TestMemoryPromote:
         vault, db = _make_vault()
         new_session(db, str(vault))
         _seed_memory_record(db, "rec_001")
-        result = _invoke([
-            "memory", "promote", "rec_001",
-            "--vault", str(vault),
-            "--slot", "evidence",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "rec_001",
+                "--vault",
+                str(vault),
+                "--slot",
+                "evidence",
+            ]
+        )
         assert result.exit_code == 0
         assert "Promoted:" in result.output
         assert "rec_001" in result.output
@@ -230,81 +267,124 @@ class TestMemoryPromote:
     def test_promote_pin_flag(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
-        result = _invoke([
-            "memory", "promote",
-            "--vault", str(vault),
-            "--text", "pinned goal",
-            "--slot", "goal",
-            "--pin",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "--vault",
+                str(vault),
+                "--text",
+                "pinned goal",
+                "--slot",
+                "goal",
+                "--pin",
+            ]
+        )
         assert result.exit_code == 0
         assert "[pinned]" in result.output
 
     def test_promote_salience_override(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
-        result = _invoke([
-            "memory", "promote",
-            "--vault", str(vault),
-            "--text", "custom salience",
-            "--slot", "context",
-            "--salience", "0.42",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "--vault",
+                str(vault),
+                "--text",
+                "custom salience",
+                "--slot",
+                "context",
+                "--salience",
+                "0.42",
+            ]
+        )
         assert result.exit_code == 0
         assert "0.4200" in result.output
 
     def test_promote_unknown_slot_exits_2(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
-        result = _invoke([
-            "memory", "promote",
-            "--vault", str(vault),
-            "--text", "bad slot",
-            "--slot", "nonexistent_slot",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "--vault",
+                str(vault),
+                "--text",
+                "bad slot",
+                "--slot",
+                "nonexistent_slot",
+            ]
+        )
         assert result.exit_code == 2
-        assert "unknown slot" in result.output.lower() or "unknown slot" in (result.stderr or "").lower()
+        assert (
+            "unknown slot" in result.output.lower()
+            or "unknown slot" in (result.stderr or "").lower()
+        )
 
     def test_promote_missing_slot_flag_exits_2(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
-        result = _invoke([
-            "memory", "promote",
-            "--vault", str(vault),
-            "--text", "no slot flag",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "--vault",
+                str(vault),
+                "--text",
+                "no slot flag",
+            ]
+        )
         assert result.exit_code == 2
 
     def test_promote_missing_required_input_exits_2(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
-        result = _invoke([
-            "memory", "promote",
-            "--vault", str(vault),
-            "--slot", "goal",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "--vault",
+                str(vault),
+                "--slot",
+                "goal",
+            ]
+        )
         assert result.exit_code == 2
 
     def test_promote_record_id_not_found_exits_2(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
-        result = _invoke([
-            "memory", "promote", "rec_missing",
-            "--vault", str(vault),
-            "--slot", "evidence",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "rec_missing",
+                "--vault",
+                str(vault),
+                "--slot",
+                "evidence",
+            ]
+        )
         assert result.exit_code == 2
         assert "not found" in (result.output + (result.stderr or "")).lower()
 
     def test_promote_tier_2_requires_cite(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
-        result = _invoke([
-            "memory", "promote",
-            "--vault", str(vault),
-            "--tier", "2",
-            "wmi_someid",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "--vault",
+                str(vault),
+                "--tier",
+                "2",
+                "wmi_someid",
+            ]
+        )
         assert result.exit_code == 2
         combined = result.output + (result.stderr or "")
         assert "--cite is required" in combined
@@ -312,46 +392,72 @@ class TestMemoryPromote:
     def test_promote_tier_1_exits_2(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
-        result = _invoke([
-            "memory", "promote",
-            "--vault", str(vault),
-            "--text", "will fail",
-            "--slot", "goal",
-            "--tier", "1",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "--vault",
+                str(vault),
+                "--text",
+                "will fail",
+                "--slot",
+                "goal",
+                "--tier",
+                "1",
+            ]
+        )
         assert result.exit_code == 2
 
     def test_promote_auto_creates_session_if_none(self) -> None:
         vault, _db = _make_vault()
         # No session created
-        result = _invoke([
-            "memory", "promote",
-            "--vault", str(vault),
-            "--text", "auto session item",
-            "--slot", "goal",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "--vault",
+                str(vault),
+                "--text",
+                "auto session item",
+                "--slot",
+                "goal",
+            ]
+        )
         assert result.exit_code == 0, f"Unexpected failure: {result.output}"
 
     def test_promote_text_and_record_id_mutually_exclusive(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
-        result = _invoke([
-            "memory", "promote", "rec_001",
-            "--vault", str(vault),
-            "--text", "also text",
-            "--slot", "goal",
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "promote",
+                "rec_001",
+                "--vault",
+                str(vault),
+                "--text",
+                "also text",
+                "--slot",
+                "goal",
+            ]
+        )
         assert result.exit_code == 2
 
     def test_promote_item_persists_in_wm(self) -> None:
         vault, db = _make_vault()
         sid = new_session(db, str(vault))
-        _invoke([
-            "memory", "promote",
-            "--vault", str(vault),
-            "--text", "persisted item",
-            "--slot", "context",
-        ])
+        _invoke(
+            [
+                "memory",
+                "promote",
+                "--vault",
+                str(vault),
+                "--text",
+                "persisted item",
+                "--slot",
+                "context",
+            ]
+        )
         wm = WorkingMemory(db, sid)
         active = wm.load_slot("context")
         assert any(i.content_summary == "persisted item" for i in active)
@@ -367,10 +473,15 @@ class TestMemoryEvict:
         sid = new_session(db, str(vault))
         wm = WorkingMemory(db, sid)
         item = wm.promote("goal", None, "to be evicted", salience_score=0.5)
-        result = _invoke([
-            "memory", "evict", item.item_id,
-            "--vault", str(vault),
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "evict",
+                item.item_id,
+                "--vault",
+                str(vault),
+            ]
+        )
         assert result.exit_code == 0
         assert item.item_id in result.output
 
@@ -385,18 +496,28 @@ class TestMemoryEvict:
     def test_evict_missing_item_exits_2(self) -> None:
         vault, db = _make_vault()
         new_session(db, str(vault))
-        result = _invoke([
-            "memory", "evict", "wmi_nonexistent",
-            "--vault", str(vault),
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "evict",
+                "wmi_nonexistent",
+                "--vault",
+                str(vault),
+            ]
+        )
         assert result.exit_code == 2
         assert "not found" in (result.output + (result.stderr or "")).lower()
 
     def test_evict_no_session_exits_2(self) -> None:
         vault, _db = _make_vault()
-        result = _invoke([
-            "memory", "evict", "wmi_any",
-            "--vault", str(vault),
-        ])
+        result = _invoke(
+            [
+                "memory",
+                "evict",
+                "wmi_any",
+                "--vault",
+                str(vault),
+            ]
+        )
         assert result.exit_code == 2
         assert "no active session" in (result.output + (result.stderr or "")).lower()

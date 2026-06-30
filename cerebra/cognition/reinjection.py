@@ -53,19 +53,16 @@ def _pred_max_steps_without_acceptance(
     """
     if termination_reason != "cap_reached":
         return False
-    return not any(
-        getattr(step, "clutch_action", None) == "accept"
-        for step in step_history
-    )
+    return not any(getattr(step, "clutch_action", None) == "accept" for step in step_history)
 
 
 BUILTIN_REINJECTION_PREDICATES: dict[str, Any] = {
     "max_steps_without_acceptance": _pred_max_steps_without_acceptance,
 }
 
-assert frozenset(BUILTIN_REINJECTION_PREDICATES.keys()) == BUILTIN_REINJECTION_PREDICATE_NAMES, (
-    "BUILTIN_REINJECTION_PREDICATES keys must match BUILTIN_REINJECTION_PREDICATE_NAMES"
-)
+assert (
+    frozenset(BUILTIN_REINJECTION_PREDICATES.keys()) == BUILTIN_REINJECTION_PREDICATE_NAMES
+), "BUILTIN_REINJECTION_PREDICATES keys must match BUILTIN_REINJECTION_PREDICATE_NAMES"
 
 
 # ── ReinjectionTriggerEvaluator ───────────────────────────────────────────────

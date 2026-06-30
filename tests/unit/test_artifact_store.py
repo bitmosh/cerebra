@@ -126,9 +126,7 @@ class TestIdempotency:
 
 @pytest.mark.unit
 class TestInspectorEvent:
-    def test_event_emitted_on_write(
-        self, vault_with_db: tuple[Path, Path]
-    ) -> None:
+    def test_event_emitted_on_write(self, vault_with_db: tuple[Path, Path]) -> None:
         vault, db_path = vault_with_db
         log = SQLiteEventLog(db_path)
         write_artifact(vault, "doc_001", "hello", event_log=log)
@@ -136,14 +134,13 @@ class TestInspectorEvent:
         assert len(events) == 1
         data = events[0]["data_json"]
         import json
+
         d = json.loads(data)
         assert d["document_id"] == "doc_001"
         assert d["size_bytes"] > 0
         assert "artifact_path" in d
 
-    def test_no_event_on_idempotent_skip(
-        self, vault_with_db: tuple[Path, Path]
-    ) -> None:
+    def test_no_event_on_idempotent_skip(self, vault_with_db: tuple[Path, Path]) -> None:
         vault, db_path = vault_with_db
         log = SQLiteEventLog(db_path)
         write_artifact(vault, "doc_001", "same", event_log=log)
@@ -152,9 +149,7 @@ class TestInspectorEvent:
         # Only one event — the second call was a skip
         assert len(events) == 1
 
-    def test_event_emitted_on_overwrite(
-        self, vault_with_db: tuple[Path, Path]
-    ) -> None:
+    def test_event_emitted_on_overwrite(self, vault_with_db: tuple[Path, Path]) -> None:
         vault, db_path = vault_with_db
         log = SQLiteEventLog(db_path)
         write_artifact(vault, "doc_001", "old", event_log=log)
@@ -167,14 +162,13 @@ class TestInspectorEvent:
         result = write_artifact(vault, "doc_001", "hello")
         assert result.written is True
 
-    def test_event_artifact_path_is_relative(
-        self, vault_with_db: tuple[Path, Path]
-    ) -> None:
+    def test_event_artifact_path_is_relative(self, vault_with_db: tuple[Path, Path]) -> None:
         vault, db_path = vault_with_db
         log = SQLiteEventLog(db_path)
         write_artifact(vault, "doc_001", "hello", event_log=log)
         events = log.query_by_type("DocumentArtifactWritten")
         import json
+
         d = json.loads(events[0]["data_json"])
         # artifact_path in the event should be relative (e.g. "artifacts/doc_001.txt")
         assert not Path(d["artifact_path"]).is_absolute()

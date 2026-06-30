@@ -35,21 +35,21 @@ def vault_root() -> Path:
 def clean_session(vault_root: Path) -> str:
     """Create a fresh session for this test module; return session_id."""
     from cerebra.cognition.working_memory import new_session
+
     db = vault_root / "data" / "cerebra.db"
     return new_session(db, str(vault_root))
 
 
 def _t1_count(vault_root: Path, session_id: str) -> int:
     from cerebra.cognition.truth_tower import TruthTower
+
     db = vault_root / "data" / "cerebra.db"
     return len(TruthTower(db, session_id).load_tier(1))
 
 
 @pytest.mark.integration
 class TestContextT1AgainstVault:
-    def test_leeway_network_populates_t1(
-        self, vault_root: Path, clean_session: str
-    ) -> None:
+    def test_leeway_network_populates_t1(self, vault_root: Path, clean_session: str) -> None:
         """Running cerebra context with a normal query populates T1."""
         from click.testing import CliRunner
 
@@ -65,9 +65,7 @@ class TestContextT1AgainstVault:
         assert after >= before
         assert "ContextPacket" in result.output
 
-    def test_second_query_accumulates_t1(
-        self, vault_root: Path, clean_session: str
-    ) -> None:
+    def test_second_query_accumulates_t1(self, vault_root: Path, clean_session: str) -> None:
         """A second distinct query adds items to T1 (cumulative)."""
         from click.testing import CliRunner
 
@@ -87,9 +85,7 @@ class TestContextT1AgainstVault:
         # Either added items (success) or same count (abstained / full dedup)
         assert after >= before
 
-    def test_no_promote_leaves_t1_unchanged(
-        self, vault_root: Path, clean_session: str
-    ) -> None:
+    def test_no_promote_leaves_t1_unchanged(self, vault_root: Path, clean_session: str) -> None:
         """--no-promote does not change T1 even though retrieval runs."""
         from click.testing import CliRunner
 
@@ -98,16 +94,21 @@ class TestContextT1AgainstVault:
         before = _t1_count(vault_root, clean_session)
         result = CliRunner().invoke(
             cli,
-            ["context", "cognitive architecture",
-             "--vault", str(vault_root), "--limit", "3", "--no-promote"],
+            [
+                "context",
+                "cognitive architecture",
+                "--vault",
+                str(vault_root),
+                "--limit",
+                "3",
+                "--no-promote",
+            ],
         )
         assert result.exit_code in (0, 1)
         after = _t1_count(vault_root, clean_session)
         assert after == before, "--no-promote must not change T1 count"
 
-    def test_abstained_leaves_t1_unchanged(
-        self, vault_root: Path, clean_session: str
-    ) -> None:
+    def test_abstained_leaves_t1_unchanged(self, vault_root: Path, clean_session: str) -> None:
         """--floor 0.99 forces abstention; T1 must not change."""
         from click.testing import CliRunner
 
@@ -116,8 +117,14 @@ class TestContextT1AgainstVault:
         before = _t1_count(vault_root, clean_session)
         result = CliRunner().invoke(
             cli,
-            ["context", "some rare query unlikely to score high",
-             "--vault", str(vault_root), "--floor", "0.99"],
+            [
+                "context",
+                "some rare query unlikely to score high",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.99",
+            ],
         )
         assert result.exit_code == 1  # abstained
         after = _t1_count(vault_root, clean_session)
@@ -140,9 +147,7 @@ class TestContextT1AgainstVault:
             assert "Truth Tower" in result.output
             assert "T1 [1]" in result.output
 
-    def test_json_output_includes_truth_tower(
-        self, vault_root: Path, clean_session: str
-    ) -> None:
+    def test_json_output_includes_truth_tower(self, vault_root: Path, clean_session: str) -> None:
         """JSON output includes truth_tower field when tower is non-empty."""
         from click.testing import CliRunner
 
@@ -150,8 +155,16 @@ class TestContextT1AgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["context", "leeway network", "--vault", str(vault_root),
-             "--limit", "3", "--format", "json"],
+            [
+                "context",
+                "leeway network",
+                "--vault",
+                str(vault_root),
+                "--limit",
+                "3",
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 0, result.output
         data = json.loads(result.output)

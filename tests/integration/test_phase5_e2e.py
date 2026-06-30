@@ -41,6 +41,7 @@ def vault_root() -> Path:
 def _fresh_session(vault_root: Path) -> str:
     """Create a fresh session for the vault; returns session_id."""
     from cerebra.cognition.working_memory import new_session
+
     return new_session(vault_root / "data" / "cerebra.db", str(vault_root))
 
 
@@ -51,11 +52,14 @@ def _db(vault_root: Path) -> Path:
 def _cli(*args: str, vault: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["cerebra", *args, "--vault", str(vault)],
-        capture_output=True, text=True, timeout=30,
+        capture_output=True,
+        text=True,
+        timeout=30,
     )
 
 
 # ── 1. Full working memory flow ───────────────────────────────────────────────
+
 
 @pytest.mark.integration
 class TestFullWorkingMemoryFlow:
@@ -69,19 +73,14 @@ class TestFullWorkingMemoryFlow:
         session_id = _fresh_session(vault_root)
         db = _db(vault_root)
         wm = WorkingMemory(db, session_id)
-        items = [
-            wm.promote("evidence", None, f"evidence {i}", 0.70 + i * 0.05)
-            for i in range(3)
-        ]
+        items = [wm.promote("evidence", None, f"evidence {i}", 0.70 + i * 0.05) for i in range(3)]
 
         result = CliRunner().invoke(cli, ["memory", "status", "--vault", str(vault_root)])
         assert result.exit_code == 0, result.output
         assert "3" in result.output or "[evidence]" in result.output
 
         # Evict the first item
-        CliRunner().invoke(
-            cli, ["memory", "evict", items[0].item_id, "--vault", str(vault_root)]
-        )
+        CliRunner().invoke(cli, ["memory", "evict", items[0].item_id, "--vault", str(vault_root)])
 
         result2 = CliRunner().invoke(cli, ["memory", "status", "--vault", str(vault_root)])
         assert result2.exit_code == 0, result2.output
@@ -103,8 +102,16 @@ class TestFullWorkingMemoryFlow:
         # Try to promote another into the full pinned slot via CLI
         result = CliRunner().invoke(
             cli,
-            ["memory", "promote", "--text", "extra goal", "--slot", "goal",
-             "--vault", str(vault_root)],
+            [
+                "memory",
+                "promote",
+                "--text",
+                "extra goal",
+                "--slot",
+                "goal",
+                "--vault",
+                str(vault_root),
+            ],
         )
         # Should fail: slot at capacity, only pinned item exists
         assert result.exit_code == 2
@@ -119,8 +126,16 @@ class TestFullWorkingMemoryFlow:
         session_id = _fresh_session(vault_root)
         result = CliRunner().invoke(
             cli,
-            ["memory", "promote", "--text", "unique synthetic content abc",
-             "--slot", "hypothesis", "--vault", str(vault_root)],
+            [
+                "memory",
+                "promote",
+                "--text",
+                "unique synthetic content abc",
+                "--slot",
+                "hypothesis",
+                "--vault",
+                str(vault_root),
+            ],
         )
         assert result.exit_code == 0, result.output
         assert "0.8000" in result.output  # SYNTHETIC_ITEM_DEFAULT_SALIENCE
@@ -133,6 +148,7 @@ class TestFullWorkingMemoryFlow:
 
 
 # ── 2. Full tower flow ────────────────────────────────────────────────────────
+
 
 @pytest.mark.integration
 class TestFullTowerFlow:
@@ -169,15 +185,22 @@ class TestFullTowerFlow:
         t1_id = t1_items[0].tower_item_id
         result2 = CliRunner().invoke(
             cli,
-            ["memory", "promote", wm_item.item_id, "--tier", "2", "--cite", t1_id,
-             "--vault", str(vault_root)],
+            [
+                "memory",
+                "promote",
+                wm_item.item_id,
+                "--tier",
+                "2",
+                "--cite",
+                t1_id,
+                "--vault",
+                str(vault_root),
+            ],
         )
         assert result2.exit_code == 0, result2.output
 
         # memory status should show both sections
-        result3 = CliRunner().invoke(
-            cli, ["memory", "status", "--vault", str(vault_root)]
-        )
+        result3 = CliRunner().invoke(cli, ["memory", "status", "--vault", str(vault_root)])
         assert result3.exit_code == 0, result3.output
         assert "T1 [1]" in result3.output
         assert "T2 [1]" in result3.output
@@ -217,9 +240,7 @@ class TestFullTowerFlow:
         conn.close()
         tower.mark_stale_from_t1_eviction(t1s[0].tower_item_id)
 
-        result = CliRunner().invoke(
-            cli, ["memory", "status", "--vault", str(vault_root)]
-        )
+        result = CliRunner().invoke(cli, ["memory", "status", "--vault", str(vault_root)])
         assert result.exit_code == 0, result.output
         assert "[stale]" in result.output
 
@@ -263,6 +284,7 @@ class TestFullTowerFlow:
 
 
 # ── 3. Session lifecycle ──────────────────────────────────────────────────────
+
 
 @pytest.mark.integration
 class TestSessionLifecycle:
@@ -312,8 +334,15 @@ class TestSessionLifecycle:
         )
         assert result_json.exit_code == 0, result_json.output
         data = json.loads(result_json.output)
-        for key in ("session_id", "vault_path", "started_at", "last_active_at",
-                    "wm_item_count", "t1_item_count", "t2_item_count"):
+        for key in (
+            "session_id",
+            "vault_path",
+            "started_at",
+            "last_active_at",
+            "wm_item_count",
+            "t1_item_count",
+            "t2_item_count",
+        ):
             assert key in data, f"Missing key: {key}"
         assert data["session_id"] == session_id
 
@@ -345,6 +374,7 @@ class TestSessionLifecycle:
 
 
 # ── 4. Context × session interaction ─────────────────────────────────────────
+
 
 @pytest.mark.integration
 class TestContextSessionInteraction:
@@ -395,8 +425,7 @@ class TestContextSessionInteraction:
 
         CliRunner().invoke(
             cli,
-            ["context", "memory drift",
-             "--vault", str(vault_root), "--limit", "3", "--no-promote"],
+            ["context", "memory drift", "--vault", str(vault_root), "--limit", "3", "--no-promote"],
         )
 
         session_id2 = get_active_session(db, str(vault_root))
@@ -405,6 +434,7 @@ class TestContextSessionInteraction:
 
 
 # ── 5. Lattice-aware T1 deduplication ────────────────────────────────────────
+
 
 @pytest.mark.integration
 class TestLatticeAwareT1Promotion:
@@ -456,7 +486,18 @@ class TestLatticeAwareT1Promotion:
                 " detected_type, detection_confidence, parser_status, "
                 " lifecycle_state, created_at, schema_version) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?)",
-                (src_id, f"/test/sibling_{now}", "h0", 1, "markdown", 1.0, "done", "active", now, 1),
+                (
+                    src_id,
+                    f"/test/sibling_{now}",
+                    "h0",
+                    1,
+                    "markdown",
+                    1.0,
+                    "done",
+                    "active",
+                    now,
+                    1,
+                ),
             )
             conn.execute(
                 "INSERT OR IGNORE INTO documents "
@@ -471,8 +512,21 @@ class TestLatticeAwareT1Promotion:
                 " depth, content, content_hash, token_estimate, chunk_strategy, "
                 " lifecycle_state, created_at, schema_version) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (shared_chunk, doc_id, src_id, "", 0, 0, "shared chunk content",
-                 f"hc_{now}", 5, "fixed", "active", now, 1),
+                (
+                    shared_chunk,
+                    doc_id,
+                    src_id,
+                    "",
+                    0,
+                    0,
+                    "shared chunk content",
+                    f"hc_{now}",
+                    5,
+                    "fixed",
+                    "active",
+                    now,
+                    1,
+                ),
             )
             for rec in (rec_a, rec_b):
                 conn.execute(
@@ -481,8 +535,19 @@ class TestLatticeAwareT1Promotion:
                     " content, content_hash, token_estimate, lifecycle_state, "
                     " created_at, schema_version) "
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                    (rec, "source_chunk", src_id, doc_id, shared_chunk,
-                     f"content for {rec}", "hr0", 5, "active", now, 1),
+                    (
+                        rec,
+                        "source_chunk",
+                        src_id,
+                        doc_id,
+                        shared_chunk,
+                        f"content for {rec}",
+                        "hr0",
+                        5,
+                        "active",
+                        now,
+                        1,
+                    ),
                 )
             conn.execute(
                 "INSERT OR IGNORE INTO retrieval_traces "
@@ -495,21 +560,24 @@ class TestLatticeAwareT1Promotion:
         finally:
             conn.close()
 
-        mi_a = _FakeMI(rec_a, src_id, shared_chunk, "content for a", "/test/a.md",
-                       None, 0.80, {}, "vector", 1)
-        mi_b = _FakeMI(rec_b, src_id, shared_chunk, "content for b", "/test/b.md",
-                       None, 0.75, {}, "vector", 2)
+        mi_a = _FakeMI(
+            rec_a, src_id, shared_chunk, "content for a", "/test/a.md", None, 0.80, {}, "vector", 1
+        )
+        mi_b = _FakeMI(
+            rec_b, src_id, shared_chunk, "content for b", "/test/b.md", None, 0.75, {}, "vector", 2
+        )
 
         tower = TruthTower(db, session_id)
         promoted = tower.promote_to_t1([mi_a, mi_b], trace_id=f"trace_sibling_{now}")
 
-        assert len(promoted) == 1, (
-            f"Expected 1 T1 item from two siblings sharing chunk_id; got {len(promoted)}"
-        )
+        assert (
+            len(promoted) == 1
+        ), f"Expected 1 T1 item from two siblings sharing chunk_id; got {len(promoted)}"
         assert promoted[0].record_id == rec_a
 
 
 # ── 6. Lockfile enforcement ───────────────────────────────────────────────────
+
 
 @pytest.mark.integration
 class TestLockfileEnforcement:
@@ -525,18 +593,28 @@ class TestLockfileEnforcement:
             fd.flush()
 
             result = subprocess.run(
-                ["cerebra", "memory", "promote",
-                 "--text", "blocked item", "--slot", "evidence",
-                 "--vault", str(vault_root)],
-                capture_output=True, text=True, timeout=10,
+                [
+                    "cerebra",
+                    "memory",
+                    "promote",
+                    "--text",
+                    "blocked item",
+                    "--slot",
+                    "evidence",
+                    "--vault",
+                    str(vault_root),
+                ],
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
             assert result.returncode == 2, (
                 f"Expected exit 2 under lock, got {result.returncode}. "
                 f"stderr: {result.stderr!r}"
             )
-            assert "locked" in (result.stderr + result.stdout).lower(), (
-                f"Expected 'locked' in output. stderr: {result.stderr!r}"
-            )
+            assert (
+                "locked" in (result.stderr + result.stdout).lower()
+            ), f"Expected 'locked' in output. stderr: {result.stderr!r}"
         finally:
             fd.close()
             lp.unlink(missing_ok=True)
@@ -553,9 +631,18 @@ class TestLockfileEnforcement:
             fd.flush()
 
             result = subprocess.run(
-                ["cerebra", "context", "leeway network",
-                 "--vault", str(vault_root), "--limit", "3"],
-                capture_output=True, text=True, timeout=30,
+                [
+                    "cerebra",
+                    "context",
+                    "leeway network",
+                    "--vault",
+                    str(vault_root),
+                    "--limit",
+                    "3",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=30,
             )
             assert result.returncode == 2, (
                 f"Expected exit 2 under lock, got {result.returncode}. "
@@ -577,9 +664,10 @@ class TestLockfileEnforcement:
             fd.flush()
 
             result = subprocess.run(
-                ["cerebra", "search", "leeway network",
-                 "--vault", str(vault_root)],
-                capture_output=True, text=True, timeout=30,
+                ["cerebra", "search", "leeway network", "--vault", str(vault_root)],
+                capture_output=True,
+                text=True,
+                timeout=30,
             )
             assert result.returncode == 0, (
                 f"search should succeed with lock held, got {result.returncode}. "

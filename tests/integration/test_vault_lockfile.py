@@ -53,12 +53,12 @@ class TestVaultLockfile:
                 text=True,
                 timeout=10,
             )
-            assert result.returncode == 2, (
-                f"Expected exit 2, got {result.returncode}. stderr: {result.stderr!r}"
-            )
-            assert "locked" in result.stderr.lower(), (
-                f"Expected 'locked' in stderr: {result.stderr!r}"
-            )
+            assert (
+                result.returncode == 2
+            ), f"Expected exit 2, got {result.returncode}. stderr: {result.stderr!r}"
+            assert (
+                "locked" in result.stderr.lower()
+            ), f"Expected 'locked' in stderr: {result.stderr!r}"
         finally:
             fd.close()
             lp.unlink(missing_ok=True)

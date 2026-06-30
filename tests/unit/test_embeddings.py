@@ -63,16 +63,14 @@ def _insert_record(db_path: Path, record_id: str, content: str = "hello") -> str
             " chunk_index, depth, content, content_hash, token_estimate,"
             " chunk_strategy, lifecycle_state, created_at, schema_version)"
             " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (chk_id, doc_id, src_id, "", 0, 0, content, h, 10,
-             "fixed", "active", now, 1),
+            (chk_id, doc_id, src_id, "", 0, 0, content, h, 10, "fixed", "active", now, 1),
         )
         conn.execute(
             "INSERT INTO memory_records (record_id, record_type, source_id, document_id,"
             " chunk_id, content, content_hash, token_estimate, lifecycle_state,"
             " created_at, schema_version)"
             " VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            (record_id, "source_chunk", src_id, doc_id, chk_id, content, h,
-             10, "active", now, 1),
+            (record_id, "source_chunk", src_id, doc_id, chk_id, content, h, 10, "active", now, 1),
         )
     return record_id
 
@@ -291,8 +289,15 @@ class TestCosineSearch:
                 " (embedding_id, record_id, embedding_model, model_version,"
                 "  vector_bytes, dimensions, created_at, schema_version)"
                 " VALUES (?,?,?,?,?,?,?,1)",
-                (_embedding_id(record_id), record_id, _MODEL_NAME, _MODEL_VERSION,
-                 vec.astype(np.float32).tobytes(), int(vec.shape[0]), int(time.time())),
+                (
+                    _embedding_id(record_id),
+                    record_id,
+                    _MODEL_NAME,
+                    _MODEL_VERSION,
+                    vec.astype(np.float32).tobytes(),
+                    int(vec.shape[0]),
+                    int(time.time()),
+                ),
             )
 
     def test_returns_empty_when_no_embeddings(self, db: Path) -> None:

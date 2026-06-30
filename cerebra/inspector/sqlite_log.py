@@ -87,8 +87,7 @@ class SQLiteEventLog:
                 ).fetchall()
             else:
                 rows = conn.execute(
-                    "SELECT * FROM inspector_events "
-                    "WHERE subject_id = ? ORDER BY timestamp ASC",
+                    "SELECT * FROM inspector_events " "WHERE subject_id = ? ORDER BY timestamp ASC",
                     (subject_id,),
                 ).fetchall()
         return [dict(row) for row in rows]

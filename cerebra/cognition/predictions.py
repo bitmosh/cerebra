@@ -165,9 +165,7 @@ class PredictionPipeline:
             recorded_at=_now_ms(),
         )
 
-    def _select_basis(
-        self, input: PredictionInput
-    ) -> tuple[str, dict[str, float], float]:
+    def _select_basis(self, input: PredictionInput) -> tuple[str, dict[str, float], float]:
         """Pick the most informed basis. Returns (basis, per_signal, confidence)."""
         if input.prior_step_per_signal is not None:
             missing = SIGNAL_NAMES - set(input.prior_step_per_signal.keys())
@@ -266,9 +264,7 @@ def write_outcome(db_path: Path, record: OutcomeRecord) -> None:
         conn.close()
 
 
-def read_predictions_for_session(
-    db_path: Path, session_id: str
-) -> list[PredictionRecord]:
+def read_predictions_for_session(db_path: Path, session_id: str) -> list[PredictionRecord]:
     conn = connect(db_path)
     try:
         rows = conn.execute(

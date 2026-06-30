@@ -77,9 +77,7 @@ def _record_size(token_estimate: int) -> float:
     return min(12.0, max(4.0, token_estimate / 100))
 
 
-def _record_label(
-    heading_path: str | None, doc_title: str | None, record_id: str
-) -> str:
+def _record_label(heading_path: str | None, doc_title: str | None, record_id: str) -> str:
     if heading_path:
         return heading_path
     if doc_title:
@@ -90,6 +88,7 @@ def _record_label(
 def _d1_category_name(d1: int) -> str:
     try:
         from cerebra.cognition.sku_categories import D1Category
+
         return D1Category(d1).name
     except (ValueError, ImportError):
         return f"D1_{d1}"
@@ -98,6 +97,7 @@ def _d1_category_name(d1: int) -> str:
 def _d9_name(d9: int) -> str:
     try:
         from cerebra.cognition.sku import D9Modality
+
         return D9Modality(d9).name
     except (ValueError, ImportError):
         return f"D9_{d9}"
@@ -106,6 +106,7 @@ def _d9_name(d9: int) -> str:
 def _d10_name(d10: int) -> str:
     try:
         from cerebra.cognition.sku import D10Provenance
+
         return D10Provenance(d10).name
     except (ValueError, ImportError):
         return f"D10_{d10}"
@@ -210,25 +211,27 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
         basename = Path(row["canonical_path"]).name
         cluster = _source_cluster(row["detected_type"])
         size = _source_size(int(row["total_tokens"]))
-        nodes.append({
-            "id": f"source:{src_id}",
-            "label": basename,
-            "fullLabel": row["canonical_path"],
-            "type": "spine",
-            "cluster": cluster,
-            "status": row["lifecycle_state"],
-            "tags": ["source", row["detected_type"]],
-            "size": round(size, 2),
-            "path": row["canonical_path"],
-            "lastModified": _ts_to_iso(row["ingested_at"]),
-            "raw": {
-                "detected_type": row["detected_type"],
-                "source_id": src_id,
-                "record_count": int(row["record_count"]),
-                "total_tokens": int(row["total_tokens"]),
-                "sourceAdapter": "cerebra-vault",
-            },
-        })
+        nodes.append(
+            {
+                "id": f"source:{src_id}",
+                "label": basename,
+                "fullLabel": row["canonical_path"],
+                "type": "spine",
+                "cluster": cluster,
+                "status": row["lifecycle_state"],
+                "tags": ["source", row["detected_type"]],
+                "size": round(size, 2),
+                "path": row["canonical_path"],
+                "lastModified": _ts_to_iso(row["ingested_at"]),
+                "raw": {
+                    "detected_type": row["detected_type"],
+                    "source_id": src_id,
+                    "record_count": int(row["record_count"]),
+                    "total_tokens": int(row["total_tokens"]),
+                    "sourceAdapter": "cerebra-vault",
+                },
+            }
+        )
         exported_source_ids.add(src_id)
 
     spine_count = len(nodes)
@@ -253,36 +256,38 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
         full_label = f"{basename} › {heading}" if heading else basename
         dim_factor = 0.7 if d1_confidence < 0.5 else 1.0
 
-        nodes.append({
-            "id": f"record:{rec_id}",
-            "label": label,
-            "fullLabel": full_label,
-            "type": "memory_record",
-            "cluster": cluster,
-            "status": row["lifecycle_state"],
-            "tags": [_d1_category_name(d1), _d9_name(int(row["d9"])), f"q{d1 // 4}"],
-            "size": round(size, 2),
-            "path": row["canonical_path"],
-            "lastModified": _ts_to_iso(row["ingested_at"]),
-            "raw": {
-                "sku_address": row["sku_address"],
-                "d1": d1,
-                "d1_category": _d1_category_name(d1),
-                "d1_confidence": round(d1_confidence, 6),
-                "d9_modality": _d9_name(int(row["d9"])),
-                "d10_provenance": _d10_name(int(row["d10"])),
-                "quadrant": d1 // 4,
-                "quadrant_name": _record_quadrant_name(d1),
-                "detected_type": row["detected_type"],
-                "token_estimate": int(row["token_estimate"]),
-                "chunk_index": int(row["chunk_index"]),
-                "heading_path": heading,
-                "record_id": rec_id,
-                "source_id": row["source_id"],
-                "dimFactor": dim_factor,
-                "sourceAdapter": "cerebra-vault",
-            },
-        })
+        nodes.append(
+            {
+                "id": f"record:{rec_id}",
+                "label": label,
+                "fullLabel": full_label,
+                "type": "memory_record",
+                "cluster": cluster,
+                "status": row["lifecycle_state"],
+                "tags": [_d1_category_name(d1), _d9_name(int(row["d9"])), f"q{d1 // 4}"],
+                "size": round(size, 2),
+                "path": row["canonical_path"],
+                "lastModified": _ts_to_iso(row["ingested_at"]),
+                "raw": {
+                    "sku_address": row["sku_address"],
+                    "d1": d1,
+                    "d1_category": _d1_category_name(d1),
+                    "d1_confidence": round(d1_confidence, 6),
+                    "d9_modality": _d9_name(int(row["d9"])),
+                    "d10_provenance": _d10_name(int(row["d10"])),
+                    "quadrant": d1 // 4,
+                    "quadrant_name": _record_quadrant_name(d1),
+                    "detected_type": row["detected_type"],
+                    "token_estimate": int(row["token_estimate"]),
+                    "chunk_index": int(row["chunk_index"]),
+                    "heading_path": heading,
+                    "record_id": rec_id,
+                    "source_id": row["source_id"],
+                    "dimFactor": dim_factor,
+                    "sourceAdapter": "cerebra-vault",
+                },
+            }
+        )
         exported_record_ids.add(rec_id)
 
     record_count = len(nodes) - spine_count
@@ -308,16 +313,18 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
         src_id = rec["source_id"]
         if src_id not in exported_source_ids:
             continue
-        edges.append({
-            "id": f"edge-{src_id}-{rec_id}-contains",
-            "source": f"source:{src_id}",
-            "target": f"record:{rec_id}",
-            "type": "contains",
-            "weight": 0.4,
-            "bidirectional": False,
-            "provenance": {"source": "cerebra-db", "detail": "source_id FK"},
-            "raw": {"label": None, "color": "rgba(107,114,128,0.35)"},
-        })
+        edges.append(
+            {
+                "id": f"edge-{src_id}-{rec_id}-contains",
+                "source": f"source:{src_id}",
+                "target": f"record:{rec_id}",
+                "type": "contains",
+                "weight": 0.4,
+                "bidirectional": False,
+                "provenance": {"source": "cerebra-db", "detail": "source_id FK"},
+                "raw": {"label": None, "color": "rgba(107,114,128,0.35)"},
+            }
+        )
         edges_by_type["contains"] += 1
 
     # describes: adjacent records within the same document, by chunk_index
@@ -333,16 +340,18 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
             b = sorted_recs[i + 1]
             a_id = a["record_id"]
             b_id = b["record_id"]
-            edges.append({
-                "id": f"edge-{a_id}-{b_id}-describes",
-                "source": f"record:{a_id}",
-                "target": f"record:{b_id}",
-                "type": "describes",
-                "weight": 0.65,
-                "bidirectional": False,
-                "provenance": {"source": "cerebra-db", "detail": "chunk adjacency"},
-                "raw": {"label": None, "color": "rgba(79,163,224,0.40)"},
-            })
+            edges.append(
+                {
+                    "id": f"edge-{a_id}-{b_id}-describes",
+                    "source": f"record:{a_id}",
+                    "target": f"record:{b_id}",
+                    "type": "describes",
+                    "weight": 0.65,
+                    "bidirectional": False,
+                    "provenance": {"source": "cerebra-db", "detail": "chunk adjacency"},
+                    "raw": {"label": None, "color": "rgba(79,163,224,0.40)"},
+                }
+            )
             edges_by_type["describes"] += 1
 
     # sku-proximity: records sharing the same d1, cap 5 per node
@@ -361,21 +370,23 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
         weight = round(min(0.5, d1_count / 20), 4)
 
         for i, a_id in enumerate(group_ids_sorted):
-            for b_id in group_ids_sorted[i + 1:]:
+            for b_id in group_ids_sorted[i + 1 :]:
                 if prox_count.get(a_id, 0) >= _SKU_PROXIMITY_CAP:
                     break
                 if prox_count.get(b_id, 0) >= _SKU_PROXIMITY_CAP:
                     continue
-                edges.append({
-                    "id": f"edge-{a_id}-{b_id}-sku-proximity",
-                    "source": f"record:{a_id}",
-                    "target": f"record:{b_id}",
-                    "type": "sku-proximity",
-                    "weight": weight,
-                    "bidirectional": True,
-                    "provenance": {"source": "cerebra-db", "detail": "shared d1"},
-                    "raw": {"label": None, "color": "rgba(100,217,164,0.30)"},
-                })
+                edges.append(
+                    {
+                        "id": f"edge-{a_id}-{b_id}-sku-proximity",
+                        "source": f"record:{a_id}",
+                        "target": f"record:{b_id}",
+                        "type": "sku-proximity",
+                        "weight": weight,
+                        "bidirectional": True,
+                        "provenance": {"source": "cerebra-db", "detail": "shared d1"},
+                        "raw": {"label": None, "color": "rgba(100,217,164,0.30)"},
+                    }
+                )
                 edges_by_type["sku-proximity"] += 1
                 prox_count[a_id] = prox_count.get(a_id, 0) + 1
                 prox_count[b_id] = prox_count.get(b_id, 0) + 1
@@ -391,17 +402,19 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
             continue
         group_ids_sorted = sorted(group_ids)
         for i, a_id in enumerate(group_ids_sorted):
-            for b_id in group_ids_sorted[i + 1:]:
-                edges.append({
-                    "id": f"edge-{a_id}-{b_id}-sku-exact",
-                    "source": f"record:{a_id}",
-                    "target": f"record:{b_id}",
-                    "type": "sku-exact",
-                    "weight": 0.9,
-                    "bidirectional": True,
-                    "provenance": {"source": "cerebra-db", "detail": "identical sku_address"},
-                    "raw": {"label": None, "color": "rgba(224,168,79,0.55)"},
-                })
+            for b_id in group_ids_sorted[i + 1 :]:
+                edges.append(
+                    {
+                        "id": f"edge-{a_id}-{b_id}-sku-exact",
+                        "source": f"record:{a_id}",
+                        "target": f"record:{b_id}",
+                        "type": "sku-exact",
+                        "weight": 0.9,
+                        "bidirectional": True,
+                        "provenance": {"source": "cerebra-db", "detail": "identical sku_address"},
+                        "raw": {"label": None, "color": "rgba(224,168,79,0.55)"},
+                    }
+                )
                 edges_by_type["sku-exact"] += 1
 
     # ── Assemble graph dict ───────────────────────────────────────────────────
@@ -460,9 +473,7 @@ def _emit_snapshot_available(
             store = FossicStore.at_platform_path(Path(platform_path).expanduser())
 
         content_hash = hashlib.sha256(out_path.read_bytes()).hexdigest()
-        lineage_id = hashlib.sha256(
-            str(vault_path.resolve()).encode()
-        ).hexdigest()[:16]
+        lineage_id = hashlib.sha256(str(vault_path.resolve()).encode()).hexdigest()[:16]
 
         payload: dict[str, Any] = {
             "lineage_id": lineage_id,
@@ -533,15 +544,16 @@ def export_graph(
     )
 
     if event_log is not None:
-        event_log.write(make_event(
-            event_type="GraphExported",
-            actor="graph_exporter",
-            summary=(
-                f"Exported {stats.node_count} nodes, {stats.edge_count} edges "
-                f"to {out_path}"
-            ),
-            data=stats.as_dict(),
-        ))
+        event_log.write(
+            make_event(
+                event_type="GraphExported",
+                actor="graph_exporter",
+                summary=(
+                    f"Exported {stats.node_count} nodes, {stats.edge_count} edges " f"to {out_path}"
+                ),
+                data=stats.as_dict(),
+            )
+        )
 
     _emit_snapshot_available(
         out_path=out_path,

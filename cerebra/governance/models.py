@@ -83,10 +83,7 @@ class LeewayRule:
         v0.1: action-name + phase matching only. Signal-based conditions (is_granted)
         are consulted in v0.2 once the signals dict is available at gate call time.
         """
-        return (
-            self.capability == action.action_name
-            and self.phase in ("pre_action", "both")
-        )
+        return self.capability == action.action_name and self.phase in ("pre_action", "both")
 
 
 # ── Constitutional rules ──────────────────────────────────────────────────────

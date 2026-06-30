@@ -16,19 +16,48 @@ from typing import Any
 PROMPT_VERSION = "epistemic_humility_v1"
 
 # Uncertainty markers that boost score when present — indicate appropriate hedging
-UNCERTAINTY_MARKERS: frozenset[str] = frozenset({
-    "i think", "i believe", "probably", "possibly", "perhaps", "maybe",
-    "might", "may be", "could be", "it seems", "it appears", "uncertain",
-    "i'm not sure", "i don't know", "it's unclear", "to my knowledge",
-    "as far as i know", "i suspect", "my guess", "approximately",
-})
+UNCERTAINTY_MARKERS: frozenset[str] = frozenset(
+    {
+        "i think",
+        "i believe",
+        "probably",
+        "possibly",
+        "perhaps",
+        "maybe",
+        "might",
+        "may be",
+        "could be",
+        "it seems",
+        "it appears",
+        "uncertain",
+        "i'm not sure",
+        "i don't know",
+        "it's unclear",
+        "to my knowledge",
+        "as far as i know",
+        "i suspect",
+        "my guess",
+        "approximately",
+    }
+)
 
 # Overclaiming patterns that lower score — indicate false confidence
-OVERCLAIMING_PATTERNS: frozenset[str] = frozenset({
-    "definitely", "certainly", "absolutely", "without doubt", "always",
-    "never", "obviously", "clearly", "undeniably", "indisputably",
-    "the answer is", "the truth is",
-})
+OVERCLAIMING_PATTERNS: frozenset[str] = frozenset(
+    {
+        "definitely",
+        "certainly",
+        "absolutely",
+        "without doubt",
+        "always",
+        "never",
+        "obviously",
+        "clearly",
+        "undeniably",
+        "indisputably",
+        "the answer is",
+        "the truth is",
+    }
+)
 
 # PROMPT_TEMPLATE is a no-op in v0.1 (marker path does not use LLM).
 # Retained for interface parity and v0.2 upgrade path.
@@ -62,11 +91,7 @@ def score_epistemic_humility(output_text: str) -> tuple[float, dict[str, Any]]:
 
     # Start at 0.5; +0.1 per marker per 100w (capped at +0.4);
     # -0.15 per overclaim per 100w (capped at -0.4).
-    raw_score = (
-        0.5
-        + min(0.4, markers_per_100w * 0.1)
-        - min(0.4, overclaim_per_100w * 0.15)
-    )
+    raw_score = 0.5 + min(0.4, markers_per_100w * 0.1) - min(0.4, overclaim_per_100w * 0.15)
     score = max(0.0, min(1.0, raw_score))
 
     return score, {

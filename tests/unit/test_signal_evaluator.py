@@ -27,10 +27,7 @@ class _MockStructuredResponse:
 
     def complete_structured(self, prompt: str, schema: dict) -> dict:
         return {
-            "checks": [
-                {"item": i, "severity": 0, "specific_lines": ""}
-                for i in range(1, 6)
-            ],
+            "checks": [{"item": i, "severity": 0, "specific_lines": ""} for i in range(1, 6)],
             "overall_score": self._score,
             "reasoning": self._reasoning,
         }
@@ -59,8 +56,11 @@ class _MockBadScoreAdapter(_MockStructuredResponse):
     """Returns score outside [0, 1]."""
 
     def complete_structured(self, prompt: str, schema: dict) -> dict:
-        return {"checks": [{"item": 1, "severity": 0, "specific_lines": ""}],
-                "overall_score": 1.8, "reasoning": "bad score"}
+        return {
+            "checks": [{"item": 1, "severity": 0, "specific_lines": ""}],
+            "overall_score": 1.8,
+            "reasoning": "bad score",
+        }
 
 
 class _MockMissingScoreAdapter(_MockStructuredResponse):
@@ -142,7 +142,9 @@ class TestEpistemicHumilityPath:
 
     def test_overclaiming_lowers_score(self) -> None:
         ev = _make_evaluator()
-        overclaiming = "Definitely this is certainly absolutely the truth. Always and without doubt."
+        overclaiming = (
+            "Definitely this is certainly absolutely the truth. Always and without doubt."
+        )
         baseline = "The sky appears blue during daytime."
         overclaim_score = ev.evaluate("EPISTEMIC_HUMILITY", overclaiming)
         baseline_score = ev.evaluate("EPISTEMIC_HUMILITY", baseline)

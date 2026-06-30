@@ -45,16 +45,16 @@ PHASE_5_EVENT_TYPES: frozenset[str] = frozenset(
         "TowerItemEvicted",
         "TowerCrossReferenceAdded",
         "TowerItemStaled",
-        "TowerTierRebuilt",   # Phase 6+ — defined here, never emitted in Phase 5
-        "TowerCollapsed",     # Phase 6+ — defined here, never emitted in Phase 5
+        "TowerTierRebuilt",  # Phase 6+ — defined here, never emitted in Phase 5
+        "TowerCollapsed",  # Phase 6+ — defined here, never emitted in Phase 5
         "TowerRendered",
     }
 )
 
 LATTICE_EVENT_TYPES: frozenset[str] = frozenset(
     {
-        "LatticeCommit",          # emitted once per chunk when ≥2 categories clear threshold
-        "LatticeSiblingResolved", # emitted once per lineage group when siblings are deduped
+        "LatticeCommit",  # emitted once per chunk when ≥2 categories clear threshold
+        "LatticeSiblingResolved",  # emitted once per lineage group when siblings are deduped
     }
 )
 

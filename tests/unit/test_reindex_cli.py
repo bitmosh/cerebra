@@ -96,23 +96,32 @@ class TestReindexLexical:
 
     def test_lexical_calls_build_fts_index(self) -> None:
         runner = CliRunner()
-        with _patched_lexical() as _, patch(
-            "cerebra.storage.lexical.build_fts_index", return_value=10
-        ) as mock_build:
+        with (
+            _patched_lexical() as _,
+            patch("cerebra.storage.lexical.build_fts_index", return_value=10) as mock_build,
+        ):
             with (
-                patch("cerebra.cli.main._get_vault", return_value=__import__("pathlib").Path("/fake/vault")),
+                patch(
+                    "cerebra.cli.main._get_vault",
+                    return_value=__import__("pathlib").Path("/fake/vault"),
+                ),
                 patch("cerebra.storage.migrations.run_migrations"),
                 patch("pathlib.Path.exists", return_value=True),
                 patch("cerebra.storage.db.connect") as mc,
             ):
-                mc.return_value.__enter__.return_value.execute.return_value.fetchone.return_value = [10]
+                mc.return_value.__enter__.return_value.execute.return_value.fetchone.return_value = [
+                    10
+                ]
                 result = runner.invoke(cli, ["reindex", "--lexical"])
         assert result.exit_code == 0
 
     def test_lexical_vault_not_found_exits_two(self) -> None:
         runner = CliRunner()
         with (
-            patch("cerebra.cli.main._get_vault", return_value=__import__("pathlib").Path("/fake/vault")),
+            patch(
+                "cerebra.cli.main._get_vault",
+                return_value=__import__("pathlib").Path("/fake/vault"),
+            ),
             patch("pathlib.Path.exists", return_value=False),
         ):
             result = runner.invoke(cli, ["reindex", "--lexical"])
@@ -121,7 +130,10 @@ class TestReindexLexical:
     def test_lexical_build_error_exits_two(self) -> None:
         runner = CliRunner()
         with (
-            patch("cerebra.cli.main._get_vault", return_value=__import__("pathlib").Path("/fake/vault")),
+            patch(
+                "cerebra.cli.main._get_vault",
+                return_value=__import__("pathlib").Path("/fake/vault"),
+            ),
             patch("cerebra.storage.migrations.run_migrations"),
             patch("pathlib.Path.exists", return_value=True),
             patch("cerebra.storage.db.connect") as mc,
@@ -137,7 +149,10 @@ class TestReindexLexical:
     def test_lexical_error_message_on_stderr(self) -> None:
         runner = CliRunner()
         with (
-            patch("cerebra.cli.main._get_vault", return_value=__import__("pathlib").Path("/fake/vault")),
+            patch(
+                "cerebra.cli.main._get_vault",
+                return_value=__import__("pathlib").Path("/fake/vault"),
+            ),
             patch("cerebra.storage.migrations.run_migrations"),
             patch("pathlib.Path.exists", return_value=True),
             patch("cerebra.storage.db.connect") as mc,
@@ -181,6 +196,7 @@ class TestReindexIndexState:
     def test_index_state_updated_calls_build_fts(self) -> None:
         """build_fts_index is responsible for calling mark_updated; verify it is called."""
         from pathlib import Path
+
         runner = CliRunner()
         with (
             patch("cerebra.cli.main._get_vault", return_value=Path("/fake/vault")),
@@ -197,6 +213,7 @@ class TestReindexIndexState:
     def test_index_state_db_path_passed_to_build(self) -> None:
         """build_fts_index receives the vault's data/cerebra.db path."""
         from pathlib import Path
+
         runner = CliRunner()
         expected_db = Path("/fake/vault/data/cerebra.db")
         with (

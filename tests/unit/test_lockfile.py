@@ -73,6 +73,7 @@ class TestVaultLock:
             assert not lp.exists()
         finally:
             import shutil
+
             shutil.rmtree(vault, ignore_errors=True)
 
     def test_lock_writes_pid(self) -> None:
@@ -83,6 +84,7 @@ class TestVaultLock:
                 assert pid == os.getpid()
         finally:
             import shutil
+
             shutil.rmtree(vault, ignore_errors=True)
 
     def test_lock_deleted_after_exception(self) -> None:
@@ -94,6 +96,7 @@ class TestVaultLock:
             assert not lp.exists()
         finally:
             import shutil
+
             shutil.rmtree(vault, ignore_errors=True)
 
     def test_contention_exits_2(self) -> None:
@@ -110,6 +113,7 @@ class TestVaultLock:
             assert exc_info.value.code == 2
         finally:
             import shutil
+
             shutil.rmtree(vault, ignore_errors=True)
 
     def test_stale_lock_reclaimed(self) -> None:
@@ -145,4 +149,5 @@ class TestVaultLock:
             assert not lock_path(vault).exists()
         finally:
             import shutil
+
             shutil.rmtree(vault, ignore_errors=True)

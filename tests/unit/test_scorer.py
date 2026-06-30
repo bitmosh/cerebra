@@ -51,7 +51,7 @@ class TestLexicalNormalization:
         The normalization formula is: abs(rank) / max_abs.
         This test pins the direction so a future refactor cannot silently re-invert it.
         """
-        best_rank = -3.0   # most negative = best match
+        best_rank = -3.0  # most negative = best match
         worst_rank = -0.1  # least negative = worst match
         ranks = [best_rank, worst_rank, -1.5]
 
@@ -67,9 +67,9 @@ class TestLexicalNormalization:
         )
 
         # Boundary assertion: best maps to exactly 1.0
-        assert best_score == pytest.approx(1.0), (
-            f"Best BM25 rank should normalize to 1.0, got {best_score:.3f}"
-        )
+        assert best_score == pytest.approx(
+            1.0
+        ), f"Best BM25 rank should normalize to 1.0, got {best_score:.3f}"
 
         # Ordering assertion: mid-rank scores between best and worst
         assert best_score > mid_score > worst_score
@@ -169,6 +169,7 @@ class TestLifecycleConstant:
 
 def _migrated_db() -> Path:
     from cerebra.storage.migrations import run_migrations
+
     with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         db = Path(f.name)
     run_migrations(db)
@@ -177,6 +178,7 @@ def _migrated_db() -> Path:
 
 def _make_plan(query: str, query_d1: int | None = None, mode: str = "hybrid"):
     from cerebra.retrieval.planner import QueryPlan
+
     return QueryPlan(
         trace_id="trace_scorer_test",
         raw_query=query,
@@ -197,6 +199,7 @@ def _insert_full_record(
 ) -> None:
     """Insert the full FK chain for a scoreable record."""
     import time as _time
+
     now = created_at if created_at is not None else int(_time.time())
     src_id = "src_scorer_shared"
     doc_id = "doc_scorer_shared"
@@ -234,7 +237,7 @@ def _insert_full_record(
         "(assignment_id, record_id, sku_address, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, "
         " raw_scores_json, d1_confidence, classifier_version, prompt_version, created_at) "
         "VALUES (?, ?, ?, ?, 0, 0, 0, 0, 0, 0, 0, 0, 0, ?, 0.9, 'test', 'v1', ?)",
-        (f"asgn_{record_id}", record_id, sku_addr, d1, '{}', now),
+        (f"asgn_{record_id}", record_id, sku_addr, d1, "{}", now),
     )
 
 
@@ -247,6 +250,7 @@ def _make_raw(
     step: str = "exact_sku",
 ):
     from cerebra.retrieval.traversal import RawCandidate
+
     return RawCandidate(
         record_id=record_id,
         step_surfaced=step,
@@ -261,6 +265,7 @@ def _make_raw(
 class TestScoreCandidates:
     def test_empty_input_returns_empty(self) -> None:
         from cerebra.retrieval.scorer import score_candidates
+
         db = _migrated_db()
         try:
             result = score_candidates([], _make_plan("test"), db)
@@ -271,6 +276,7 @@ class TestScoreCandidates:
     def test_returns_scored_candidates(self) -> None:
         from cerebra.retrieval.scorer import ScoredCandidate, score_candidates
         from cerebra.storage.db import connect
+
         db = _migrated_db()
         try:
             with connect(db) as conn:
@@ -285,6 +291,7 @@ class TestScoreCandidates:
     def test_sorted_by_composite_descending(self) -> None:
         from cerebra.retrieval.scorer import score_candidates
         from cerebra.storage.db import connect
+
         db = _migrated_db()
         now = 1_720_000_000
         try:
@@ -304,6 +311,7 @@ class TestScoreCandidates:
     def test_rank_assigned_one_based(self) -> None:
         from cerebra.retrieval.scorer import score_candidates
         from cerebra.storage.db import connect
+
         db = _migrated_db()
         now = 1_720_000_000
         try:
@@ -323,6 +331,7 @@ class TestScoreCandidates:
     def test_composite_in_unit_interval(self) -> None:
         from cerebra.retrieval.scorer import score_candidates
         from cerebra.storage.db import connect
+
         db = _migrated_db()
         now = 1_720_000_000
         try:
@@ -331,15 +340,16 @@ class TestScoreCandidates:
             raw = [_make_raw("rec_a", semantic_score=0.85, sku_d1_match=True)]
             result = score_candidates(raw, _make_plan("test", query_d1=5), db, now=now)
             for c in result:
-                assert 0.0 <= c.score.composite <= 1.0, (
-                    f"Composite {c.score.composite:.4f} out of [0,1]"
-                )
+                assert (
+                    0.0 <= c.score.composite <= 1.0
+                ), f"Composite {c.score.composite:.4f} out of [0,1]"
         finally:
             db.unlink(missing_ok=True)
 
     def test_sku_match_affects_score(self) -> None:
         from cerebra.retrieval.scorer import score_candidates
         from cerebra.storage.db import connect
+
         db = _migrated_db()
         now = 1_720_000_000
         try:
@@ -352,15 +362,16 @@ class TestScoreCandidates:
             ]
             result = score_candidates(raw, _make_plan("test", query_d1=5), db, now=now)
             scores = {c.record_id: c.score.composite for c in result}
-            assert scores["rec_match"] > scores["rec_nomatch"], (
-                "SKU D1 match should produce higher composite score"
-            )
+            assert (
+                scores["rec_match"] > scores["rec_nomatch"]
+            ), "SKU D1 match should produce higher composite score"
         finally:
             db.unlink(missing_ok=True)
 
     def test_lexical_normalization_relative(self) -> None:
         from cerebra.retrieval.scorer import score_candidates
         from cerebra.storage.db import connect
+
         db = _migrated_db()
         now = 1_720_000_000
         try:
@@ -373,9 +384,9 @@ class TestScoreCandidates:
             ]
             result = score_candidates(raw, _make_plan("test"), db, now=now)
             scores = {c.record_id: c.score.components["lexical"] for c in result}
-            assert scores["rec_best"] == pytest.approx(1.0), (
-                "Best BM25 rank should normalize to lexical=1.0"
-            )
+            assert scores["rec_best"] == pytest.approx(
+                1.0
+            ), "Best BM25 rank should normalize to lexical=1.0"
             assert scores["rec_worst"] < scores["rec_best"]
         finally:
             db.unlink(missing_ok=True)
@@ -383,6 +394,7 @@ class TestScoreCandidates:
     def test_missing_semantic_defaults_to_zero(self) -> None:
         from cerebra.retrieval.scorer import score_candidates
         from cerebra.storage.db import connect
+
         db = _migrated_db()
         now = 1_720_000_000
         try:
@@ -398,6 +410,7 @@ class TestScoreCandidates:
         from cerebra.inspector.sqlite_log import SQLiteEventLog
         from cerebra.retrieval.scorer import score_candidates
         from cerebra.storage.db import connect
+
         db = _migrated_db()
         now = 1_720_000_000
         try:
@@ -413,4 +426,5 @@ class TestScoreCandidates:
 
     def test_weights_sum_to_one(self) -> None:
         from cerebra.retrieval.scorer import _WEIGHTS
+
         assert sum(_WEIGHTS.values()) == pytest.approx(1.0)

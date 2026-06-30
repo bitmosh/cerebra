@@ -89,7 +89,9 @@ def manager(db_path: Path, store: FossicStore) -> SessionManager:
     return SessionManager(db_path=db_path, store=store)
 
 
-def _open_session(manager: SessionManager, vault: Path, cycle_config: str = "simple.planning.v0") -> RuntimeSession:
+def _open_session(
+    manager: SessionManager, vault: Path, cycle_config: str = "simple.planning.v0"
+) -> RuntimeSession:
     session, _event_id = manager.open_session(
         goal="design a search feature",
         cycle_config=cycle_config,
@@ -123,19 +125,25 @@ def _minimal_accept_config() -> CycleConfig:
 
 @pytest.mark.integration
 class TestCycleResultFields:
-    def test_result_has_cycle_id(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_result_has_cycle_id(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
         assert result.cycle_id.startswith("cycle_")
 
-    def test_result_session_id_matches(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_result_session_id_matches(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
         assert result.session_id == session.session_id
 
-    def test_minimal_accept_outcome(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_minimal_accept_outcome(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
@@ -143,9 +151,13 @@ class TestCycleResultFields:
         assert result.total_steps == 1
         assert result.final_output == "e2e output"
 
-    def test_step_result_correct(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_step_result_correct(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
-        runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM(text="the answer"))
+        runtime = CycleRuntime(
+            _minimal_accept_config(), session, db_path, store, _StubLLM(text="the answer")
+        )
         result = runtime.run()
         assert len(result.step_results) == 1
         sr = result.step_results[0]
@@ -161,42 +173,51 @@ class TestCycleResultFields:
 class TestFossicEvents:
     def _read_cycle_events(self, store: FossicStore, session_id: str) -> list[Any]:
         from fossic import ReadQuery
-        return store._store.read_range(
-            ReadQuery(stream_id=f"cerebra/agent-trace/{session_id}")
-        )
+
+        return store._store.read_range(ReadQuery(stream_id=f"cerebra/agent-trace/{session_id}"))
 
     def _event_types(self, events: list[Any]) -> list[str]:
         return [e.event_type for e in events]
 
-    def test_cycle_started_emitted(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_cycle_started_emitted(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
         types = self._event_types(self._read_cycle_events(store, result.session_id))
         assert "CycleStarted" in types
 
-    def test_step_started_emitted(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_step_started_emitted(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
         types = self._event_types(self._read_cycle_events(store, result.session_id))
         assert "StepStarted" in types
 
-    def test_step_executed_emitted_on_success(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_step_executed_emitted_on_success(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
         types = self._event_types(self._read_cycle_events(store, result.session_id))
         assert "StepExecuted" in types
 
-    def test_clutch_decision_emitted(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_clutch_decision_emitted(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
         types = self._event_types(self._read_cycle_events(store, result.session_id))
         assert "ClutchDecisionMade" in types
 
-    def test_memory_write_emitted_on_accept(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_memory_write_emitted_on_accept(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
@@ -204,14 +225,18 @@ class TestFossicEvents:
         assert "LeewayGrantApplied" in types
         assert "MemoryWriteFromCycle" in types
 
-    def test_cycle_completed_emitted(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_cycle_completed_emitted(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
         types = self._event_types(self._read_cycle_events(store, result.session_id))
         assert "CycleCompleted" in types
 
-    def test_session_flushed_emitted(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_session_flushed_emitted(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
@@ -222,7 +247,9 @@ class TestFossicEvents:
         self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
     ) -> None:
         stop_on_fail_cfg = CycleConfig(
-            name="e2e.fail.v0", version=1, description="",
+            name="e2e.fail.v0",
+            version=1,
+            description="",
             steps=[CycleStep("fail_step", "", StepPromptTemplate("{{ goal }}", "free_form"))],
             max_steps=3,
             stop_conditions=[
@@ -237,14 +264,18 @@ class TestFossicEvents:
         types = self._event_types(self._read_cycle_events(store, result.session_id))
         assert "StepExecutionFailed" in types
 
-    def test_context_packet_built_emitted(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_context_packet_built_emitted(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
         types = self._event_types(self._read_cycle_events(store, result.session_id))
         assert "ContextPacketBuilt" in types
 
-    def test_event_ordering_cycle_start_before_step(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_event_ordering_cycle_start_before_step(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         # Stream now includes SessionOpened (before CycleStarted); test the
         # meaningful invariant: CycleStarted precedes the first StepStarted.
         session = _open_session(manager, vault, "e2e.minimal.v0")
@@ -253,7 +284,9 @@ class TestFossicEvents:
         types = self._event_types(self._read_cycle_events(store, result.session_id))
         assert types.index("CycleStarted") < types.index("StepStarted")
 
-    def test_event_ordering_completed_before_flushed(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_event_ordering_completed_before_flushed(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())
         result = runtime.run()
@@ -266,9 +299,13 @@ class TestFossicEvents:
 
 @pytest.mark.integration
 class TestOutcomeVariants:
-    def test_stop_outcome_from_clutch(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_stop_outcome_from_clutch(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         stop_cfg = CycleConfig(
-            name="e2e.stop.v0", version=1, description="",
+            name="e2e.stop.v0",
+            version=1,
+            description="",
             steps=[CycleStep("s", "", StepPromptTemplate("{{ goal }}", "free_form"))],
             max_steps=5,
             stop_conditions=[
@@ -282,9 +319,13 @@ class TestOutcomeVariants:
         result = runtime.run()
         assert result.outcome == "stop"
 
-    def test_cap_reached_outcome(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_cap_reached_outcome(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         cap_cfg = CycleConfig(
-            name="e2e.cap.v0", version=1, description="",
+            name="e2e.cap.v0",
+            version=1,
+            description="",
             steps=[
                 CycleStep("s1", "", StepPromptTemplate("{{ goal }}", "free_form")),
                 CycleStep("s2", "", StepPromptTemplate("{{ goal }}", "free_form")),
@@ -304,7 +345,9 @@ class TestOutcomeVariants:
 
 @pytest.mark.integration
 class TestSessionFlushIntegration:
-    def test_run_then_flush_session(self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager) -> None:
+    def test_run_then_flush_session(
+        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager
+    ) -> None:
         """CycleRuntime.run() completes; SessionManager.flush_session() succeeds."""
         session = _open_session(manager, vault, "e2e.minimal.v0")
         runtime = CycleRuntime(_minimal_accept_config(), session, db_path, store, _StubLLM())

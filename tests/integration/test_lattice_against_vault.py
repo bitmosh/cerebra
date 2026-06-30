@@ -61,15 +61,13 @@ class TestLatticeColumnsOnVault:
 
         col_info = {r[1]: {"notnull": r[3], "dflt_value": r[4]} for r in rows}
 
-        assert col_info["is_lattice_member"]["dflt_value"] == "0", (
-            "is_lattice_member must default to 0 so pre-migration rows are non-lattice"
-        )
-        assert col_info["is_lattice_member"]["notnull"] == 1, (
-            "is_lattice_member must be NOT NULL"
-        )
-        assert col_info["lattice_lineage_id"]["dflt_value"] is None, (
-            "lattice_lineage_id should have no default (NULL for non-members)"
-        )
-        assert col_info["lattice_confidence"]["dflt_value"] is None, (
-            "lattice_confidence should have no default (NULL for non-members)"
-        )
+        assert (
+            col_info["is_lattice_member"]["dflt_value"] == "0"
+        ), "is_lattice_member must default to 0 so pre-migration rows are non-lattice"
+        assert col_info["is_lattice_member"]["notnull"] == 1, "is_lattice_member must be NOT NULL"
+        assert (
+            col_info["lattice_lineage_id"]["dflt_value"] is None
+        ), "lattice_lineage_id should have no default (NULL for non-members)"
+        assert (
+            col_info["lattice_confidence"]["dflt_value"] is None
+        ), "lattice_confidence should have no default (NULL for non-members)"

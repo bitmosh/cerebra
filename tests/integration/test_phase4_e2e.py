@@ -27,11 +27,21 @@ _VAULT_DB = _VAULT_ROOT / "data" / "cerebra.db"
 
 # §5 required fields for a non-abstained ContextPacket
 _PACKET_REQUIRED_FIELDS = (
-    "context_packet_id", "packet_version", "schema_version",
-    "created_at", "query", "mode", "is_abstained",
-    "abstention_rationale", "retrieval_trace_id", "origin_event_ids",
-    "selected_memory", "token_estimate", "selected_count",
-    "candidate_count", "excluded_candidate_count",
+    "context_packet_id",
+    "packet_version",
+    "schema_version",
+    "created_at",
+    "query",
+    "mode",
+    "is_abstained",
+    "abstention_rationale",
+    "retrieval_trace_id",
+    "origin_event_ids",
+    "selected_memory",
+    "token_estimate",
+    "selected_count",
+    "candidate_count",
+    "excluded_candidate_count",
 )
 
 
@@ -44,6 +54,7 @@ def vault_root() -> Path:
 
 def _db_connect(vault_root: Path):
     from cerebra.storage.db import connect
+
     return connect(vault_root / "data" / "cerebra.db")
 
 
@@ -58,18 +69,12 @@ class TestFullSearchPipeline:
 
         from cerebra.cli.main import cli
 
-        result = CliRunner().invoke(
-            cli, ["search", "leeway network", "--vault", str(vault_root)]
-        )
+        result = CliRunner().invoke(cli, ["search", "leeway network", "--vault", str(vault_root)])
         assert result.exit_code == 0, f"Expected exit 0:\n{result.output}"
 
         # Text output contains score and a source reference
-        assert "Score" in result.output or "0." in result.output, (
-            "Expected score in output"
-        )
-        assert "LEEWAY" in result.output.upper(), (
-            "Expected LEEWAY_NETWORK.md in top results"
-        )
+        assert "Score" in result.output or "0." in result.output, "Expected score in output"
+        assert "LEEWAY" in result.output.upper(), "Expected LEEWAY_NETWORK.md in top results"
 
         # --format json emits NDJSON (one object per line); verify at least one line parses
         result_json = CliRunner().invoke(
@@ -136,7 +141,9 @@ class TestFullSearchPipeline:
         assert "QueryPlanned" in event_types, "QueryPlanned missing"
         assert "SalienceScored" in event_types, "SalienceScored missing"
         step_events = [e for e in event_types if e == "TraversalStepCompleted"]
-        assert len(step_events) == 6, f"Expected 6 TraversalStepCompleted events, got {len(step_events)}"
+        assert (
+            len(step_events) == 6
+        ), f"Expected 6 TraversalStepCompleted events, got {len(step_events)}"
 
 
 # ── Test 2 — Full context pipeline ────────────────────────────────────────────
@@ -151,8 +158,15 @@ class TestFullContextPipeline:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["context", "how does Cerebra handle memory drift",
-                  "--vault", str(vault_root), "--format", "json"]
+            cli,
+            [
+                "context",
+                "how does Cerebra handle memory drift",
+                "--vault",
+                str(vault_root),
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 0, f"Expected exit 0:\n{result.output}"
 
@@ -169,8 +183,15 @@ class TestFullContextPipeline:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["context", "how does Cerebra handle memory drift",
-                  "--vault", str(vault_root), "--format", "json"]
+            cli,
+            [
+                "context",
+                "how does Cerebra handle memory drift",
+                "--vault",
+                str(vault_root),
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 0, result.output
         packet = json.loads(result.output)
@@ -192,8 +213,15 @@ class TestFullContextPipeline:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["context", "how does Cerebra handle memory drift",
-                  "--vault", str(vault_root), "--format", "json"]
+            cli,
+            [
+                "context",
+                "how does Cerebra handle memory drift",
+                "--vault",
+                str(vault_root),
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 0, result.output
         packet = json.loads(result.output)
@@ -291,8 +319,15 @@ class TestAbstentionEndToEnd:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["search", "weather forecast for tomorrow",
-                  "--vault", str(vault_root), "--floor", "0.45"]
+            cli,
+            [
+                "search",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+            ],
         )
         assert result.exit_code == 1, f"Expected exit 1:\n{result.output}"
         assert "No relevant results above floor" in result.output
@@ -306,8 +341,17 @@ class TestAbstentionEndToEnd:
 
         # Use context --format json to get the trace_id back
         result = CliRunner().invoke(
-            cli, ["context", "weather forecast for tomorrow",
-                  "--vault", str(vault_root), "--floor", "0.45", "--format", "json"]
+            cli,
+            [
+                "context",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 1, result.output
         packet = json.loads(result.output)
@@ -325,7 +369,9 @@ class TestAbstentionEndToEnd:
 
         assert row is not None
         assert row["abstained"] == 1, "Expected abstained=1 on trace row"
-        assert row["context_packet_id"] is None, "Expected NULL context_packet_id on abstained trace"
+        assert (
+            row["context_packet_id"] is None
+        ), "Expected NULL context_packet_id on abstained trace"
         assert cand_count >= 1, f"Expected candidate rows even on abstention, got {cand_count}"
 
     def test_abstention_event_has_correct_fields(self, vault_root: Path) -> None:
@@ -335,8 +381,17 @@ class TestAbstentionEndToEnd:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["context", "weather forecast for tomorrow",
-                  "--vault", str(vault_root), "--floor", "0.45", "--format", "json"]
+            cli,
+            [
+                "context",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 1, result.output
         trace_id = json.loads(result.output)["retrieval_trace_id"]
@@ -367,8 +422,17 @@ class TestAbstentionContextPacket:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["context", "weather forecast for tomorrow",
-                  "--vault", str(vault_root), "--floor", "0.45", "--format", "json"]
+            cli,
+            [
+                "context",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 1, result.output
         packet = json.loads(result.output)
@@ -383,8 +447,17 @@ class TestAbstentionContextPacket:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["context", "weather forecast for tomorrow",
-                  "--vault", str(vault_root), "--floor", "0.45", "--format", "json"]
+            cli,
+            [
+                "context",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 1
         packet = json.loads(result.output)
@@ -402,8 +475,17 @@ class TestAbstentionContextPacket:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["context", "weather forecast for tomorrow",
-                  "--vault", str(vault_root), "--floor", "0.45", "--format", "json"]
+            cli,
+            [
+                "context",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 1
         packet = json.loads(result.output)
@@ -467,16 +549,32 @@ class TestJsonRoundTrip:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["context", "leeway network", "--vault", str(vault_root),
-                  "--format", "json", "--limit", "3"]
+            cli,
+            [
+                "context",
+                "leeway network",
+                "--vault",
+                str(vault_root),
+                "--format",
+                "json",
+                "--limit",
+                "3",
+            ],
         )
         assert result.exit_code == 0, result.output
         packet = json.loads(result.output)
 
         item_fields = (
-            "record_id", "source_id", "chunk_id", "content_excerpt",
-            "source_path", "sku_address", "score", "score_components",
-            "retrieval_path", "rank",
+            "record_id",
+            "source_id",
+            "chunk_id",
+            "content_excerpt",
+            "source_path",
+            "sku_address",
+            "score",
+            "score_components",
+            "retrieval_path",
+            "rank",
         )
         for item in packet["selected_memory"]:
             for field in item_fields:
@@ -500,8 +598,8 @@ class TestOutFlag:
         out_path.unlink()  # start absent
         try:
             result = CliRunner().invoke(
-                cli, ["context", "leeway network", "--vault", str(vault_root),
-                      "--out", str(out_path)]
+                cli,
+                ["context", "leeway network", "--vault", str(vault_root), "--out", str(out_path)],
             )
             assert result.exit_code == 0, result.output
             assert out_path.exists(), "--out file not created"
@@ -522,13 +620,13 @@ class TestOutFlag:
             out_path = Path(f.name)
         try:
             result = CliRunner().invoke(
-                cli, ["context", "leeway network", "--vault", str(vault_root),
-                      "--out", str(out_path)]
+                cli,
+                ["context", "leeway network", "--vault", str(vault_root), "--out", str(out_path)],
             )
             assert result.exit_code == 0, result.output
-            assert "Packet written to" in result.output, (
-                f"Expected 'Packet written to' in stdout, got:\n{result.output}"
-            )
+            assert (
+                "Packet written to" in result.output
+            ), f"Expected 'Packet written to' in stdout, got:\n{result.output}"
         finally:
             out_path.unlink(missing_ok=True)
 
@@ -543,8 +641,8 @@ class TestOutFlag:
         try:
             # Run with --out
             r_file = CliRunner().invoke(
-                cli, ["context", "leeway network", "--vault", str(vault_root),
-                      "--out", str(out_path)]
+                cli,
+                ["context", "leeway network", "--vault", str(vault_root), "--out", str(out_path)],
             )
             assert r_file.exit_code == 0, r_file.output
             file_packet = json.loads(out_path.read_text())
@@ -569,14 +667,23 @@ class TestLimitClamps:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["context", "leeway network", "--vault", str(vault_root),
-                  "--format", "json", "--limit", "3"]
+            cli,
+            [
+                "context",
+                "leeway network",
+                "--vault",
+                str(vault_root),
+                "--format",
+                "json",
+                "--limit",
+                "3",
+            ],
         )
         assert result.exit_code == 0, result.output
         packet = json.loads(result.output)
-        assert len(packet["selected_memory"]) <= 3, (
-            f"Expected ≤3 items with --limit 3, got {len(packet['selected_memory'])}"
-        )
+        assert (
+            len(packet["selected_memory"]) <= 3
+        ), f"Expected ≤3 items with --limit 3, got {len(packet['selected_memory'])}"
         assert packet["selected_count"] == len(packet["selected_memory"])
 
     def test_limit_large_value_clamped_to_200(self, vault_root: Path) -> None:
@@ -586,14 +693,23 @@ class TestLimitClamps:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["context", "leeway network", "--vault", str(vault_root),
-                  "--format", "json", "--limit", "500"]
+            cli,
+            [
+                "context",
+                "leeway network",
+                "--vault",
+                str(vault_root),
+                "--format",
+                "json",
+                "--limit",
+                "500",
+            ],
         )
         assert result.exit_code == 0, result.output
         packet = json.loads(result.output)
-        assert packet["selected_count"] <= 200, (
-            f"selected_count exceeds 200 with --limit 500: {packet['selected_count']}"
-        )
+        assert (
+            packet["selected_count"] <= 200
+        ), f"selected_count exceeds 200 with --limit 500: {packet['selected_count']}"
 
     def test_limit_default_is_ten_or_fewer(self, vault_root: Path) -> None:
         """Default limit produces ≤10 items in selected_memory."""
@@ -606,9 +722,9 @@ class TestLimitClamps:
         )
         assert result.exit_code == 0, result.output
         packet = json.loads(result.output)
-        assert len(packet["selected_memory"]) <= 10, (
-            f"Expected ≤10 items with default limit, got {len(packet['selected_memory'])}"
-        )
+        assert (
+            len(packet["selected_memory"]) <= 10
+        ), f"Expected ≤10 items with default limit, got {len(packet['selected_memory'])}"
 
 
 # ── Test 9 — Concurrent queries isolated ──────────────────────────────────────
@@ -643,9 +759,9 @@ class TestConcurrentQueriesIsolated:
         p1 = json.loads(r1.output)
         p2 = json.loads(r2.output)
 
-        assert p1["retrieval_trace_id"] != p2["retrieval_trace_id"], (
-            "Sequential invocations produced identical trace_ids — shared state leak suspected"
-        )
+        assert (
+            p1["retrieval_trace_id"] != p2["retrieval_trace_id"]
+        ), "Sequential invocations produced identical trace_ids — shared state leak suspected"
         assert p1["query"] == q1
         assert p2["query"] == q2
 
@@ -671,15 +787,15 @@ class TestConcurrentQueriesIsolated:
         exit_codes: list[int | None] = [None, None]
 
         def run_search(idx: int, query: str) -> None:
-            r = CliRunner().invoke(
-                cli, ["search", query, "--vault", str(vault_root)]
-            )
+            r = CliRunner().invoke(cli, ["search", query, "--vault", str(vault_root)])
             exit_codes[idx] = r.exit_code
 
         t1 = threading.Thread(target=run_search, args=(0, "Cerebra SKU addressing"))
         t2 = threading.Thread(target=run_search, args=(1, "retrieval pipeline architecture"))
-        t1.start(); t2.start()
-        t1.join(); t2.join()
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
 
         assert exit_codes[0] == 0, f"Thread 0 exited {exit_codes[0]}"
         assert exit_codes[1] == 0, f"Thread 1 exited {exit_codes[1]}"

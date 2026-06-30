@@ -186,9 +186,19 @@ def list_continuation_chain(db_path: Path, root_session_id: str) -> list[Runtime
 
 def _row_to_session(row: tuple[Any, ...]) -> RuntimeSession:
     (
-        session_id, cycle_config, goal, vault_path, opened_at,
-        parent_session_id, recursion_depth, max_recursion_depth,
-        cycles_run, steps_run, state, flushed_at, final_outcome,
+        session_id,
+        cycle_config,
+        goal,
+        vault_path,
+        opened_at,
+        parent_session_id,
+        recursion_depth,
+        max_recursion_depth,
+        cycles_run,
+        steps_run,
+        state,
+        flushed_at,
+        final_outcome,
     ) = row
     return RuntimeSession(
         session_id=session_id,
@@ -325,9 +335,7 @@ class SessionManager:
         if session is None:
             raise ValueError(f"Session not found: {session_id}")
         if not session.is_active:
-            raise ValueError(
-                f"Session {session_id} is not active (state={session.state!r})"
-            )
+            raise ValueError(f"Session {session_id} is not active (state={session.state!r})")
 
         flushed = replace(
             session,

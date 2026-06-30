@@ -30,9 +30,7 @@ class _IdentityReducer:
     def initial_state(self) -> dict[str, list[Any]]:
         return {"items": []}
 
-    def apply(
-        self, state: dict[str, list[Any]], payload: Any
-    ) -> dict[str, list[Any]]:
+    def apply(self, state: dict[str, list[Any]], payload: Any) -> dict[str, list[Any]]:
         return {"items": state["items"] + [payload]}
 
 
@@ -97,9 +95,7 @@ class TestFossicSnapshotLifecycleIntegration:
         e2 = emitter.emit_cycle_event("CycleStarted", {"cycle": "cyc-caus"})
         e3 = emitter.emit_cycle_event("StepStarted", {"step": 1})
 
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/ses-caus")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/ses-caus"))
         assert len(events) == 3
         assert events[0].causation_id is None
         assert events[1].causation_id.as_bytes() == e1

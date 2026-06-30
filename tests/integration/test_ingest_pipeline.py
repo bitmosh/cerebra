@@ -121,12 +121,8 @@ class TestIngestHappyPath:
     def test_graph_tables_populated(self, vault: Path, docs_dir: Path) -> None:
         ingest_path(vault, docs_dir)
         with _db(vault) as conn:
-            node_count = conn.execute(
-                "SELECT COUNT(*) FROM graph_nodes"
-            ).fetchone()[0]
-            edge_count = conn.execute(
-                "SELECT COUNT(*) FROM graph_edges"
-            ).fetchone()[0]
+            node_count = conn.execute("SELECT COUNT(*) FROM graph_nodes").fetchone()[0]
+            edge_count = conn.execute("SELECT COUNT(*) FROM graph_edges").fetchone()[0]
         assert node_count > 0
         assert edge_count > 0
 
@@ -149,9 +145,7 @@ class TestIngestHappyPath:
     def test_embeddings_queued(self, vault: Path, docs_dir: Path) -> None:
         ingest_path(vault, docs_dir)
         with _db(vault) as conn:
-            pending = conn.execute(
-                "SELECT COUNT(*) FROM pending_embeddings"
-            ).fetchone()[0]
+            pending = conn.execute("SELECT COUNT(*) FROM pending_embeddings").fetchone()[0]
         assert pending > 0
 
     def test_artifacts_written(self, vault: Path, docs_dir: Path) -> None:

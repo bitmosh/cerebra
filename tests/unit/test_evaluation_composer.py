@@ -24,8 +24,12 @@ from cerebra.storage.fossic_store import FossicStore
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 _SIGNAL_ORDER = [
-    "COHERENCE", "GROUNDEDNESS", "GENERATIVITY",
-    "RELEVANCE", "PRECISION", "EPISTEMIC_HUMILITY",
+    "COHERENCE",
+    "GROUNDEDNESS",
+    "GENERATIVITY",
+    "RELEVANCE",
+    "PRECISION",
+    "EPISTEMIC_HUMILITY",
 ]
 
 _SEQ = itertools.count()
@@ -116,9 +120,7 @@ class TestCompose:
 
     def test_session_cycle_step_ids_preserved(self) -> None:
         composer = EvaluationComposer()
-        packet = composer.compose(
-            _make_scores(), "my_session", "my_cycle", "my_step"
-        )
+        packet = composer.compose(_make_scores(), "my_session", "my_cycle", "my_step")
         assert packet.session_id == "my_session"
         assert packet.cycle_id == "my_cycle"
         assert packet.step_id == "my_step"
@@ -170,8 +172,9 @@ class TestConfidence:
 
     def test_partial_confidence(self) -> None:
         scores = [
-            SignalScore(signal_name=name, score=0.8, evaluator_prompt_version="v1",
-                        signal_strength=0.5)
+            SignalScore(
+                signal_name=name, score=0.8, evaluator_prompt_version="v1", signal_strength=0.5
+            )
             for name in _SIGNAL_ORDER
         ]
         packet = _packet_from_scores(scores)
@@ -195,8 +198,12 @@ def emitter_and_seed(tmp_vault):
     # Emit a seed event to act as step_executed_event_id
     seed_id = em.emit_cycle_event(
         event_type="StepExecuted",
-        payload={"session_id": session_id, "cycle_id": cycle_id, "step_id": "step_001",
-                 "_seq": next(_SEQ)},
+        payload={
+            "session_id": session_id,
+            "cycle_id": cycle_id,
+            "step_id": "step_001",
+            "_seq": next(_SEQ),
+        },
     )
     return em, seed_id, store, cycle_id
 

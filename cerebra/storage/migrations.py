@@ -526,7 +526,9 @@ class Migration009_Phase5Schema(Migration):
     """
 
     version = 9
-    description = "Phase 5 working memory and truth tower: sessions, working_memory_items, truth_tower_items"
+    description = (
+        "Phase 5 working memory and truth tower: sessions, working_memory_items, truth_tower_items"
+    )
 
     def up(self, conn: sqlite3.Connection) -> None:
         conn.executescript("""
@@ -631,7 +633,9 @@ class Migration010_LatticeColumns(Migration):
     """
 
     version = 10
-    description = "Interpretive lattice Phase 1: lattice_lineage_id, is_lattice_member, lattice_confidence"
+    description = (
+        "Interpretive lattice Phase 1: lattice_lineage_id, is_lattice_member, lattice_confidence"
+    )
 
     def up(self, conn: sqlite3.Connection) -> None:
         conn.executescript("""
