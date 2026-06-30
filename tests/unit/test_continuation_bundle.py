@@ -28,21 +28,21 @@ from cerebra.storage.migrations import run_migrations
 
 class TestContinuationBundleDataclass:
     def _make_bundle(self, **overrides) -> ContinuationBundle:
-        defaults = dict(
-            bundle_id="bundle_abc123",
-            parent_session_id="sess_parent001",
-            distilled_goal="design a search feature",
-            summarized_prior_prompt="Explored retrieval architecture.",
-            truth_tower_projection={"t1": [], "t2": []},
-            cognitive_insights=["Sparse beats dense for short queries"],
-            next_focus="implement ranking layer",
-            open_questions=["What latency budget?"],
-            constraints=["No new deps without approval"],
-            recursion_depth=0,
-            voice_mode="default",
-            bundle_size_bytes=512,
-            created_at=1700000000000,
-        )
+        defaults = {
+            "bundle_id": "bundle_abc123",
+            "parent_session_id": "sess_parent001",
+            "distilled_goal": "design a search feature",
+            "summarized_prior_prompt": "Explored retrieval architecture.",
+            "truth_tower_projection": {"t1": [], "t2": []},
+            "cognitive_insights": ["Sparse beats dense for short queries"],
+            "next_focus": "implement ranking layer",
+            "open_questions": ["What latency budget?"],
+            "constraints": ["No new deps without approval"],
+            "recursion_depth": 0,
+            "voice_mode": "default",
+            "bundle_size_bytes": 512,
+            "created_at": 1700000000000,
+        }
         defaults.update(overrides)
         return ContinuationBundle(**defaults)
 
@@ -248,21 +248,21 @@ def session_id(db_path: Path, store: FossicStore, tmp_path: Path) -> str:
 
 
 def _make_bundle(parent_session_id: str, **overrides) -> ContinuationBundle:
-    defaults = dict(
-        bundle_id=_generate_bundle_id(),
-        parent_session_id=parent_session_id,
-        distilled_goal="goal",
-        summarized_prior_prompt="summary",
-        truth_tower_projection={},
-        cognitive_insights=[],
-        next_focus="focus",
-        open_questions=[],
-        constraints=[],
-        recursion_depth=0,
-        voice_mode="default",
-        bundle_size_bytes=100,
-        created_at=_now_ms(),
-    )
+    defaults = {
+        "bundle_id": _generate_bundle_id(),
+        "parent_session_id": parent_session_id,
+        "distilled_goal": "goal",
+        "summarized_prior_prompt": "summary",
+        "truth_tower_projection": {},
+        "cognitive_insights": [],
+        "next_focus": "focus",
+        "open_questions": [],
+        "constraints": [],
+        "recursion_depth": 0,
+        "voice_mode": "default",
+        "bundle_size_bytes": 100,
+        "created_at": _now_ms(),
+    }
     defaults.update(overrides)
     return ContinuationBundle(**defaults)
 

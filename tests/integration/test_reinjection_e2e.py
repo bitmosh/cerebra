@@ -331,7 +331,7 @@ class TestBanditArmStatsInheritance:
         parent_runtime = CycleRuntime(
             config, parent_session, db_path, store, _StubLLM(score=0.55), parent_opened_event_id
         )
-        parent_result = parent_runtime.run()
+        parent_runtime.run()
 
         # Verify parent has arm_stats
         conn = sqlite3.connect(db_path)

@@ -60,31 +60,30 @@ def vault_lock(vault_path: Path) -> Generator[None, None, None]:
     lp = lock_path(vault_path)
     # Read any existing PID before we open for writing (open "w" clears the file).
     existing_pid = _read_pid(lp) if lp.exists() else None
-    fd = None
     try:
-        fd = open(lp, "w")
-        try:
-            fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            pid = existing_pid
-            if pid is not None and not _pid_alive(pid):
-                # Stale lock — owner process is dead. Reclaim it.
-                fd.close()
-                fd = None
-                lp.unlink(missing_ok=True)
-                fd = open(lp, "w")
-                try:
-                    fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-                except BlockingIOError:
-                    _contention_exit_with_pid(None)
+        with open(lp, "w") as fd:
+            try:
+                fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                pid = existing_pid
+                if pid is None or _pid_alive(pid):
+                    _contention_exit_with_pid(pid)
+                # Stale lock — owner process is dead. Reclaim it (after closing fd below).
             else:
-                _contention_exit_with_pid(pid)
-
-        # We hold the lock — write our PID so stale detection works
-        fd.write(str(os.getpid()))
-        fd.flush()
-        yield
+                # We hold the lock — write our PID so stale detection works
+                fd.write(str(os.getpid()))
+                fd.flush()
+                yield
+                return
+        # Stale-lock retry path: previous fd is closed; remove lockfile and retry once.
+        lp.unlink(missing_ok=True)
+        with open(lp, "w") as fd:
+            try:
+                fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                _contention_exit_with_pid(None)
+            fd.write(str(os.getpid()))
+            fd.flush()
+            yield
     finally:
-        if fd is not None:
-            fd.close()
         lp.unlink(missing_ok=True)

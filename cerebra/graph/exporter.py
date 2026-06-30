@@ -329,11 +329,11 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
 
     # describes: adjacent records within the same document, by chunk_index
     by_document: dict[str, list[dict]] = {}
-    for rec_id, rec in record_index.items():
+    for _rec_id, rec in record_index.items():
         doc_id = rec["document_id"]
         by_document.setdefault(doc_id, []).append(rec)
 
-    for doc_id, doc_records in by_document.items():
+    for _doc_id, doc_records in by_document.items():
         sorted_recs = sorted(doc_records, key=lambda r: int(r["chunk_index"]))
         for i in range(len(sorted_recs) - 1):
             a = sorted_recs[i]
@@ -362,7 +362,7 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
 
     prox_count: dict[str, int] = {}
 
-    for d1, group_ids in by_d1.items():
+    for _d1, group_ids in by_d1.items():
         if len(group_ids) < 2:
             continue
         group_ids_sorted = sorted(group_ids)
@@ -397,7 +397,7 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
         sku = rec["sku_address"]
         by_sku.setdefault(sku, []).append(rec_id)
 
-    for sku, group_ids in by_sku.items():
+    for _sku, group_ids in by_sku.items():
         if len(group_ids) < 2:
             continue
         group_ids_sorted = sorted(group_ids)

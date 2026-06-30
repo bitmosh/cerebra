@@ -378,7 +378,7 @@ class TestContextOutFile:
             out_path = Path(f.name)
         try:
             with _patched_runner([_make_scored()]):
-                result = runner.invoke(cli, ["context", "test query", "--out", str(out_path)])
+                runner.invoke(cli, ["context", "test query", "--out", str(out_path)])
             content = json.loads(out_path.read_text())
             assert isinstance(content, dict)
         finally:

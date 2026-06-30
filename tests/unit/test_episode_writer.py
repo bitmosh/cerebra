@@ -148,15 +148,15 @@ class TestMigration016:
 
 class TestEpisodeRecordDataclass:
     def _make(self, **overrides) -> EpisodeRecord:
-        defaults = dict(
-            record_id="ep_abc123456789",
-            runtime_session_id="sess_parent001",
-            cycle_id="cycle_001",
-            step_id="step_001",
-            step_name="plan",
-            content="The output of step one.",
-            created_at=1700000000000,
-        )
+        defaults = {
+            "record_id": "ep_abc123456789",
+            "runtime_session_id": "sess_parent001",
+            "cycle_id": "cycle_001",
+            "step_id": "step_001",
+            "step_name": "plan",
+            "content": "The output of step one.",
+            "created_at": 1700000000000,
+        }
         defaults.update(overrides)
         return EpisodeRecord(**defaults)
 

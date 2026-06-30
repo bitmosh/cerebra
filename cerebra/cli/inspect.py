@@ -748,12 +748,11 @@ def _query_inspector_events(
     if cycle_id:
         clauses.append("cycle_id = ?")
         params.append(cycle_id)
-    if extra_filter:
-        # Parse "key=value" and apply as json_extract on data_json
-        if "=" in extra_filter:
-            key, _, value = extra_filter.partition("=")
-            clauses.append(f"json_extract(data_json, '$.{key.strip()}') = ?")
-            params.append(value.strip())
+    # Parse "key=value" and apply as json_extract on data_json
+    if extra_filter and "=" in extra_filter:
+        key, _, value = extra_filter.partition("=")
+        clauses.append(f"json_extract(data_json, '$.{key.strip()}') = ?")
+        params.append(value.strip())
 
     where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
     params.append(limit)

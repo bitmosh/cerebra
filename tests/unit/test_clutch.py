@@ -223,24 +223,6 @@ class TestClutchEngine:
 
     def test_no_match_returns_default_no_match(self) -> None:
         # Make an engine with no always rule but only step_index_at=99
-        engine = self._engine(
-            [
-                {
-                    "name": "unreachable",
-                    "description": "",
-                    "predicate_name": "step_index_at",
-                    "action": "stop",
-                    "parameters": {"index": 99},
-                },
-                {
-                    "name": "accept",
-                    "description": "",
-                    "predicate_name": "always",
-                    "action": "accept",
-                    "parameters": {},
-                },
-            ]
-        )
         # The "always" rule fires so default_no_match won't be hit; test the fallback
         # by building a config where NO rule would match:
         from cerebra.cognition.cycle_config import (

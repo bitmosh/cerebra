@@ -55,9 +55,9 @@ class TestMemoryCliVaultIntegration:
 
         # Promote 3 items
         wm = WorkingMemory(db, sid)
-        i1 = wm.promote("context", None, "item one", salience_score=0.5)
+        wm.promote("context", None, "item one", salience_score=0.5)
         i2 = wm.promote("context", None, "item two", salience_score=0.4)
-        i3 = wm.promote("evidence", None, "item three", salience_score=0.6)
+        wm.promote("evidence", None, "item three", salience_score=0.6)
 
         # Status should show all 3
         r_status = _invoke(["memory", "status"] + _vault_args(vault_root))
@@ -142,37 +142,36 @@ class TestMemoryCliVaultIntegration:
         from cerebra.cli.lockfile import lock_path
 
         lp = lock_path(vault_root)
-        fd = open(lp, "w")
-        try:
-            fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            fd.write(str(os.getpid()))
-            fd.flush()
+        with open(lp, "w") as fd:
+            try:
+                fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fd.write(str(os.getpid()))
+                fd.flush()
 
-            result = subprocess.run(
-                [
-                    "cerebra",
-                    "memory",
-                    "promote",
-                    "--vault",
-                    str(vault_root),
-                    "--text",
-                    "should not arrive",
-                    "--slot",
-                    "goal",
-                ],
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-            assert (
-                result.returncode == 2
-            ), f"Expected exit 2, got {result.returncode}. stderr: {result.stderr!r}"
-            assert (
-                "locked" in result.stderr.lower()
-            ), f"Expected 'locked' in stderr: {result.stderr!r}"
-        finally:
-            fd.close()
-            lp.unlink(missing_ok=True)
+                result = subprocess.run(
+                    [
+                        "cerebra",
+                        "memory",
+                        "promote",
+                        "--vault",
+                        str(vault_root),
+                        "--text",
+                        "should not arrive",
+                        "--slot",
+                        "goal",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+                assert (
+                    result.returncode == 2
+                ), f"Expected exit 2, got {result.returncode}. stderr: {result.stderr!r}"
+                assert (
+                    "locked" in result.stderr.lower()
+                ), f"Expected 'locked' in stderr: {result.stderr!r}"
+            finally:
+                lp.unlink(missing_ok=True)
 
     def test_working_memory_rendered_event_emitted(
         self, vault_root: Path, fresh_session: tuple

@@ -6,12 +6,16 @@ import json
 import tempfile
 import time
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from cerebra.retrieval.trace import TraceData, write_trace
 from cerebra.storage.db import connect
 from cerebra.storage.migrations import run_migrations
+
+if TYPE_CHECKING:
+    from cerebra.retrieval.scorer import ScoredCandidate
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 

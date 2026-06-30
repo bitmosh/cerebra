@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import FrozenInstanceError, replace
 from pathlib import Path
 from typing import Any
 
@@ -20,13 +20,13 @@ from cerebra.cognition.session import (
 
 class TestRuntimeSession:
     def _make(self, **overrides: Any) -> RuntimeSession:
-        kwargs: dict[str, Any] = dict(
-            session_id="sess_abc123",
-            cycle_config="default",
-            goal="do something",
-            vault_path=Path("/tmp/vault"),
-            opened_at=1_700_000_000_000,
-        )
+        kwargs: dict[str, Any] = {
+            "session_id": "sess_abc123",
+            "cycle_config": "default",
+            "goal": "do something",
+            "vault_path": Path("/tmp/vault"),
+            "opened_at": 1_700_000_000_000,
+        }
         kwargs.update(overrides)
         return RuntimeSession(**kwargs)
 
@@ -57,7 +57,7 @@ class TestRuntimeSession:
 
     def test_frozen_immutability(self) -> None:
         s = self._make()
-        with pytest.raises(Exception):  # FrozenInstanceError
+        with pytest.raises(FrozenInstanceError):
             s.state = "flushed"  # type: ignore[misc]
 
     def test_replace_produces_new_instance(self) -> None:
@@ -122,7 +122,7 @@ class TestSessionState:
 
     def test_frozen_immutability(self) -> None:
         ss = SessionState(session=self._make_session(), cycle_config_loaded={})
-        with pytest.raises(Exception):
+        with pytest.raises(FrozenInstanceError):
             ss.prior_step_composites = [1.0]  # type: ignore[misc]
 
 

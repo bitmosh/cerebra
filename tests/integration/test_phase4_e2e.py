@@ -81,7 +81,7 @@ class TestFullSearchPipeline:
             cli, ["search", "leeway network", "--vault", str(vault_root), "--format", "json"]
         )
         assert result_json.exit_code == 0, result_json.output
-        lines = [l for l in result_json.output.splitlines() if l.strip()]
+        lines = [ln for ln in result_json.output.splitlines() if ln.strip()]
         assert len(lines) > 0, "Expected at least one NDJSON line"
         first = json.loads(lines[0])
         assert "score" in first and "record_id" in first

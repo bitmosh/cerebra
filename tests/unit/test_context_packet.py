@@ -6,6 +6,7 @@ import json
 import tempfile
 import time
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -20,6 +21,9 @@ from cerebra.retrieval.context_packet import (
 )
 from cerebra.storage.db import connect
 from cerebra.storage.migrations import run_migrations
+
+if TYPE_CHECKING:
+    from cerebra.retrieval.scorer import ScoredCandidate
 
 # ── Fixtures ───────────────────────────────────────────────────────────────────
 
@@ -722,7 +726,7 @@ class TestRenderText:
             excluded_candidate_count=0,
         )
         rendered = render_text(pkt)
-        lines = [l for l in rendered.split("\n") if "AAA" in l]
+        lines = [ln for ln in rendered.split("\n") if "AAA" in ln]
         assert lines
         assert len(lines[0]) <= 120
 

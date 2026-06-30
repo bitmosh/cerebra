@@ -41,24 +41,23 @@ class TestVaultLockfile:
         from cerebra.cli.lockfile import lock_path
 
         lp = lock_path(vault_root)
-        fd = open(lp, "w")
-        try:
-            fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            fd.write(str(os.getpid()))
-            fd.flush()
+        with open(lp, "w") as fd:
+            try:
+                fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fd.write(str(os.getpid()))
+                fd.flush()
 
-            result = subprocess.run(
-                ["cerebra", "session", "reset", "--vault", str(vault_root)],
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-            assert (
-                result.returncode == 2
-            ), f"Expected exit 2, got {result.returncode}. stderr: {result.stderr!r}"
-            assert (
-                "locked" in result.stderr.lower()
-            ), f"Expected 'locked' in stderr: {result.stderr!r}"
-        finally:
-            fd.close()
-            lp.unlink(missing_ok=True)
+                result = subprocess.run(
+                    ["cerebra", "session", "reset", "--vault", str(vault_root)],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+                assert (
+                    result.returncode == 2
+                ), f"Expected exit 2, got {result.returncode}. stderr: {result.stderr!r}"
+                assert (
+                    "locked" in result.stderr.lower()
+                ), f"Expected 'locked' in stderr: {result.stderr!r}"
+            finally:
+                lp.unlink(missing_ok=True)

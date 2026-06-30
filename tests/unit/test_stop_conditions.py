@@ -205,13 +205,6 @@ class TestUserInterrupt:
 
 class TestEvaluatorOrder:
     def test_first_matching_condition_wins(self) -> None:
-        cfg = _make_config(
-            [
-                StopCondition("cap", "max_steps_reached", {}),
-                StopCondition("done", "all_steps_completed", {}),
-            ]
-        )
-        ev = StopConditionEvaluator(cfg)
         # Both conditions are true; first one should win
         cfg_with_max_1 = CycleConfig(
             name="t",
@@ -231,8 +224,6 @@ class TestEvaluatorOrder:
         assert name == "cap"  # first condition wins
 
     def test_no_condition_matches_returns_false_none(self) -> None:
-        cfg = _make_config([StopCondition("cap", "max_steps_reached", {})])
-        ev = StopConditionEvaluator(cfg)
         cfg_with_max_10 = CycleConfig(
             name="t",
             version=1,

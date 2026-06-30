@@ -462,8 +462,8 @@ def _parse_quadrant_response(raw_text: str) -> ClassificationResult:
         text = text.strip()
     try:
         data = json.loads(text)
-    except json.JSONDecodeError:
-        raise ClassificationError(f"Quadrant response JSON parse failed: {raw_text[:400]}")
+    except json.JSONDecodeError as e:
+        raise ClassificationError(f"Quadrant response JSON parse failed: {raw_text[:400]}") from e
 
     valid_quadrants = {"EMPIRICAL", "GENERATIVE", "NORMATIVE", "RELATIONAL"}
     scores_raw = data.get("scores", {})

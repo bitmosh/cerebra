@@ -106,10 +106,12 @@ class TestVaultLock:
             lp = lock_path(vault)
             lp.write_text(str(os.getpid()))  # alive PID — written BEFORE vault_lock opens file
 
-            with patch("cerebra.cli.lockfile.fcntl.flock", side_effect=BlockingIOError):
-                with pytest.raises(SystemExit) as exc_info:
-                    with vault_lock(vault):
-                        pass
+            with (
+                patch("cerebra.cli.lockfile.fcntl.flock", side_effect=BlockingIOError),
+                pytest.raises(SystemExit) as exc_info,
+                vault_lock(vault),
+            ):
+                pass
             assert exc_info.value.code == 2
         finally:
             import shutil
@@ -142,9 +144,11 @@ class TestVaultLock:
                     raise BlockingIOError
                 return original_flock(fd, flags)
 
-            with patch("cerebra.cli.lockfile.fcntl.flock", side_effect=fake_flock):
-                with vault_lock(vault):
-                    assert _read_pid(lock_path(vault)) == os.getpid()
+            with (
+                patch("cerebra.cli.lockfile.fcntl.flock", side_effect=fake_flock),
+                vault_lock(vault),
+            ):
+                assert _read_pid(lock_path(vault)) == os.getpid()
 
             assert not lock_path(vault).exists()
         finally:
