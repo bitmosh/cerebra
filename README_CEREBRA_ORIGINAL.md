@@ -2,11 +2,11 @@
 
 A local-first cognitive runtime. Memory is one subsystem; the runtime is the project.
 
-Part of the [Lattica](https://github.com/bitmosh) suite alongside LumaWeave and Bons.ai. Each project is standalone — connection happens through data contracts and graph-native event emission, not runtime dependencies.
+Part of the [Lattica](https://github.com/bitmosh) suite. Each project is standalone — connection happens through data contracts and graph-native event emission, not runtime dependencies.
 
 ## Status
 
-**v0.1** — Architecture complete, full spine tested against real Ollama. See `docs/refined-runtime-model/CEREBRA_DEV_ROADMAP_v8.1.md` for roadmap.
+**v0.4.4** — All 14 build phases complete. Full spine tested against real Ollama. See [`docs/CEREBRA_CLASSIC.md`](docs/CEREBRA_CLASSIC.md) for the full development arc and current state.
 
 ## What Cerebra is
 
@@ -18,7 +18,6 @@ A configurable cognitive cycle runtime that:
 - Operates within structural safety bounds (capability + leeway + constitutional layers)
 - Emits inspectable graph-native events for downstream visualization
 
-Bons.ai will eventually be expressible as one cycle configuration that Cerebra runs.
 
 ## What Cerebra is not
 
@@ -127,7 +126,7 @@ vault/
 
 Core pipeline: `ingest_path` → `query_plan` → `run_traversal` → `score_candidates` → `CycleRuntime` → `FossicStore` events
 
-For documentation: `docs/refined-runtime-model/CEREBRA_DOC_INDEX.md`
+For documentation: [`docs/CEREBRA_CLASSIC.md`](docs/CEREBRA_CLASSIC.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
 ## License
 
