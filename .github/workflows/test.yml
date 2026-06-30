@@ -15,9 +15,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Configure git for private dependencies
-        run: git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
       - name: Install deps
         run: pip install -e ".[dev]"
       - name: ruff
@@ -34,9 +31,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Configure git for private dependencies
-        run: git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
       - name: Install deps
         run: pip install -e ".[dev]"
       - name: mypy
@@ -51,9 +45,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Configure git for private dependencies
-        run: git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
       - name: Install deps
         run: pip install -e ".[dev]"
       - name: pytest

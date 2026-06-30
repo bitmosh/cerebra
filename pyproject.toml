@@ -13,7 +13,7 @@ dependencies = [
     "click>=8.1",
     "numpy>=2.0,<3.0",
     "sentence-transformers>=3.0",
-    "fossic @ git+https://github.com/bitmosh/fossic.git#subdirectory=fossic-py",
+    "fossic @ file:vendor/fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl",
 ]
 
 [project.optional-dependencies]
