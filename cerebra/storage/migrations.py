@@ -32,7 +32,8 @@ class Migration001_InitSchema(Migration):
     description = "Phase 0 initial schema: inspector_events + migration tracking"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS applied_migrations (
                 version     INTEGER PRIMARY KEY,
                 description TEXT    NOT NULL,
@@ -61,7 +62,8 @@ class Migration001_InitSchema(Migration):
                 ON inspector_events(event_type, timestamp);
             CREATE INDEX IF NOT EXISTS idx_events_subject
                 ON inspector_events(subject_id);
-            """)
+            """
+        )
 
 
 class Migration002_Phase1Schema(Migration):
@@ -79,7 +81,8 @@ class Migration002_Phase1Schema(Migration):
     description = "Phase 1 source memory: sources, documents, chunks, memory_records"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS sources (
                 source_id           TEXT    PRIMARY KEY,
                 canonical_path      TEXT    NOT NULL UNIQUE,
@@ -170,7 +173,8 @@ class Migration002_Phase1Schema(Migration):
                 ON memory_records(sku_address);
             CREATE INDEX IF NOT EXISTS idx_records_state
                 ON memory_records(lifecycle_state);
-        """)
+        """
+        )
 
 
 class Migration003_RenameParseWarnings(Migration):
@@ -203,7 +207,8 @@ class Migration004_SKUAssignments(Migration):
     description = "Phase 2: sku_assignments table for SKU classifier output"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS sku_assignments (
                 assignment_id               TEXT    PRIMARY KEY,
                 record_id                   TEXT    NOT NULL
@@ -240,7 +245,8 @@ class Migration004_SKUAssignments(Migration):
                 ON sku_assignments(sku_address);
             CREATE INDEX IF NOT EXISTS idx_sku_location
                 ON sku_assignments(d1, d2, d3, d4, d5, d6, d9, d10);
-        """)
+        """
+        )
 
 
 class Migration005_AddPassCount(Migration):
@@ -297,7 +303,8 @@ class Migration006_Phase3Schema(Migration):
     description = "Phase 3: embeddings, pending_embeddings, index_state, graph_nodes, graph_edges"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS embeddings (
                 embedding_id        TEXT    PRIMARY KEY,
                 record_id           TEXT    NOT NULL
@@ -393,7 +400,8 @@ class Migration006_Phase3Schema(Migration):
                 ON graph_edges(source_node_id, target_node_id);
             CREATE INDEX IF NOT EXISTS idx_ge_created
                 ON graph_edges(created_at);
-        """)
+        """
+        )
 
 
 class Migration007_SeedIndexStateAndQueue(Migration):
@@ -449,7 +457,8 @@ class Migration008_RetrievalTraces(Migration):
     description = "Phase 4: retrieval_traces, retrieval_steps, retrieval_candidates"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS retrieval_traces (
                 trace_id          TEXT    PRIMARY KEY,
                 query             TEXT    NOT NULL,
@@ -510,7 +519,8 @@ class Migration008_RetrievalTraces(Migration):
                 ON retrieval_candidates(trace_id, selected);
             CREATE INDEX IF NOT EXISTS idx_cand_record
                 ON retrieval_candidates(record_id);
-        """)
+        """
+        )
 
 
 class Migration009_Phase5Schema(Migration):
@@ -531,7 +541,8 @@ class Migration009_Phase5Schema(Migration):
     )
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS sessions (
                 session_id       TEXT    PRIMARY KEY,
                 vault_path       TEXT    NOT NULL,
@@ -608,7 +619,8 @@ class Migration009_Phase5Schema(Migration):
             CREATE INDEX IF NOT EXISTS idx_tti_t1_citation
                 ON truth_tower_items(t1_citation_id)
                 WHERE evicted_at IS NULL;
-        """)
+        """
+        )
 
 
 class Migration010_LatticeColumns(Migration):
@@ -638,7 +650,8 @@ class Migration010_LatticeColumns(Migration):
     )
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             ALTER TABLE memory_records ADD COLUMN lattice_lineage_id TEXT;
             ALTER TABLE memory_records ADD COLUMN is_lattice_member INTEGER NOT NULL DEFAULT 0;
             ALTER TABLE memory_records ADD COLUMN lattice_confidence REAL;
@@ -646,7 +659,8 @@ class Migration010_LatticeColumns(Migration):
             CREATE INDEX IF NOT EXISTS idx_records_lattice_lineage
                 ON memory_records(lattice_lineage_id)
                 WHERE lattice_lineage_id IS NOT NULL;
-        """)
+        """
+        )
 
 
 class Migration011_LatticeRetrieval(Migration):
@@ -670,7 +684,8 @@ class Migration011_LatticeRetrieval(Migration):
     description = "Lattice Step 2: lattice_sibling_count, lattice_winner_record_id, lattice_routing_basis on retrieval_candidates"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             ALTER TABLE retrieval_candidates ADD COLUMN lattice_sibling_count INTEGER NOT NULL DEFAULT 0;
             ALTER TABLE retrieval_candidates ADD COLUMN lattice_winner_record_id TEXT;
             ALTER TABLE retrieval_candidates ADD COLUMN lattice_routing_basis TEXT;
@@ -678,7 +693,8 @@ class Migration011_LatticeRetrieval(Migration):
             CREATE INDEX IF NOT EXISTS idx_rc_lattice_winner
                 ON retrieval_candidates(lattice_winner_record_id)
                 WHERE lattice_sibling_count > 0;
-        """)
+        """
+        )
 
 
 class Migration012_Evaluations(Migration):
@@ -691,7 +707,8 @@ class Migration012_Evaluations(Migration):
     description = "Phase 6 Step 2: evaluations table"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS evaluations (
                 evaluation_id           TEXT    PRIMARY KEY,
                 session_id              TEXT    NOT NULL,
@@ -708,7 +725,8 @@ class Migration012_Evaluations(Migration):
                 ON evaluations(session_id);
             CREATE INDEX IF NOT EXISTS idx_evaluations_cycle
                 ON evaluations(cycle_id);
-        """)
+        """
+        )
 
 
 class Migration013_PredictionsOutcomes(Migration):
@@ -729,7 +747,8 @@ class Migration013_PredictionsOutcomes(Migration):
     description = "Phase 6 Step 3: predictions + outcomes tables"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS predictions (
                 prediction_id           TEXT    PRIMARY KEY,
                 session_id              TEXT    NOT NULL,
@@ -761,7 +780,8 @@ class Migration013_PredictionsOutcomes(Migration):
                 ON outcomes(session_id);
             CREATE INDEX IF NOT EXISTS idx_outcomes_classification
                 ON outcomes(error_classification);
-        """)
+        """
+        )
 
 
 class Migration014_Sessions(Migration):
@@ -782,7 +802,8 @@ class Migration014_Sessions(Migration):
     description = "Phase 8 Step 1: runtime_sessions table"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS runtime_sessions (
                 session_id          TEXT    PRIMARY KEY,
                 cycle_config        TEXT    NOT NULL,
@@ -805,7 +826,8 @@ class Migration014_Sessions(Migration):
                 ON runtime_sessions(state);
             CREATE INDEX IF NOT EXISTS idx_runtime_sessions_vault
                 ON runtime_sessions(vault_path);
-        """)
+        """
+        )
 
 
 class Migration015_ContinuationBundles(Migration):
@@ -823,7 +845,8 @@ class Migration015_ContinuationBundles(Migration):
     description = "Phase 8 Step 3: continuation_bundles table"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS continuation_bundles (
                 bundle_id               TEXT    PRIMARY KEY,
                 parent_session_id       TEXT    NOT NULL
@@ -849,7 +872,8 @@ class Migration015_ContinuationBundles(Migration):
                 ON continuation_bundles(child_session_id);
             CREATE INDEX IF NOT EXISTS idx_bundles_created
                 ON continuation_bundles(created_at);
-        """)
+        """
+        )
 
 
 class Migration016_CycleEpisodeRecords(Migration):
@@ -870,7 +894,8 @@ class Migration016_CycleEpisodeRecords(Migration):
     description = "Phase 8 v0.3.5a: cycle_episode_records table"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS cycle_episode_records (
                 record_id                   TEXT    PRIMARY KEY,
                 runtime_session_id          TEXT    NOT NULL
@@ -895,7 +920,8 @@ class Migration016_CycleEpisodeRecords(Migration):
                 ON cycle_episode_records(cycle_id);
             CREATE INDEX IF NOT EXISTS idx_episodes_created
                 ON cycle_episode_records(created_at);
-        """)
+        """
+        )
 
 
 class Migration017_CatalystArmStats(Migration):
@@ -909,7 +935,8 @@ class Migration017_CatalystArmStats(Migration):
     description = "Phase 9 Step 3: catalyst_arm_stats and catalyst_recent_selections"
 
     def up(self, conn: sqlite3.Connection) -> None:
-        conn.executescript("""
+        conn.executescript(
+            """
             CREATE TABLE IF NOT EXISTS catalyst_arm_stats (
                 arm_id                TEXT    NOT NULL,
                 runtime_session_id    TEXT    NOT NULL
@@ -936,7 +963,8 @@ class Migration017_CatalystArmStats(Migration):
                 ON catalyst_arm_stats(runtime_session_id);
             CREATE INDEX IF NOT EXISTS idx_catalyst_recent_session
                 ON catalyst_recent_selections(runtime_session_id, selection_order DESC);
-        """)
+        """
+        )
 
 
 class Migration018_SyntheticEpisodeProvenance(Migration):
@@ -1040,13 +1068,15 @@ def run_migrations(db_path: Path) -> list[int]:
     conn = connect(db_path)
     try:
         # Bootstrap: ensure applied_migrations table exists before any query
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS applied_migrations (
                 version     INTEGER PRIMARY KEY,
                 description TEXT    NOT NULL,
                 applied_at  INTEGER NOT NULL
             )
-            """)
+            """
+        )
         conn.commit()
 
         applied = {

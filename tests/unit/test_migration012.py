@@ -95,7 +95,8 @@ class TestMigration012Schema:
         try:
             run_migrations(db)
             conn = sqlite3.connect(db)
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO evaluations
                     (evaluation_id, session_id, cycle_id, step_id,
                      composite_score, per_signal_scores, weights_used,
@@ -103,7 +104,8 @@ class TestMigration012Schema:
                 VALUES
                     ('eval_001', 'sess_001', 'cycle_001', 'step_001',
                      0.72, '{}', '{}', 0, 1.0, 1718000000000)
-            """)
+            """
+            )
             conn.commit()
             row = conn.execute(
                 "SELECT composite_score FROM evaluations WHERE evaluation_id='eval_001'"

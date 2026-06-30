@@ -61,21 +61,25 @@ class TestIngestHappyPath:
     def test_no_orphan_chunks(self, vault: Path, docs_dir: Path) -> None:
         ingest_path(vault, docs_dir)
         with _db(vault) as conn:
-            orphans = conn.execute("""
+            orphans = conn.execute(
+                """
                 SELECT COUNT(*) FROM chunks c
                 LEFT JOIN documents d ON c.document_id = d.document_id
                 WHERE d.document_id IS NULL
-            """).fetchone()[0]
+            """
+            ).fetchone()[0]
         assert orphans == 0
 
     def test_no_orphan_records(self, vault: Path, docs_dir: Path) -> None:
         ingest_path(vault, docs_dir)
         with _db(vault) as conn:
-            orphans = conn.execute("""
+            orphans = conn.execute(
+                """
                 SELECT COUNT(*) FROM memory_records r
                 LEFT JOIN chunks c ON r.chunk_id = c.chunk_id
                 WHERE c.chunk_id IS NULL
-            """).fetchone()[0]
+            """
+            ).fetchone()[0]
         assert orphans == 0
 
     def test_all_records_have_null_sku(self, vault: Path, docs_dir: Path) -> None:
