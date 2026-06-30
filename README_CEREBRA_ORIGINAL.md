@@ -1,5 +1,12 @@
 # Cerebra
 
+> **This fork is archived.** See [`README.md`](README.md) for the archive context
+> at `v0.4.4-pre-dyson` (2026-06-21). The content below is the original project
+> README preserved verbatim for reference; for current development, follow the
+> live [Cerebra repository](https://github.com/bitmosh/cerebra).
+
+---
+
 A local-first cognitive runtime. Memory is one subsystem; the runtime is the project.
 
 Part of the [Lattica](https://github.com/bitmosh) suite. Each project is standalone — connection happens through data contracts and graph-native event emission, not runtime dependencies.
