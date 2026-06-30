@@ -81,24 +81,22 @@ def _patched_runner(scored_list: list, plan: MagicMock | None = None):
         with (
             patch("cerebra.cli.main._get_vault", return_value=Path("/fake/vault")),
             patch("cerebra.cli.main.json.dumps", wraps=json.dumps),
+            patch("cerebra.storage.migrations.run_migrations"),
+            patch("cerebra.inspector.sqlite_log.SQLiteEventLog"),
+            patch("cerebra.retrieval.planner.query_plan", return_value=_plan),
+            patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
+            patch(
+                "cerebra.retrieval.scorer.score_candidates",
+                return_value=scored_list,
+            ),
+            patch("cerebra.retrieval.trace.write_trace", return_value="trace_testtest001"),
+            patch("pathlib.Path.exists", return_value=True),
+            patch(
+                "cerebra.retrieval.lattice_dedup.dedup_siblings",
+                side_effect=lambda scored, *a, **kw: scored,
+            ),
         ):
-            with (
-                patch("cerebra.storage.migrations.run_migrations"),
-                patch("cerebra.inspector.sqlite_log.SQLiteEventLog"),
-                patch("cerebra.retrieval.planner.query_plan", return_value=_plan),
-                patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
-                patch(
-                    "cerebra.retrieval.scorer.score_candidates",
-                    return_value=scored_list,
-                ),
-                patch("cerebra.retrieval.trace.write_trace", return_value="trace_testtest001"),
-                patch("pathlib.Path.exists", return_value=True),
-                patch(
-                    "cerebra.retrieval.lattice_dedup.dedup_siblings",
-                    side_effect=lambda scored, *a, **kw: scored,
-                ),
-            ):
-                yield
+            yield
 
     return _cm()
 
@@ -325,7 +323,7 @@ class TestSearchJsonOutput:
         ]
         with _patched_runner(scored):
             result = runner.invoke(cli, ["search", "test query", "--format", "json"])
-        lines = [l for l in result.output.strip().splitlines() if l.strip()]
+        lines = [ln for ln in result.output.strip().splitlines() if ln.strip()]
         assert len(lines) == 2
 
 
@@ -341,7 +339,7 @@ class TestSearchLimit:
             result = runner.invoke(
                 cli, ["search", "test query", "--format", "json", "--limit", "3"]
             )
-        lines = [l for l in result.output.strip().splitlines() if l.strip()]
+        lines = [ln for ln in result.output.strip().splitlines() if ln.strip()]
         assert len(lines) == 3
 
     def test_limit_default_is_ten(self) -> None:
@@ -349,7 +347,7 @@ class TestSearchLimit:
         scored = [_make_scored(record_id=f"rec_{i}", rank=i + 1) for i in range(15)]
         with _patched_runner(scored):
             result = runner.invoke(cli, ["search", "test query", "--format", "json"])
-        lines = [l for l in result.output.strip().splitlines() if l.strip()]
+        lines = [ln for ln in result.output.strip().splitlines() if ln.strip()]
         assert len(lines) == 10
 
     def test_limit_clamped_to_200(self) -> None:
@@ -360,7 +358,7 @@ class TestSearchLimit:
             result = runner.invoke(
                 cli, ["search", "test query", "--format", "json", "--limit", "999"]
             )
-        lines = [l for l in result.output.strip().splitlines() if l.strip()]
+        lines = [ln for ln in result.output.strip().splitlines() if ln.strip()]
         assert len(lines) == 5  # only 5 candidates available
 
 
@@ -379,7 +377,7 @@ class TestSearchFloor:
             result = runner.invoke(
                 cli, ["search", "test query", "--format", "json", "--floor", "0.50"]
             )
-        lines = [l for l in result.output.strip().splitlines() if l.strip()]
+        lines = [ln for ln in result.output.strip().splitlines() if ln.strip()]
         assert len(lines) == 1
         obj = json.loads(lines[0])
         assert obj["record_id"] == "hi"
@@ -394,5 +392,5 @@ class TestSearchFloor:
             result = runner.invoke(
                 cli, ["search", "test query", "--format", "json", "--floor", "0.0"]
             )
-        lines = [l for l in result.output.strip().splitlines() if l.strip()]
+        lines = [ln for ln in result.output.strip().splitlines() if ln.strip()]
         assert len(lines) == 2

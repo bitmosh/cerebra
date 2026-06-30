@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import tempfile
 import time
 from pathlib import Path
@@ -334,10 +335,8 @@ class TestEvictionPolicy:
         db_path, session_id = _fresh_db()
         wm = _wm(db_path, session_id)
         wm.promote("goal", None, "pinned goal", salience_score=0.9, is_pinned=True)
-        try:
+        with contextlib.suppress(PromotionError):
             wm.promote("goal", None, "rejected goal", salience_score=0.3)
-        except PromotionError:
-            pass
         active = wm.load_slot("goal")
         assert len(active) == 1
         assert active[0].content_summary == "pinned goal"
@@ -637,10 +636,8 @@ class TestEventEmission:
         event_log = self._event_log(db_path)
         wm = _wm(db_path, session_id)
         wm.promote("goal", None, "pinned", salience_score=0.9, is_pinned=True, event_log=event_log)
-        try:
+        with contextlib.suppress(PromotionError):
             wm.promote("goal", None, "blocked", salience_score=0.3, event_log=event_log)
-        except PromotionError:
-            pass
 
         conn = connect(db_path)
         try:

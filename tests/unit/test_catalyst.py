@@ -15,9 +15,8 @@ from cerebra.storage.migrations import run_migrations
 
 def _migrated_db() -> Path:
     """Return path to a fresh temp DB with all migrations applied."""
-    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
-    tmp.close()
-    path = Path(tmp.name)
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
+        path = Path(tmp.name)
     run_migrations(path)
     return path
 

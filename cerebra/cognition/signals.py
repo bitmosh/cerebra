@@ -129,6 +129,4 @@ class SignalEvaluator:
         """Flag structural response issues that suggest unreliable scoring."""
         if not response.get("checks"):
             return True
-        if not response.get("reasoning"):
-            return True
-        return False
+        return not response.get("reasoning")

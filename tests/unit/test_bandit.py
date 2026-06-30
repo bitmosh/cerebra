@@ -23,7 +23,7 @@ def _seeded(seed: int = 42) -> Bandit:
 def _with_updates(arms: list[str], rewards: list[float], seed: int = 42) -> Bandit:
     """Create a bandit that has seen each arm once with the given reward."""
     b = _seeded(seed)
-    for arm, reward in zip(arms, rewards):
+    for arm, reward in zip(arms, rewards, strict=True):
         b.update(arm, reward)
     return b
 

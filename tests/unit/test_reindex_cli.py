@@ -98,21 +98,17 @@ class TestReindexLexical:
         runner = CliRunner()
         with (
             _patched_lexical() as _,
-            patch("cerebra.storage.lexical.build_fts_index", return_value=10) as mock_build,
+            patch("cerebra.storage.lexical.build_fts_index", return_value=10),
+            patch(
+                "cerebra.cli.main._get_vault",
+                return_value=__import__("pathlib").Path("/fake/vault"),
+            ),
+            patch("cerebra.storage.migrations.run_migrations"),
+            patch("pathlib.Path.exists", return_value=True),
+            patch("cerebra.storage.db.connect") as mc,
         ):
-            with (
-                patch(
-                    "cerebra.cli.main._get_vault",
-                    return_value=__import__("pathlib").Path("/fake/vault"),
-                ),
-                patch("cerebra.storage.migrations.run_migrations"),
-                patch("pathlib.Path.exists", return_value=True),
-                patch("cerebra.storage.db.connect") as mc,
-            ):
-                mc.return_value.__enter__.return_value.execute.return_value.fetchone.return_value = [
-                    10
-                ]
-                result = runner.invoke(cli, ["reindex", "--lexical"])
+            mc.return_value.__enter__.return_value.execute.return_value.fetchone.return_value = [10]
+            result = runner.invoke(cli, ["reindex", "--lexical"])
         assert result.exit_code == 0
 
     def test_lexical_vault_not_found_exits_two(self) -> None:

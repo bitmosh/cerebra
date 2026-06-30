@@ -12,6 +12,7 @@ Awaiting brainstorm resolution on memory_records FK strategy.
 
 from __future__ import annotations
 
+import contextlib
 import signal
 import time
 import uuid
@@ -695,7 +696,8 @@ class CycleRuntime:
                 ).fetchone()
                 if row is None:
                     continue
-                try:
+                # silent: eviction failure, slot full of pinned items, etc.
+                with contextlib.suppress(Exception):
                     wm.promote(
                         slot_type="context",
                         record_id=record_id,
@@ -703,8 +705,6 @@ class CycleRuntime:
                         salience_score=ELEVATED_SALIENCE,
                         is_pinned=False,
                     )
-                except Exception:
-                    pass  # silent: eviction failure, slot full of pinned items, etc.
         finally:
             conn.close()
 

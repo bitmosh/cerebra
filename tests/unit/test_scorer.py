@@ -87,7 +87,6 @@ class TestLexicalNormalization:
         FTS5 result set should be assigned 0.0, not passed to _normalize_lexical.
         """
         # Simulate: record is not in FTS5 results
-        fts_ranks = [-2.0, -0.5]
         absent_record_score = 0.0  # caller assigns this
         assert absent_record_score == 0.0
 

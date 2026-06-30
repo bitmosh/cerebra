@@ -586,93 +586,90 @@ class TestLockfileEnforcement:
         from cerebra.cli.lockfile import lock_path
 
         lp = lock_path(vault_root)
-        fd = open(lp, "w")
-        try:
-            fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            fd.write(str(os.getpid()))
-            fd.flush()
+        with open(lp, "w") as fd:
+            try:
+                fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fd.write(str(os.getpid()))
+                fd.flush()
 
-            result = subprocess.run(
-                [
-                    "cerebra",
-                    "memory",
-                    "promote",
-                    "--text",
-                    "blocked item",
-                    "--slot",
-                    "evidence",
-                    "--vault",
-                    str(vault_root),
-                ],
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-            assert result.returncode == 2, (
-                f"Expected exit 2 under lock, got {result.returncode}. "
-                f"stderr: {result.stderr!r}"
-            )
-            assert (
-                "locked" in (result.stderr + result.stdout).lower()
-            ), f"Expected 'locked' in output. stderr: {result.stderr!r}"
-        finally:
-            fd.close()
-            lp.unlink(missing_ok=True)
+                result = subprocess.run(
+                    [
+                        "cerebra",
+                        "memory",
+                        "promote",
+                        "--text",
+                        "blocked item",
+                        "--slot",
+                        "evidence",
+                        "--vault",
+                        str(vault_root),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+                assert result.returncode == 2, (
+                    f"Expected exit 2 under lock, got {result.returncode}. "
+                    f"stderr: {result.stderr!r}"
+                )
+                assert (
+                    "locked" in (result.stderr + result.stdout).lower()
+                ), f"Expected 'locked' in output. stderr: {result.stderr!r}"
+            finally:
+                lp.unlink(missing_ok=True)
 
     def test_context_fails_when_locked(self, vault_root: Path) -> None:
         """subprocess cerebra context exits 2 when vault lock is held (T1 write path)."""
         from cerebra.cli.lockfile import lock_path
 
         lp = lock_path(vault_root)
-        fd = open(lp, "w")
-        try:
-            fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            fd.write(str(os.getpid()))
-            fd.flush()
+        with open(lp, "w") as fd:
+            try:
+                fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fd.write(str(os.getpid()))
+                fd.flush()
 
-            result = subprocess.run(
-                [
-                    "cerebra",
-                    "context",
-                    "leeway network",
-                    "--vault",
-                    str(vault_root),
-                    "--limit",
-                    "3",
-                ],
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
-            assert result.returncode == 2, (
-                f"Expected exit 2 under lock, got {result.returncode}. "
-                f"stderr: {result.stderr!r}"
-            )
-        finally:
-            fd.close()
-            lp.unlink(missing_ok=True)
+                result = subprocess.run(
+                    [
+                        "cerebra",
+                        "context",
+                        "leeway network",
+                        "--vault",
+                        str(vault_root),
+                        "--limit",
+                        "3",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
+                assert result.returncode == 2, (
+                    f"Expected exit 2 under lock, got {result.returncode}. "
+                    f"stderr: {result.stderr!r}"
+                )
+            finally:
+                lp.unlink(missing_ok=True)
 
     def test_search_succeeds_when_locked(self, vault_root: Path) -> None:
         """subprocess cerebra search exits 0 with lock held (read-only, no lock needed)."""
         from cerebra.cli.lockfile import lock_path
 
         lp = lock_path(vault_root)
-        fd = open(lp, "w")
-        try:
-            fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            fd.write(str(os.getpid()))
-            fd.flush()
+        with open(lp, "w") as fd:
+            try:
+                fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fd.write(str(os.getpid()))
+                fd.flush()
 
-            result = subprocess.run(
-                ["cerebra", "search", "leeway network", "--vault", str(vault_root)],
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
-            assert result.returncode == 0, (
-                f"search should succeed with lock held, got {result.returncode}. "
-                f"stderr: {result.stderr!r}"
-            )
-        finally:
-            fd.close()
-            lp.unlink(missing_ok=True)
+                result = subprocess.run(
+                    ["cerebra", "search", "leeway network", "--vault", str(vault_root)],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
+                assert result.returncode == 0, (
+                    f"search should succeed with lock held, got {result.returncode}. "
+                    f"stderr: {result.stderr!r}"
+                )
+            finally:
+                lp.unlink(missing_ok=True)

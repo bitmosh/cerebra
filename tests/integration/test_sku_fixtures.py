@@ -147,7 +147,6 @@ def _run_calibration(vault: Path) -> list[FixtureResult]:
 
 def _print_report(results: list[FixtureResult]) -> None:
     total = len(results)
-    correct = sum(1 for r in results if r.correct)
     hc_correct = [r for r in results if r.quadrant == "hc_correct"]
     hc_wrong = [r for r in results if r.quadrant == "hc_wrong"]
     lc_correct = [r for r in results if r.quadrant == "lc_correct"]
