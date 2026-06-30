@@ -21,8 +21,14 @@ from cerebra.cognition.signal_prompts import (
 @pytest.mark.unit
 class TestPromptModuleAttributes:
     def test_all_modules_have_prompt_version(self) -> None:
-        for mod in (coherence_v1, groundedness_v1, generativity_v1,
-                    relevance_v1, precision_v1, epistemic_humility_v1):
+        for mod in (
+            coherence_v1,
+            groundedness_v1,
+            generativity_v1,
+            relevance_v1,
+            precision_v1,
+            epistemic_humility_v1,
+        ):
             assert hasattr(mod, "PROMPT_VERSION"), f"{mod.__name__} missing PROMPT_VERSION"
             assert isinstance(mod.PROMPT_VERSION, str)
             assert mod.PROMPT_VERSION.strip()
@@ -39,8 +45,14 @@ class TestPromptModuleAttributes:
         assert len(versions) == len(set(versions)), f"Duplicate PROMPT_VERSIONs: {versions}"
 
     def test_all_modules_have_render(self) -> None:
-        for mod in (coherence_v1, groundedness_v1, generativity_v1,
-                    relevance_v1, precision_v1, epistemic_humility_v1):
+        for mod in (
+            coherence_v1,
+            groundedness_v1,
+            generativity_v1,
+            relevance_v1,
+            precision_v1,
+            epistemic_humility_v1,
+        ):
             assert callable(getattr(mod, "render", None)), f"{mod.__name__} missing render()"
 
 

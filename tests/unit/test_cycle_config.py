@@ -116,9 +116,7 @@ class TestRenderTemplate:
 
 class TestStepPromptTemplate:
     def test_free_form_no_schema(self) -> None:
-        tpl = StepPromptTemplate(
-            template="{{ goal }}", expected_output_format="free_form"
-        )
+        tpl = StepPromptTemplate(template="{{ goal }}", expected_output_format="free_form")
         assert tpl.output_schema is None
 
     def test_json_with_schema(self) -> None:
@@ -192,13 +190,15 @@ class TestCycleConfigValidation:
         # Keep the first rule's action unknown AND add a valid accept rule so that
         # validation check #4 (accept rule required) passes before check #5 fires.
         d["clutch_rules"][0]["action"] = "fly_to_mars"
-        d["clutch_rules"].append({
-            "name": "fallback",
-            "description": "",
-            "predicate_name": "always",
-            "action": "accept",
-            "parameters": {},
-        })
+        d["clutch_rules"].append(
+            {
+                "name": "fallback",
+                "description": "",
+                "predicate_name": "always",
+                "action": "accept",
+                "parameters": {},
+            }
+        )
         with pytest.raises(CycleConfigValidationError, match="Unknown action"):
             _parse_config(d)
 

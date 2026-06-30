@@ -38,19 +38,34 @@ def _make_vault(tmp_path: Path) -> tuple[Path, Path]:
     return vault_path, db_path
 
 
-def _insert_source(conn: sqlite3.Connection, source_id: str, canonical_path: str,
-                   detected_type: str = "markdown", lifecycle_state: str = "active") -> None:
+def _insert_source(
+    conn: sqlite3.Connection,
+    source_id: str,
+    canonical_path: str,
+    detected_type: str = "markdown",
+    lifecycle_state: str = "active",
+) -> None:
     conn.execute(
         "INSERT INTO sources (source_id, canonical_path, content_hash, size_bytes, "
         "detected_type, detection_confidence, lifecycle_state, created_at, ingested_at) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (source_id, canonical_path, "abc123", 1024, detected_type, 1.0,
-         lifecycle_state, int(time.time()), int(time.time())),
+        (
+            source_id,
+            canonical_path,
+            "abc123",
+            1024,
+            detected_type,
+            1.0,
+            lifecycle_state,
+            int(time.time()),
+            int(time.time()),
+        ),
     )
 
 
-def _insert_document(conn: sqlite3.Connection, document_id: str, source_id: str,
-                     title: str = "Test Doc") -> None:
+def _insert_document(
+    conn: sqlite3.Connection, document_id: str, source_id: str, title: str = "Test Doc"
+) -> None:
     conn.execute(
         "INSERT INTO documents (document_id, source_id, document_type, title, "
         "lifecycle_state, created_at) VALUES (?, ?, ?, ?, ?, ?)",
@@ -58,41 +73,96 @@ def _insert_document(conn: sqlite3.Connection, document_id: str, source_id: str,
     )
 
 
-def _insert_chunk(conn: sqlite3.Connection, chunk_id: str, document_id: str,
-                  source_id: str, heading_path: str = "§1", chunk_index: int = 0,
-                  token_estimate: int = 100) -> None:
+def _insert_chunk(
+    conn: sqlite3.Connection,
+    chunk_id: str,
+    document_id: str,
+    source_id: str,
+    heading_path: str = "§1",
+    chunk_index: int = 0,
+    token_estimate: int = 100,
+) -> None:
     conn.execute(
         "INSERT INTO chunks (chunk_id, document_id, source_id, heading_path, chunk_index, "
         "depth, content, content_hash, token_estimate, chunk_strategy, lifecycle_state, "
         "created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (chunk_id, document_id, source_id, heading_path, chunk_index, 1,
-         "Test content", f"hash_{chunk_id}", token_estimate, "heading", "active",
-         int(time.time())),
+        (
+            chunk_id,
+            document_id,
+            source_id,
+            heading_path,
+            chunk_index,
+            1,
+            "Test content",
+            f"hash_{chunk_id}",
+            token_estimate,
+            "heading",
+            "active",
+            int(time.time()),
+        ),
     )
 
 
-def _insert_record(conn: sqlite3.Connection, record_id: str, source_id: str,
-                   chunk_id: str, document_id: str = "doc_001",
-                   lifecycle_state: str = "active") -> None:
+def _insert_record(
+    conn: sqlite3.Connection,
+    record_id: str,
+    source_id: str,
+    chunk_id: str,
+    document_id: str = "doc_001",
+    lifecycle_state: str = "active",
+) -> None:
     conn.execute(
         "INSERT INTO memory_records (record_id, source_id, document_id, chunk_id, content, "
         "content_hash, token_estimate, lifecycle_state, created_at) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (record_id, source_id, document_id, chunk_id, "Test content",
-         f"hash_{record_id}", 100, lifecycle_state, int(time.time())),
+        (
+            record_id,
+            source_id,
+            document_id,
+            chunk_id,
+            "Test content",
+            f"hash_{record_id}",
+            100,
+            lifecycle_state,
+            int(time.time()),
+        ),
     )
 
 
-def _insert_sku(conn: sqlite3.Connection, record_id: str, d1: int = 4,
-                sku_address: str = "400000.03.00", d9: int = 0,
-                d10: int = 0, d1_confidence: float = 0.9) -> None:
+def _insert_sku(
+    conn: sqlite3.Connection,
+    record_id: str,
+    d1: int = 4,
+    sku_address: str = "400000.03.00",
+    d9: int = 0,
+    d10: int = 0,
+    d1_confidence: float = 0.9,
+) -> None:
     conn.execute(
         "INSERT INTO sku_assignments (assignment_id, record_id, sku_address, d1, d2, d3, "
         "d4, d5, d6, d7, d8, d9, d10, raw_scores_json, d1_confidence, classifier_version, "
         "prompt_version, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
         "?, ?, ?)",
-        (f"asgn_{record_id}", record_id, sku_address, d1, 0, 0, 0, 0, 0, 3, 0, d9, d10,
-         '{}', d1_confidence, "v1", "v1", int(time.time())),
+        (
+            f"asgn_{record_id}",
+            record_id,
+            sku_address,
+            d1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            3,
+            0,
+            d9,
+            d10,
+            "{}",
+            d1_confidence,
+            "v1",
+            "v1",
+            int(time.time()),
+        ),
     )
 
 
@@ -114,20 +184,20 @@ class TestScalarHelpers:
         assert _source_cluster("pdf") == "azure"
 
     def test_record_cluster_empirical(self) -> None:
-        assert _record_cluster(0) == "azure"   # OBSERVATION
-        assert _record_cluster(3) == "azure"   # PHENOMENON
+        assert _record_cluster(0) == "azure"  # OBSERVATION
+        assert _record_cluster(3) == "azure"  # PHENOMENON
 
     def test_record_cluster_generative(self) -> None:
-        assert _record_cluster(4) == "gold"    # TECHNIQUE
-        assert _record_cluster(7) == "gold"    # TOOL
+        assert _record_cluster(4) == "gold"  # TECHNIQUE
+        assert _record_cluster(7) == "gold"  # TOOL
 
     def test_record_cluster_normative(self) -> None:
         assert _record_cluster(8) == "purple"  # PRINCIPLE
-        assert _record_cluster(11) == "purple" # CONSTRAINT
+        assert _record_cluster(11) == "purple"  # CONSTRAINT
 
     def test_record_cluster_relational(self) -> None:
-        assert _record_cluster(12) == "teal"   # EVENT
-        assert _record_cluster(15) == "teal"   # RELATION
+        assert _record_cluster(12) == "teal"  # EVENT
+        assert _record_cluster(15) == "teal"  # RELATION
 
     def test_source_size_low(self) -> None:
         assert _source_size(0) == 10.0
@@ -136,7 +206,7 @@ class TestScalarHelpers:
         assert _source_size(100_000) == 24.0
 
     def test_source_size_mid(self) -> None:
-        assert _source_size(5000) == 10.0   # 5000/500=10 exactly
+        assert _source_size(5000) == 10.0  # 5000/500=10 exactly
 
     def test_record_size_low(self) -> None:
         assert _record_size(0) == 4.0
@@ -235,8 +305,15 @@ class TestRecordNodes:
             conn.row_factory = sqlite3.Row
             _insert_source(conn, "src_001", "/vault/notes.md")
             _insert_document(conn, "doc_001", "src_001", "Notes")
-            _insert_chunk(conn, "chk_001", "doc_001", "src_001",
-                          heading_path="§1 Intro", chunk_index=0, token_estimate=200)
+            _insert_chunk(
+                conn,
+                "chk_001",
+                "doc_001",
+                "src_001",
+                heading_path="§1 Intro",
+                chunk_index=0,
+                token_estimate=200,
+            )
             _insert_record(conn, "rec_001", "src_001", "chk_001")
             _insert_sku(conn, "rec_001", d1=4, sku_address="400000.03.00")
         return vault_path, db_path
@@ -310,10 +387,8 @@ class TestEdges:
             conn.row_factory = sqlite3.Row
             _insert_source(conn, "src_001", "/vault/notes.md")
             _insert_document(conn, "doc_001", "src_001")
-            _insert_chunk(conn, "chk_001", "doc_001", "src_001",
-                          heading_path="§1", chunk_index=0)
-            _insert_chunk(conn, "chk_002", "doc_001", "src_001",
-                          heading_path="§2", chunk_index=1)
+            _insert_chunk(conn, "chk_001", "doc_001", "src_001", heading_path="§1", chunk_index=0)
+            _insert_chunk(conn, "chk_002", "doc_001", "src_001", heading_path="§2", chunk_index=1)
             _insert_record(conn, "rec_001", "src_001", "chk_001")
             _insert_record(conn, "rec_002", "src_001", "chk_002")
             _insert_sku(conn, "rec_001", d1=4, sku_address="400000.03.00")
@@ -360,8 +435,9 @@ class TestEdges:
             for i in range(8):
                 chunk_id = f"chk_{i:03d}"
                 rec_id = f"rec_{i:03d}"
-                _insert_chunk(conn, chunk_id, "doc_001", "src_001",
-                              heading_path=f"§{i}", chunk_index=i)
+                _insert_chunk(
+                    conn, chunk_id, "doc_001", "src_001", heading_path=f"§{i}", chunk_index=i
+                )
                 _insert_record(conn, rec_id, "src_001", chunk_id)
                 _insert_sku(conn, rec_id, d1=4, sku_address=f"4{i}0000.03.00")
         graph = build_graph(db_path, vault_path)

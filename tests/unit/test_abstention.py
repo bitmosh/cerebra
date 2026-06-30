@@ -39,12 +39,18 @@ def _make_scored(record_id: str = "rec_001", composite: float = 0.30, rank: int 
     score = CompositeScore(
         composite=composite,
         components={
-            "semantic": 0.35, "lexical": 0.30,
-            "sku_match": 0.0, "recency": 0.90, "lifecycle": 1.0,
+            "semantic": 0.35,
+            "lexical": 0.30,
+            "sku_match": 0.0,
+            "recency": 0.90,
+            "lifecycle": 1.0,
         },
         weights={
-            "semantic": 0.40, "lexical": 0.25,
-            "sku_match": 0.15, "recency": 0.10, "lifecycle": 0.10,
+            "semantic": 0.40,
+            "lexical": 0.25,
+            "sku_match": 0.15,
+            "recency": 0.10,
+            "lifecycle": 0.10,
         },
     )
     return ScoredCandidate(
@@ -63,6 +69,7 @@ def _make_scored(record_id: str = "rec_001", composite: float = 0.30, rank: int 
 def _patched_search(scored_list: list, plan=None):
     """Patch the retrieval stack for `search` tests."""
     import contextlib
+
     _plan = plan or _make_plan()
 
     @contextlib.contextmanager
@@ -76,8 +83,10 @@ def _patched_search(scored_list: list, plan=None):
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=scored_list),
             patch("cerebra.retrieval.trace.write_trace", return_value="trace_abs001"),
-            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
-                  side_effect=lambda scored, *a, **kw: scored),
+            patch(
+                "cerebra.retrieval.lattice_dedup.dedup_siblings",
+                side_effect=lambda scored, *a, **kw: scored,
+            ),
         ):
             yield
 
@@ -87,6 +96,7 @@ def _patched_search(scored_list: list, plan=None):
 def _patched_context(scored_list: list, plan=None):
     """Patch the retrieval stack for `context` tests."""
     import contextlib
+
     _plan = plan or _make_plan()
 
     @contextlib.contextmanager
@@ -100,8 +110,10 @@ def _patched_context(scored_list: list, plan=None):
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=scored_list),
             patch("cerebra.retrieval.trace.write_trace", return_value="trace_abs001"),
-            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
-                  side_effect=lambda scored, *a, **kw: scored),
+            patch(
+                "cerebra.retrieval.lattice_dedup.dedup_siblings",
+                side_effect=lambda scored, *a, **kw: scored,
+            ),
         ):
             yield
 
@@ -112,21 +124,35 @@ def _make_normal_packet(packet_id: str = "ctxpkt_norm001"):
     from cerebra.retrieval.context_packet import ContextPacket, MemoryItem
 
     item = MemoryItem(
-        record_id="rec_001", source_id="src_001", chunk_id="chk_001",
+        record_id="rec_001",
+        source_id="src_001",
+        chunk_id="chk_001",
         content_excerpt="Test content.",
         source_path="docs/example.md",
-        sku_address=None, score=0.50,
+        sku_address=None,
+        score=0.50,
         score_components={"semantic": 0.50},
-        retrieval_path="vector_fallback", rank=1,
+        retrieval_path="vector_fallback",
+        rank=1,
     )
     return ContextPacket(
         context_packet_id=packet_id,
-        packet_version=1, schema_version=1, created_at=1_720_000_000,
-        query="test query", mode="hybrid",
-        is_abstained=False, abstention_rationale=None, best_score_seen=None,
-        retrieval_trace_id="trace_abs001", origin_event_ids=[],
-        selected_memory=[item], token_estimate=3, selected_count=1,
-        candidate_count=1, uncertainties=[], excluded_candidate_count=0,
+        packet_version=1,
+        schema_version=1,
+        created_at=1_720_000_000,
+        query="test query",
+        mode="hybrid",
+        is_abstained=False,
+        abstention_rationale=None,
+        best_score_seen=None,
+        retrieval_trace_id="trace_abs001",
+        origin_event_ids=[],
+        selected_memory=[item],
+        token_estimate=3,
+        selected_count=1,
+        candidate_count=1,
+        uncertainties=[],
+        excluded_candidate_count=0,
     )
 
 
@@ -155,9 +181,12 @@ class TestAbstentionTrigger:
 
     def test_context_does_not_abstain_when_max_above_floor(self) -> None:
         scored = [_make_scored(composite=0.50)]
-        with _patched_context(scored), patch(
-            "cerebra.retrieval.context_packet.build_context_packet",
-            return_value=_make_normal_packet(),
+        with (
+            _patched_context(scored),
+            patch(
+                "cerebra.retrieval.context_packet.build_context_packet",
+                return_value=_make_normal_packet(),
+            ),
         ):
             result = CliRunner().invoke(cli, ["context", "leeway network", "--floor", "0.45"])
         assert result.exit_code == 0, result.output
@@ -202,9 +231,12 @@ class TestFloorFlagOverride:
 
     def test_context_default_floor_does_not_abstain_for_score_0_39(self) -> None:
         scored = [_make_scored(composite=0.39)]
-        with _patched_context(scored), patch(
-            "cerebra.retrieval.context_packet.build_context_packet",
-            return_value=_make_normal_packet(),
+        with (
+            _patched_context(scored),
+            patch(
+                "cerebra.retrieval.context_packet.build_context_packet",
+                return_value=_make_normal_packet(),
+            ),
         ):
             result = CliRunner().invoke(cli, ["context", "test"])
         assert result.exit_code == 0, result.output
@@ -218,9 +250,7 @@ class TestSearchAbstentionMessage:
     def test_message_mentions_floor_and_best_score(self) -> None:
         scored = [_make_scored(composite=0.30)]
         with _patched_search(scored):
-            result = CliRunner().invoke(
-                cli, ["search", "test", "--floor", "0.45"]
-            )
+            result = CliRunner().invoke(cli, ["search", "test", "--floor", "0.45"])
         assert result.exit_code == 1
         assert "No relevant results above floor" in result.stderr
         assert "0.45" in result.stderr
@@ -229,9 +259,7 @@ class TestSearchAbstentionMessage:
     def test_message_goes_to_stderr_not_stdout(self) -> None:
         scored = [_make_scored(composite=0.30)]
         with _patched_search(scored):
-            result = CliRunner().invoke(
-                cli, ["search", "test", "--floor", "0.45"]
-            )
+            result = CliRunner().invoke(cli, ["search", "test", "--floor", "0.45"])
         assert result.stdout == ""
 
     def test_search_json_format_also_abstains_to_stderr(self) -> None:
@@ -308,20 +336,27 @@ class TestAbstainedPacketForm:
             )
         packet = json.loads(result.output)
         for field in (
-            "context_packet_id", "packet_version", "schema_version",
-            "created_at", "query", "mode", "is_abstained",
-            "retrieval_trace_id", "origin_event_ids",
-            "selected_memory", "token_estimate", "selected_count",
-            "candidate_count", "excluded_candidate_count",
+            "context_packet_id",
+            "packet_version",
+            "schema_version",
+            "created_at",
+            "query",
+            "mode",
+            "is_abstained",
+            "retrieval_trace_id",
+            "origin_event_ids",
+            "selected_memory",
+            "token_estimate",
+            "selected_count",
+            "candidate_count",
+            "excluded_candidate_count",
         ):
             assert field in packet, f"Missing field: {field}"
 
     def test_context_text_abstained_shows_rationale(self) -> None:
         scored = [_make_scored(composite=0.30)]
         with _patched_context(scored):
-            result = CliRunner().invoke(
-                cli, ["context", "test", "--floor", "0.45"]
-            )
+            result = CliRunner().invoke(cli, ["context", "test", "--floor", "0.45"])
         assert result.exit_code == 1
         assert "Abstained" in result.output
 
@@ -344,8 +379,10 @@ class TestRetrievalAbstainedEvent:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=scored_list),
             patch("cerebra.retrieval.trace.write_trace", return_value="trace_abs001"),
-            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
-                  side_effect=lambda scored, *a, **kw: scored),
+            patch(
+                "cerebra.retrieval.lattice_dedup.dedup_siblings",
+                side_effect=lambda scored, *a, **kw: scored,
+            ),
         ):
             result = CliRunner().invoke(
                 cli, ["context", "test", "--floor", str(floor), "--format", "json"]
@@ -365,8 +402,7 @@ class TestRetrievalAbstainedEvent:
         _, log = self._run_context_capture_log(scored, floor=0.45)
         written = [call.args[0] for call in log.write.call_args_list]
         evt = next(e for e in written if e.event_type == "RetrievalAbstained")
-        for key in ("trace_id", "query", "mode", "candidate_count",
-                    "best_score_seen", "floor"):
+        for key in ("trace_id", "query", "mode", "candidate_count", "best_score_seen", "floor"):
             assert key in evt.data, f"Missing key in event data: {key}"
 
     def test_event_payload_values_correct(self) -> None:
@@ -399,8 +435,9 @@ class TestRetrievalAbstainedEvent:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=scored),
             patch("cerebra.retrieval.trace.write_trace", return_value="trace_abs001"),
-            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
-                  side_effect=lambda s, *a, **kw: s),
+            patch(
+                "cerebra.retrieval.lattice_dedup.dedup_siblings", side_effect=lambda s, *a, **kw: s
+            ),
             patch(
                 "cerebra.retrieval.context_packet.build_context_packet",
                 return_value=_make_normal_packet(),
@@ -429,12 +466,11 @@ class TestRetrievalAbstainedEvent:
             patch("cerebra.retrieval.traversal.run_traversal", return_value=[]),
             patch("cerebra.retrieval.scorer.score_candidates", return_value=scored),
             patch("cerebra.retrieval.trace.write_trace", return_value="trace_abs001"),
-            patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
-                  side_effect=lambda s, *a, **kw: s),
+            patch(
+                "cerebra.retrieval.lattice_dedup.dedup_siblings", side_effect=lambda s, *a, **kw: s
+            ),
         ):
-            result = CliRunner().invoke(
-                cli, ["search", "weather", "--floor", "0.45"]
-            )
+            result = CliRunner().invoke(cli, ["search", "weather", "--floor", "0.45"])
         assert result.exit_code == 1
         written = [call.args[0] for call in event_log_instance.write.call_args_list]
         abstained = [e for e in written if e.event_type == "RetrievalAbstained"]
@@ -450,6 +486,7 @@ class TestTraceAbstainedFlag:
         import tempfile
 
         from cerebra.storage.migrations import run_migrations
+
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db = Path(f.name)
         run_migrations(db)
@@ -457,6 +494,7 @@ class TestTraceAbstainedFlag:
 
     def _make_real_plan(self, trace_id: str):
         from cerebra.retrieval.planner import QueryPlan
+
         return QueryPlan(
             trace_id=trace_id,
             raw_query="weather forecast",
@@ -470,35 +508,52 @@ class TestTraceAbstainedFlag:
     def _make_real_scored(self, record_id: str, composite: float):
         from cerebra._primitives.score_composer import CompositeScore
         from cerebra.retrieval.scorer import ScoredCandidate
+
         score = CompositeScore(
             composite=composite,
             components={
-                "semantic": composite, "lexical": 0.0,
-                "sku_match": 0.0, "recency": 1.0, "lifecycle": 1.0,
+                "semantic": composite,
+                "lexical": 0.0,
+                "sku_match": 0.0,
+                "recency": 1.0,
+                "lifecycle": 1.0,
             },
             weights={
-                "semantic": 0.40, "lexical": 0.25,
-                "sku_match": 0.15, "recency": 0.10, "lifecycle": 0.10,
+                "semantic": 0.40,
+                "lexical": 0.25,
+                "sku_match": 0.15,
+                "recency": 0.10,
+                "lifecycle": 0.10,
             },
         )
         return ScoredCandidate(
-            record_id=record_id, step_surfaced="vector_fallback",
-            retrieval_path="vector_fallback", score=score,
-            source_path="docs/example.md", content_excerpt="test",
-            sku_address=None, created_at=int(time.time()), rank=1,
+            record_id=record_id,
+            step_surfaced="vector_fallback",
+            retrieval_path="vector_fallback",
+            score=score,
+            source_path="docs/example.md",
+            content_excerpt="test",
+            sku_address=None,
+            created_at=int(time.time()),
+            rank=1,
         )
 
     def test_abstained_flag_one_when_all_below_floor(self) -> None:
         from cerebra.retrieval.trace import TraceData, write_trace
         from cerebra.storage.db import connect
+
         db = self._migrated_db()
         try:
             plan = self._make_real_plan("trace_tf001")
             scored = [self._make_real_scored("rec_001", 0.20)]
             now = int(time.time())
             td = TraceData(
-                plan=plan, scored_all=scored, floor=0.35,
-                started_at=now - 1, finished_at=now, duration_ms=100,
+                plan=plan,
+                scored_all=scored,
+                floor=0.35,
+                started_at=now - 1,
+                finished_at=now,
+                duration_ms=100,
             )
             write_trace(td, db)
             with connect(db) as conn:
@@ -513,14 +568,19 @@ class TestTraceAbstainedFlag:
     def test_abstained_flag_zero_when_any_above_floor(self) -> None:
         from cerebra.retrieval.trace import TraceData, write_trace
         from cerebra.storage.db import connect
+
         db = self._migrated_db()
         try:
             plan = self._make_real_plan("trace_tf002")
             scored = [self._make_real_scored("rec_001", 0.50)]
             now = int(time.time())
             td = TraceData(
-                plan=plan, scored_all=scored, floor=0.35,
-                started_at=now - 1, finished_at=now, duration_ms=100,
+                plan=plan,
+                scored_all=scored,
+                floor=0.35,
+                started_at=now - 1,
+                finished_at=now,
+                duration_ms=100,
             )
             write_trace(td, db)
             with connect(db) as conn:

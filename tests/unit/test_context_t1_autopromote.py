@@ -86,8 +86,7 @@ def _seed_memory_record(db_path: Path, record_id: str = "rec_t6") -> str:
             " content, content_hash, token_estimate, lifecycle_state, "
             " created_at, schema_version) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            (record_id, "source_chunk", src, doc, chk,
-             "test content", "hr0", 5, "active", now, 1),
+            (record_id, "source_chunk", src, doc, chk, "test content", "hr0", 5, "active", now, 1),
         )
         conn.commit()
     finally:
@@ -119,20 +118,27 @@ def _mock_packet(
 ) -> ContextPacket:
     items = []
     if selected:
-        items = [MemoryItem(
-            record_id=record_id, source_id=f"src_{record_id}",
-            chunk_id=f"chk_{record_id}",
-            content_excerpt="T6 test content excerpt.",
-            source_path="docs/test/EXAMPLE.md",
-            sku_address=None, score=0.75,
-            score_components={"semantic": 0.80},
-            retrieval_path="sku", rank=1,
-        )]
+        items = [
+            MemoryItem(
+                record_id=record_id,
+                source_id=f"src_{record_id}",
+                chunk_id=f"chk_{record_id}",
+                content_excerpt="T6 test content excerpt.",
+                source_path="docs/test/EXAMPLE.md",
+                sku_address=None,
+                score=0.75,
+                score_components={"semantic": 0.80},
+                retrieval_path="sku",
+                rank=1,
+            )
+        ]
     return ContextPacket(
         context_packet_id="ctxpkt_t6test001",
-        packet_version=1, schema_version=1,
+        packet_version=1,
+        schema_version=1,
         created_at=1_720_000_000,
-        query="test query", mode="sku",
+        query="test query",
+        mode="sku",
         is_abstained=not selected,
         abstention_rationale="no results" if not selected else None,
         best_score_seen=0.0 if not selected else None,
@@ -164,20 +170,23 @@ def _base_patches(vault: Path, packet: ContextPacket, scored: bool = True):
 
     scored_list = []
     if scored:
-        scored_list = [ScoredCandidate(
-            record_id="rec_t6", step_surfaced="sku",
-            retrieval_path="sku",
-            score=CompositeScore(
-                composite=0.75,
-                components={"semantic": 0.80},
-                weights={"semantic": 1.0},
-            ),
-            source_path=str(vault / "docs/test/EXAMPLE.md"),
-            content_excerpt="T6 test content excerpt.",
-            sku_address=None,
-            created_at=1_720_000_000,
-            rank=1,
-        )]
+        scored_list = [
+            ScoredCandidate(
+                record_id="rec_t6",
+                step_surfaced="sku",
+                retrieval_path="sku",
+                score=CompositeScore(
+                    composite=0.75,
+                    components={"semantic": 0.80},
+                    weights={"semantic": 1.0},
+                ),
+                source_path=str(vault / "docs/test/EXAMPLE.md"),
+                content_excerpt="T6 test content excerpt.",
+                sku_address=None,
+                created_at=1_720_000_000,
+                rank=1,
+            )
+        ]
 
     with (
         patch("cerebra.cli.main._get_vault", return_value=vault),
@@ -211,13 +220,15 @@ class TestRenderTextTowerSection:
         ]
         t2_items = []
         if n_t2 and t1_items:
-            t2_items = [{
-                "tower_item_id": "tti_t2_1",
-                "t1_citation_id": t1_items[0]["tower_item_id"],
-                "content_summary": "T2 interpretation item",
-                "salience_score": 0.60,
-                "is_stale": False,
-            }]
+            t2_items = [
+                {
+                    "tower_item_id": "tti_t2_1",
+                    "t1_citation_id": t1_items[0]["tower_item_id"],
+                    "content_summary": "T2 interpretation item",
+                    "salience_score": 0.60,
+                    "is_stale": False,
+                }
+            ]
         return {
             "t1_items": t1_items,
             "t2_items": t2_items,
@@ -279,7 +290,13 @@ class TestRenderTextTowerSection:
 
     def test_empty_tower_dict_no_section(self) -> None:
         packet = _mock_packet()
-        packet.truth_tower = {"t1_items": [], "t2_items": [], "t1_count": 0, "t2_count": 0, "stale_count": 0}
+        packet.truth_tower = {
+            "t1_items": [],
+            "t2_items": [],
+            "t1_count": 0,
+            "t2_count": 0,
+            "stale_count": 0,
+        }
         rendered = render_text(packet)
         assert "Truth Tower" not in rendered
 
@@ -303,8 +320,13 @@ class TestContextPacketTowerField:
 
     def test_to_dict_includes_truth_tower_when_set(self) -> None:
         packet = _mock_packet()
-        packet.truth_tower = {"t1_count": 1, "t2_count": 0, "stale_count": 0,
-                               "t1_items": [], "t2_items": []}
+        packet.truth_tower = {
+            "t1_count": 1,
+            "t2_count": 0,
+            "stale_count": 0,
+            "t1_items": [],
+            "t2_items": [],
+        }
         d = packet.to_dict()
         assert "truth_tower" in d
         assert d["truth_tower"]["t1_count"] == 1
@@ -343,9 +365,7 @@ class TestNoPromoteFlag:
         packet = _mock_packet("rec_nopromote2", "trace_nopromote2")
         runner = CliRunner()
         with _base_patches(vault, packet):
-            runner.invoke(
-                cli, ["context", "test query", "--vault", str(vault), "--no-promote"]
-            )
+            runner.invoke(cli, ["context", "test query", "--vault", str(vault), "--no-promote"])
         tower = TruthTower(db, sid)
         assert tower.load_tier(1) == []
 
@@ -367,8 +387,16 @@ class TestNoPromoteFlag:
         runner = CliRunner()
         with _base_patches(vault, packet):
             result = runner.invoke(
-                cli, ["context", "test query", "--vault", str(vault),
-                      "--no-promote", "--format", "json"]
+                cli,
+                [
+                    "context",
+                    "test query",
+                    "--vault",
+                    str(vault),
+                    "--no-promote",
+                    "--format",
+                    "json",
+                ],
             )
         assert result.exit_code == 0, result.output
         data = json.loads(result.output)
@@ -436,9 +464,7 @@ class TestT1AutoPromotion:
         packet = _mock_packet("rec_t6a", "trace_t6a")
         runner = CliRunner()
         with _base_patches(vault, packet):
-            result = runner.invoke(
-                cli, ["context", "test query", "--vault", str(vault)]
-            )
+            result = runner.invoke(cli, ["context", "test query", "--vault", str(vault)])
         assert result.exit_code == 0, result.output
         # Discover the session that was auto-created
         conn = connect(db)
@@ -460,9 +486,7 @@ class TestT1AutoPromotion:
         with _base_patches(vault, packet):
             runner.invoke(cli, ["context", "test query", "--vault", str(vault)])
         conn = connect(db)
-        session_count = conn.execute(
-            "SELECT COUNT(*) FROM sessions"
-        ).fetchone()[0]
+        session_count = conn.execute("SELECT COUNT(*) FROM sessions").fetchone()[0]
         conn.close()
         assert session_count >= 1, "auto-session must have been created"
 
@@ -529,6 +553,7 @@ class TestT1AutoPromotion:
 
         def _capture_lock(path: Path):  # type: ignore[return]
             import contextlib
+
             lock_calls.append(path)
 
             @contextlib.contextmanager

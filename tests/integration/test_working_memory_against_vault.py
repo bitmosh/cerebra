@@ -63,9 +63,7 @@ class TestWorkingMemoryVaultIntegration:
         for i in range(cap + 2):
             wm.promote("contradiction", None, f"item {i}", salience_score=float(i) / 10)
         active = wm.load_slot("contradiction")
-        assert len(active) <= cap, (
-            f"Slot exceeded capacity: {len(active)} > {cap}"
-        )
+        assert len(active) <= cap, f"Slot exceeded capacity: {len(active)} > {cap}"
 
     def test_explicit_evict_vault(self, wm: WorkingMemory) -> None:
         """Explicit evict removes item from vault DB."""
@@ -109,7 +107,9 @@ class TestWorkingMemoryVaultIntegration:
         for i in range(cap + 3):
             try:
                 wm.promote(
-                    "contradiction", None, f"filler {i}",
+                    "contradiction",
+                    None,
+                    f"filler {i}",
                     salience_score=0.9 - float(i) * 0.05,
                 )
             except PromotionError:

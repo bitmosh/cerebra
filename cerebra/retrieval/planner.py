@@ -30,12 +30,12 @@ _KEYWORDS_PATH = Path(__file__).parent / "d1_keywords.toml"
 # Regex detecting code-like identifiers: snake_case, camelCase, .extensions,
 # "quoted strings", `backtick`, CONSTANT_NAMES, hex literals.
 _IDENTIFIER_RE = re.compile(
-    r'[a-z]+_[a-zA-Z_]+'           # snake_case (at least one underscore)
-    r'|[a-z][a-z]+[A-Z][a-zA-Z]*'  # camelCase (lower then uppercase transition)
-    r'|\.[a-zA-Z]{2,6}\b'          # .extension
-    r'|"[^"]{2,}"'                  # "quoted string" (2+ chars)
-    r'|`[^`]+`'                     # `backtick block`
-    r'|[A-Z]{2,}_[A-Z_]+'           # CONSTANT_NAME
+    r"[a-z]+_[a-zA-Z_]+"  # snake_case (at least one underscore)
+    r"|[a-z][a-z]+[A-Z][a-zA-Z]*"  # camelCase (lower then uppercase transition)
+    r"|\.[a-zA-Z]{2,6}\b"  # .extension
+    r'|"[^"]{2,}"'  # "quoted string" (2+ chars)
+    r"|`[^`]+`"  # `backtick block`
+    r"|[A-Z]{2,}_[A-Z_]+"  # CONSTANT_NAME
 )
 
 _keywords_cache: dict[int, list[str]] | None = None
@@ -47,10 +47,7 @@ def _load_keywords() -> dict[int, list[str]]:
     if _keywords_cache is None:
         with open(_KEYWORDS_PATH, "rb") as f:
             data = tomllib.load(f)
-        _keywords_cache = {
-            int(k, 16): [kw.lower() for kw in v]
-            for k, v in data["d1"].items()
-        }
+        _keywords_cache = {int(k, 16): [kw.lower() for kw in v] for k, v in data["d1"].items()}
     return _keywords_cache
 
 
@@ -63,12 +60,12 @@ class QueryPlan:
     share a consistent subject_id before the trace row is written to the DB.
     """
 
-    trace_id: str                 # stable ID for this query's lifecycle (uuid)
+    trace_id: str  # stable ID for this query's lifecycle (uuid)
     raw_query: str
-    query_d1: int | None          # inferred D1 hex digit, None if unclassifiable
-    query_d1_d2_d3: str | None    # hex pattern string e.g. "0x5" (D1 only in Phase 4)
-    mode: str                     # "hybrid" | "lexical_only" | "vector_only"
-    max_candidates: int           # cap for traversal Step 5 vector fallback
+    query_d1: int | None  # inferred D1 hex digit, None if unclassifiable
+    query_d1_d2_d3: str | None  # hex pattern string e.g. "0x5" (D1 only in Phase 4)
+    mode: str  # "hybrid" | "lexical_only" | "vector_only"
+    max_candidates: int  # cap for traversal Step 5 vector fallback
     staleness_warnings: list[str] = field(default_factory=list)
 
 
@@ -81,7 +78,7 @@ def _classify_d1(query: str) -> int | None:
     """
     keywords = _load_keywords()
     query_lower = query.lower()
-    query_tokens = set(re.split(r'\W+', query_lower))
+    query_tokens = set(re.split(r"\W+", query_lower))
     query_tokens.discard("")
 
     hits: dict[int, int] = {}
@@ -153,6 +150,7 @@ def _check_staleness(db_path: Path) -> list[str]:
         # Drift: any active record created after last FTS build?
         # Lazy import avoids circular dependency (lexical imports index_state)
         from cerebra.storage.lexical import is_lexical_stale
+
         if is_lexical_stale(db_path):
             warnings.append("lexical index may be stale: new records since last build")
 
@@ -161,13 +159,9 @@ def _check_staleness(db_path: Path) -> list[str]:
         warnings.append("vector index never built (last_updated_at=0)")
     else:
         with connect(db_path) as conn:
-            pending: int = conn.execute(
-                "SELECT COUNT(*) FROM pending_embeddings"
-            ).fetchone()[0]
+            pending: int = conn.execute("SELECT COUNT(*) FROM pending_embeddings").fetchone()[0]
         if pending > 0:
-            warnings.append(
-                f"vector index may be stale: {pending} records pending embedding"
-            )
+            warnings.append(f"vector index may be stale: {pending} records pending embedding")
 
     # ── Graph (no drift detector in Phase 4) ─────────────────────────────────
     if is_stale(db_path, "graph"):
@@ -190,13 +184,15 @@ def query_plan(
     trace_id = f"trace_{uuid.uuid4().hex[:12]}"
 
     if event_log is not None:
-        event_log.write(make_event(
-            event_type="QueryReceived",
-            actor="retrieval",
-            summary=f"Query received: '{query[:60]}'",
-            data={"query": query, "vault_path": str(db_path)},
-            subject_id=trace_id,
-        ))
+        event_log.write(
+            make_event(
+                event_type="QueryReceived",
+                actor="retrieval",
+                summary=f"Query received: '{query[:60]}'",
+                data={"query": query, "vault_path": str(db_path)},
+                subject_id=trace_id,
+            )
+        )
 
     query_d1 = _classify_d1(query)
     mode = _detect_mode(query, query_d1)
@@ -214,18 +210,20 @@ def query_plan(
     )
 
     if event_log is not None:
-        event_log.write(make_event(
-            event_type="QueryPlanned",
-            actor="retrieval.planner",
-            summary=f"Query planned: mode={mode}, D1={query_d1_d2_d3}",
-            data={
-                "trace_id": trace_id,
-                "query_sku_d1": query_d1,
-                "query_sku_pattern": query_d1_d2_d3,
-                "mode": mode,
-                "staleness_warnings": staleness_warnings,
-            },
-            subject_id=trace_id,
-        ))
+        event_log.write(
+            make_event(
+                event_type="QueryPlanned",
+                actor="retrieval.planner",
+                summary=f"Query planned: mode={mode}, D1={query_d1_d2_d3}",
+                data={
+                    "trace_id": trace_id,
+                    "query_sku_d1": query_d1,
+                    "query_sku_pattern": query_d1_d2_d3,
+                    "mode": mode,
+                    "staleness_warnings": staleness_warnings,
+                },
+                subject_id=trace_id,
+            )
+        )
 
     return plan

@@ -176,7 +176,13 @@ class TestExplain:
         b = _with_updates(["explore"], [0.6])
         trace = b.explain(["explore"], total_steps=1)
         entry = trace[0]
-        assert set(entry.keys()) == {"arm", "count", "mean_reward", "exploration_bonus", "ucb_score"}
+        assert set(entry.keys()) == {
+            "arm",
+            "count",
+            "mean_reward",
+            "exploration_bonus",
+            "ucb_score",
+        }
 
 
 # ── Serialization ─────────────────────────────────────────────────────────────

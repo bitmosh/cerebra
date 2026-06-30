@@ -86,9 +86,7 @@ class TestMigration018Registration:
 
     def test_applied_version_recorded(self, db_path: Path) -> None:
         conn = sqlite3.connect(db_path)
-        row = conn.execute(
-            "SELECT version FROM applied_migrations WHERE version = 18"
-        ).fetchone()
+        row = conn.execute("SELECT version FROM applied_migrations WHERE version = 18").fetchone()
         conn.close()
         assert row is not None
 

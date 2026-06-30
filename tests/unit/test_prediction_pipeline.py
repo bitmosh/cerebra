@@ -126,7 +126,9 @@ class TestPredictionBasisSelection:
     def test_cycle_config_default_basis(self) -> None:
         defaults = dict.fromkeys(SIGNAL_NAMES, 0.8)
         inp = PredictionInput(
-            session_id="s", cycle_id="c", step_id="step_cfg",
+            session_id="s",
+            cycle_id="c",
+            step_id="step_cfg",
             prior_step_composites=[],
             prior_step_per_signal=None,
             cycle_config_defaults=defaults,
@@ -152,7 +154,9 @@ class TestPredictionBasisSelection:
     def test_prior_trajectory_uses_prior_per_signal(self) -> None:
         prior_per_signal = dict.fromkeys(SIGNAL_NAMES, 0.55)
         inp = PredictionInput(
-            session_id="s", cycle_id="c", step_id="step_t",
+            session_id="s",
+            cycle_id="c",
+            step_id="step_t",
             prior_step_composites=[0.55],
             prior_step_per_signal=prior_per_signal,
         )
@@ -165,7 +169,9 @@ class TestPredictionBasisSelection:
         prior_per_signal = dict.fromkeys(SIGNAL_NAMES, 0.72)
         defaults = dict.fromkeys(SIGNAL_NAMES, 0.8)
         inp = PredictionInput(
-            session_id="s", cycle_id="c", step_id="step_both",
+            session_id="s",
+            cycle_id="c",
+            step_id="step_both",
             prior_step_composites=[0.72],
             prior_step_per_signal=prior_per_signal,
             cycle_config_defaults=defaults,
@@ -177,7 +183,9 @@ class TestPredictionBasisSelection:
     def test_incomplete_prior_per_signal_raises(self) -> None:
         partial = {"COHERENCE": 0.7}  # only 1 of 6
         inp = PredictionInput(
-            session_id="s", cycle_id="c", step_id="step_bad",
+            session_id="s",
+            cycle_id="c",
+            step_id="step_bad",
             prior_step_composites=[0.7],
             prior_step_per_signal=partial,  # type: ignore[arg-type]
         )
@@ -366,7 +374,9 @@ class TestPredictionPersistence:
                 write_prediction(db, p)
             results = read_predictions_for_session(db, "sess_test")
             assert len(results) == 3
-            assert [r.step_id for r in results] == [p.step_id for p in sorted(preds, key=lambda p: p.made_at)]
+            assert [r.step_id for r in results] == [
+                p.step_id for p in sorted(preds, key=lambda p: p.made_at)
+            ]
         finally:
             db.unlink(missing_ok=True)
 
@@ -381,6 +391,7 @@ class TestPredictionPersistence:
     def test_outcome_fk_requires_prediction_exists(self) -> None:
         """Outcome with non-existent prediction_id should fail FK constraint."""
         import sqlite3
+
         db = _fresh_db()
         try:
             pipeline = PredictionPipeline(_composer())

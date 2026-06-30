@@ -24,6 +24,7 @@ from cerebra.storage.migrations import run_migrations
 
 # ── Seeding helpers ───────────────────────────────────────────────────────────
 
+
 def _seed_memory_record(db_path: Path, record_id: str) -> None:
     now = int(time.time())
     src_id = f"src_{record_id}"
@@ -52,7 +53,21 @@ def _seed_memory_record(db_path: Path, record_id: str) -> None:
             " depth, content, content_hash, token_estimate, chunk_strategy, "
             " lifecycle_state, created_at, schema_version) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (chunk_id, doc_id, src_id, "", 0, 0, "test content", "hc0", 5, "fixed", "active", now, 1),
+            (
+                chunk_id,
+                doc_id,
+                src_id,
+                "",
+                0,
+                0,
+                "test content",
+                "hc0",
+                5,
+                "fixed",
+                "active",
+                now,
+                1,
+            ),
         )
         conn.execute(
             "INSERT OR IGNORE INTO memory_records "
@@ -60,8 +75,19 @@ def _seed_memory_record(db_path: Path, record_id: str) -> None:
             " content, content_hash, token_estimate, lifecycle_state, "
             " created_at, schema_version) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            (record_id, "source_chunk", src_id, doc_id, chunk_id,
-             f"content for {record_id}", "hr0", 5, "active", now, 1),
+            (
+                record_id,
+                "source_chunk",
+                src_id,
+                doc_id,
+                chunk_id,
+                f"content for {record_id}",
+                "hr0",
+                5,
+                "active",
+                now,
+                1,
+            ),
         )
         conn.execute(
             "INSERT OR IGNORE INTO retrieval_traces "
@@ -106,6 +132,7 @@ def _make_mi(record_id: str, score: float = 0.70) -> _FakeMI:
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture()
 def vault(tmp_path: Path) -> Path:
     (tmp_path / "data").mkdir()
@@ -130,6 +157,7 @@ def _run(vault: Path, *args: str):
 
 
 # ── Test classes ──────────────────────────────────────────────────────────────
+
 
 class TestMemoryStatusEmptyTower:
     def test_empty_tower_shows_message(self, vault: Path, session_id: str) -> None:
@@ -157,8 +185,9 @@ class TestMemoryStatusT1Only:
             _seed_memory_record(db, f"rec_{i:02d}")
         tower = TruthTower(db, session_id)
         for i in range(1, 4):
-            tower.promote_to_t1([_make_mi(f"rec_{i:02d}", score=0.7 + i * 0.05)],
-                                trace_id=f"trace_rec_{i:02d}")
+            tower.promote_to_t1(
+                [_make_mi(f"rec_{i:02d}", score=0.7 + i * 0.05)], trace_id=f"trace_rec_{i:02d}"
+            )
 
         result = _run(vault, "memory", "status", "--vault", str(vault))
         assert result.exit_code == 0, result.output
@@ -190,8 +219,9 @@ class TestMemoryStatusT1AndT2:
         tower = TruthTower(db, session_id)
         t1_items = []
         for i in range(1, 4):
-            items = tower.promote_to_t1([_make_mi(f"rec_t_{i:02d}", score=0.75)],
-                                        trace_id=f"trace_rec_t_{i:02d}")
+            items = tower.promote_to_t1(
+                [_make_mi(f"rec_t_{i:02d}", score=0.75)], trace_id=f"trace_rec_t_{i:02d}"
+            )
             t1_items.extend(items)
 
         # Promote two WM items to T2 citing t1_items[1]

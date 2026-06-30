@@ -93,7 +93,12 @@ class TestPredictionPipelineE2E:
         # 1. Emit a synthetic StepStarted event
         step_event_id = emitter.emit_cycle_event(
             event_type="StepStarted",
-            payload={"session_id": "sess_e2e", "cycle_id": "cycle_e2e", "step_id": "step_e2e", "_seq": next(_SEQ)},
+            payload={
+                "session_id": "sess_e2e",
+                "cycle_id": "cycle_e2e",
+                "step_id": "step_e2e",
+                "_seq": next(_SEQ),
+            },
         )
 
         # 2. Predict with no prior data → static_baseline
@@ -121,7 +126,12 @@ class TestPredictionPipelineE2E:
         # 6. Emit synthetic EvaluationComposed event
         eval_event_id = emitter.emit_cycle_event(
             event_type="EvaluationComposed",
-            payload={"session_id": "sess_e2e", "cycle_id": "cycle_e2e", "step_id": "step_e2e", "_seq": next(_SEQ)},
+            payload={
+                "session_id": "sess_e2e",
+                "cycle_id": "cycle_e2e",
+                "step_id": "step_e2e",
+                "_seq": next(_SEQ),
+            },
             causation_id=pred_event_id,
         )
 
@@ -163,7 +173,12 @@ class TestPredictionPipelineE2E:
 
         step_event_id = emitter.emit_cycle_event(
             event_type="StepStarted",
-            payload={"session_id": "sess_e2e", "cycle_id": "cycle_chain", "step_id": "step_chain", "_seq": next(_SEQ)},
+            payload={
+                "session_id": "sess_e2e",
+                "cycle_id": "cycle_chain",
+                "step_id": "step_chain",
+                "_seq": next(_SEQ),
+            },
         )
 
         inp = PredictionInput(
@@ -178,7 +193,12 @@ class TestPredictionPipelineE2E:
 
         eval_event_id = emitter.emit_cycle_event(
             event_type="EvaluationComposed",
-            payload={"session_id": "sess_e2e", "cycle_id": "cycle_chain", "step_id": "step_chain", "_seq": next(_SEQ)},
+            payload={
+                "session_id": "sess_e2e",
+                "cycle_id": "cycle_chain",
+                "step_id": "step_chain",
+                "_seq": next(_SEQ),
+            },
             causation_id=pred_event_id,
         )
 
@@ -189,6 +209,7 @@ class TestPredictionPipelineE2E:
         # Verify events on the cycle stream
         stream_id = "cerebra/agent-trace/sess_e2e"
         from fossic import ReadQuery
+
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
         event_types = [e.event_type for e in events]
 
@@ -217,7 +238,12 @@ class TestPredictionPipelineE2E:
 
         step_event_id = emitter.emit_cycle_event(
             event_type="StepStarted",
-            payload={"session_id": "sess_e2e", "cycle_id": "cycle_smiss_e2e", "step_id": "step_sm", "_seq": next(_SEQ)},
+            payload={
+                "session_id": "sess_e2e",
+                "cycle_id": "cycle_smiss_e2e",
+                "step_id": "step_sm",
+                "_seq": next(_SEQ),
+            },
         )
 
         inp = PredictionInput(
@@ -232,7 +258,12 @@ class TestPredictionPipelineE2E:
 
         eval_event_id = emitter.emit_cycle_event(
             event_type="EvaluationComposed",
-            payload={"session_id": "sess_e2e", "cycle_id": "cycle_smiss_e2e", "step_id": "step_sm", "_seq": next(_SEQ)},
+            payload={
+                "session_id": "sess_e2e",
+                "cycle_id": "cycle_smiss_e2e",
+                "step_id": "step_sm",
+                "_seq": next(_SEQ),
+            },
             causation_id=pred_event_id,
         )
 
@@ -246,6 +277,7 @@ class TestPredictionPipelineE2E:
 
         stream_id = "cerebra/agent-trace/sess_e2e"
         from fossic import ReadQuery
+
         events = store._store.read_range(ReadQuery(stream_id=stream_id))
 
         sm_events = [e for e in events if e.event_type == "PredictionSevereMiss"]

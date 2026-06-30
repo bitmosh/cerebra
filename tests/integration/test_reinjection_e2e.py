@@ -214,6 +214,7 @@ class TestReinjectionTrigger:
         """A cycle that accepts should not spawn a child."""
         vault_path, db_path = _make_vault()
         from cerebra.cognition.cycle_config import _parse_config
+
         # Config with very low accept threshold (always accepts with score 0.55)
         data: dict[str, Any] = {
             "name": "test_always_accept",
@@ -221,12 +222,29 @@ class TestReinjectionTrigger:
             "description": "",
             "max_steps": 5,
             "max_recursion_depth": 3,
-            "steps": [{"name": "plan", "description": "", "prompt_template": {"template": "{{ goal }}", "expected_output_format": "free_form"}}],
+            "steps": [
+                {
+                    "name": "plan",
+                    "description": "",
+                    "prompt_template": {
+                        "template": "{{ goal }}",
+                        "expected_output_format": "free_form",
+                    },
+                }
+            ],
             "stop_conditions": [{"name": "max", "type": "max_steps_reached", "parameters": {}}],
             "clutch_rules": [
-                {"name": "accept_low", "description": "", "predicate_name": "composite_above_threshold", "action": "accept", "parameters": {"threshold": 0.30}},
+                {
+                    "name": "accept_low",
+                    "description": "",
+                    "predicate_name": "composite_above_threshold",
+                    "action": "accept",
+                    "parameters": {"threshold": 0.30},
+                },
             ],
-            "reinjection_triggers": [{"name": "t1", "predicate": "max_steps_without_acceptance", "parameters": {}}],
+            "reinjection_triggers": [
+                {"name": "t1", "predicate": "max_steps_without_acceptance", "parameters": {}}
+            ],
         }
         config = _parse_config(data)
         store = FossicStore(vault_path)
@@ -234,7 +252,9 @@ class TestReinjectionTrigger:
         session, opened_event_id = manager.open_session(
             vault_path=vault_path, goal="Test.", cycle_config=config.name
         )
-        runtime = CycleRuntime(config, session, db_path, store, _StubLLM(score=0.55), opened_event_id)
+        runtime = CycleRuntime(
+            config, session, db_path, store, _StubLLM(score=0.55), opened_event_id
+        )
         result = runtime.run()
         assert result.outcome == "accept"
         assert result.child_result is None
@@ -248,21 +268,45 @@ class TestReinjectionTrigger:
             "description": "",
             "max_steps": 2,
             "max_recursion_depth": 0,
-            "steps": [{"name": "plan", "description": "", "prompt_template": {"template": "{{ goal }}", "expected_output_format": "free_form"}}],
+            "steps": [
+                {
+                    "name": "plan",
+                    "description": "",
+                    "prompt_template": {
+                        "template": "{{ goal }}",
+                        "expected_output_format": "free_form",
+                    },
+                }
+            ],
             "stop_conditions": [{"name": "max", "type": "max_steps_reached", "parameters": {}}],
             "clutch_rules": [
-                {"name": "accept_high", "description": "", "predicate_name": "composite_above_threshold", "action": "accept", "parameters": {"threshold": 0.99}},
-                {"name": "refine_always", "description": "", "predicate_name": "always", "action": "refine", "parameters": {}},
+                {
+                    "name": "accept_high",
+                    "description": "",
+                    "predicate_name": "composite_above_threshold",
+                    "action": "accept",
+                    "parameters": {"threshold": 0.99},
+                },
+                {
+                    "name": "refine_always",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "refine",
+                    "parameters": {},
+                },
             ],
         }
         from cerebra.cognition.cycle_config import _parse_config
+
         config = _parse_config(data)
         store = FossicStore(vault_path)
         manager = SessionManager(db_path=db_path, store=store)
         session, opened_event_id = manager.open_session(
             vault_path=vault_path, goal="Test.", cycle_config=config.name
         )
-        runtime = CycleRuntime(config, session, db_path, store, _StubLLM(score=0.55), opened_event_id)
+        runtime = CycleRuntime(
+            config, session, db_path, store, _StubLLM(score=0.55), opened_event_id
+        )
         result = runtime.run()
         assert result.outcome == "cap_reached"
         assert result.child_result is None
@@ -284,7 +328,9 @@ class TestBanditArmStatsInheritance:
         parent_session, parent_opened_event_id = manager.open_session(
             vault_path=vault_path, goal="Parent goal.", cycle_config=config.name
         )
-        parent_runtime = CycleRuntime(config, parent_session, db_path, store, _StubLLM(score=0.55), parent_opened_event_id)
+        parent_runtime = CycleRuntime(
+            config, parent_session, db_path, store, _StubLLM(score=0.55), parent_opened_event_id
+        )
         parent_result = parent_runtime.run()
 
         # Verify parent has arm_stats
@@ -316,7 +362,6 @@ class TestBanditArmStatsInheritance:
         )
         # At least one arm should be loaded from parent (count > 0)
         has_inherited_stats = any(
-            child_engine._bandit.get_stats(a.arm_id).count > 0
-            for a in config.catalyst_arms
+            child_engine._bandit.get_stats(a.arm_id).count > 0 for a in config.catalyst_arms
         )
         assert has_inherited_stats, "Child CatalystEngine should inherit arm stats from parent"

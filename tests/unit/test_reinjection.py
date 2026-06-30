@@ -21,7 +21,9 @@ def _step(clutch_action: str) -> SimpleNamespace:
     return SimpleNamespace(clutch_action=clutch_action)
 
 
-def _trigger(predicate: str = "max_steps_without_acceptance", name: str = "t1") -> ReinjectionTrigger:
+def _trigger(
+    predicate: str = "max_steps_without_acceptance", name: str = "t1"
+) -> ReinjectionTrigger:
     return ReinjectionTrigger(name=name, predicate=predicate, parameters={})
 
 
@@ -181,6 +183,7 @@ def test_evaluator_first_matching_trigger_wins():
 
 def test_cycle_config_loads_planning_adaptive_with_reinjection():
     from cerebra.cognition.cycle_config import CycleConfigLoader
+
     loader = CycleConfigLoader()
     config = loader.load("planning.adaptive.v0")
     assert len(config.reinjection_triggers) == 1
@@ -190,6 +193,7 @@ def test_cycle_config_loads_planning_adaptive_with_reinjection():
 
 def test_cycle_config_simple_planning_has_no_triggers():
     from cerebra.cognition.cycle_config import CycleConfigLoader
+
     loader = CycleConfigLoader()
     config = loader.load("simple.planning.v0")
     assert config.reinjection_triggers == []
@@ -198,15 +202,30 @@ def test_cycle_config_simple_planning_has_no_triggers():
 
 def test_cycle_config_rejects_unknown_reinjection_predicate():
     from cerebra.cognition.cycle_config import CycleConfigValidationError, _parse_config
+
     data = {
         "name": "test",
         "version": 1,
         "description": "",
         "max_steps": 5,
         "max_recursion_depth": 3,
-        "steps": [{"name": "s1", "description": "", "prompt_template": {"template": "hi", "expected_output_format": "free_form"}}],
+        "steps": [
+            {
+                "name": "s1",
+                "description": "",
+                "prompt_template": {"template": "hi", "expected_output_format": "free_form"},
+            }
+        ],
         "stop_conditions": [{"name": "sc", "type": "max_steps_reached", "parameters": {}}],
-        "clutch_rules": [{"name": "r1", "description": "", "predicate_name": "at_terminal_step", "action": "accept", "parameters": {}}],
+        "clutch_rules": [
+            {
+                "name": "r1",
+                "description": "",
+                "predicate_name": "at_terminal_step",
+                "action": "accept",
+                "parameters": {},
+            }
+        ],
         "reinjection_triggers": [{"name": "bad", "predicate": "does_not_exist", "parameters": {}}],
     }
     with pytest.raises(CycleConfigValidationError, match="Unknown reinjection predicate"):
@@ -215,16 +234,33 @@ def test_cycle_config_rejects_unknown_reinjection_predicate():
 
 def test_cycle_config_rejects_triggers_with_zero_max_depth():
     from cerebra.cognition.cycle_config import CycleConfigValidationError, _parse_config
+
     data = {
         "name": "test",
         "version": 1,
         "description": "",
         "max_steps": 5,
         "max_recursion_depth": 0,
-        "steps": [{"name": "s1", "description": "", "prompt_template": {"template": "hi", "expected_output_format": "free_form"}}],
+        "steps": [
+            {
+                "name": "s1",
+                "description": "",
+                "prompt_template": {"template": "hi", "expected_output_format": "free_form"},
+            }
+        ],
         "stop_conditions": [{"name": "sc", "type": "max_steps_reached", "parameters": {}}],
-        "clutch_rules": [{"name": "r1", "description": "", "predicate_name": "at_terminal_step", "action": "accept", "parameters": {}}],
-        "reinjection_triggers": [{"name": "t1", "predicate": "max_steps_without_acceptance", "parameters": {}}],
+        "clutch_rules": [
+            {
+                "name": "r1",
+                "description": "",
+                "predicate_name": "at_terminal_step",
+                "action": "accept",
+                "parameters": {},
+            }
+        ],
+        "reinjection_triggers": [
+            {"name": "t1", "predicate": "max_steps_without_acceptance", "parameters": {}}
+        ],
     }
     with pytest.raises(CycleConfigValidationError, match="max_recursion_depth is 0"):
         _parse_config(data)
@@ -232,15 +268,30 @@ def test_cycle_config_rejects_triggers_with_zero_max_depth():
 
 def test_cycle_config_rejects_negative_max_recursion_depth():
     from cerebra.cognition.cycle_config import CycleConfigValidationError, _parse_config
+
     data = {
         "name": "test",
         "version": 1,
         "description": "",
         "max_steps": 5,
         "max_recursion_depth": -1,
-        "steps": [{"name": "s1", "description": "", "prompt_template": {"template": "hi", "expected_output_format": "free_form"}}],
+        "steps": [
+            {
+                "name": "s1",
+                "description": "",
+                "prompt_template": {"template": "hi", "expected_output_format": "free_form"},
+            }
+        ],
         "stop_conditions": [{"name": "sc", "type": "max_steps_reached", "parameters": {}}],
-        "clutch_rules": [{"name": "r1", "description": "", "predicate_name": "at_terminal_step", "action": "accept", "parameters": {}}],
+        "clutch_rules": [
+            {
+                "name": "r1",
+                "description": "",
+                "predicate_name": "at_terminal_step",
+                "action": "accept",
+                "parameters": {},
+            }
+        ],
     }
     with pytest.raises(CycleConfigValidationError, match="max_recursion_depth must be >= 0"):
         _parse_config(data)

@@ -197,22 +197,24 @@ def _emit_step(
 ) -> None:
     if event_log is None:
         return
-    event_log.write(make_event(
-        event_type="TraversalStepCompleted",
-        actor="retrieval.traversal",
-        summary=f"Step {step_number} {step_name}: {candidate_count} candidates",
-        data={
-            "trace_id": trace_id,
-            "step_number": step_number,
-            "step_name": step_name,
-            "candidate_count": candidate_count,
-            "new_candidates": new_candidates,
-            "duration_ms": duration_ms,
-            "skipped": skipped,
-            "skip_reason": skip_reason,
-        },
-        subject_id=trace_id,
-    ))
+    event_log.write(
+        make_event(
+            event_type="TraversalStepCompleted",
+            actor="retrieval.traversal",
+            summary=f"Step {step_number} {step_name}: {candidate_count} candidates",
+            data={
+                "trace_id": trace_id,
+                "step_number": step_number,
+                "step_name": step_name,
+                "candidate_count": candidate_count,
+                "new_candidates": new_candidates,
+                "duration_ms": duration_ms,
+                "skipped": skipped,
+                "skip_reason": skip_reason,
+            },
+            subject_id=trace_id,
+        )
+    )
 
 
 def run_traversal(
@@ -271,9 +273,12 @@ def run_traversal(
     t0 = time.monotonic_ns()
     query_d1, query_sku_pattern = _step1_construct_sku_query(plan)
     _emit_step(
-        event_log, trace_id,
-        step_number=1, step_name="query_sku_construction",
-        candidate_count=0, new_candidates=0,
+        event_log,
+        trace_id,
+        step_number=1,
+        step_name="query_sku_construction",
+        candidate_count=0,
+        new_candidates=0,
         duration_ms=max(0, (time.monotonic_ns() - t0) // 1_000_000),
     )
 
@@ -284,9 +289,12 @@ def run_traversal(
     for rid in exact_ids:
         _add(rid, "exact_sku", sku_d1_match=True)
     _emit_step(
-        event_log, trace_id,
-        step_number=2, step_name="exact_sku",
-        candidate_count=len(candidates), new_candidates=len(candidates) - before,
+        event_log,
+        trace_id,
+        step_number=2,
+        step_name="exact_sku",
+        candidate_count=len(candidates),
+        new_candidates=len(candidates) - before,
         duration_ms=max(0, (time.monotonic_ns() - t0) // 1_000_000),
     )
 
@@ -297,9 +305,12 @@ def run_traversal(
     for rid in partial_ids:
         _add(rid, "partial_sku", sku_d1_match=True)
     _emit_step(
-        event_log, trace_id,
-        step_number=3, step_name="partial_sku",
-        candidate_count=len(candidates), new_candidates=len(candidates) - before,
+        event_log,
+        trace_id,
+        step_number=3,
+        step_name="partial_sku",
+        candidate_count=len(candidates),
+        new_candidates=len(candidates) - before,
         duration_ms=max(0, (time.monotonic_ns() - t0) // 1_000_000),
     )
 
@@ -307,11 +318,15 @@ def run_traversal(
     t0 = time.monotonic_ns()
     # No-op: Step 4 is a placeholder for v0.2+ multi-pointer fanout.
     _emit_step(
-        event_log, trace_id,
-        step_number=4, step_name="sibling_traversal",
-        candidate_count=len(candidates), new_candidates=0,
+        event_log,
+        trace_id,
+        step_number=4,
+        step_name="sibling_traversal",
+        candidate_count=len(candidates),
+        new_candidates=0,
         duration_ms=max(0, (time.monotonic_ns() - t0) // 1_000_000),
-        skipped=True, skip_reason="single-pointer v0.1",
+        skipped=True,
+        skip_reason="single-pointer v0.1",
     )
 
     # ── Step 5a: Lexical search ───────────────────────────────────────────────
@@ -322,9 +337,12 @@ def run_traversal(
         for rid, rank in lex_results:
             _add(rid, "lexical_search", lexical_score=rank)
         _emit_step(
-            event_log, trace_id,
-            step_number=5, step_name="lexical_search",
-            candidate_count=len(candidates), new_candidates=len(candidates) - before,
+            event_log,
+            trace_id,
+            step_number=5,
+            step_name="lexical_search",
+            candidate_count=len(candidates),
+            new_candidates=len(candidates) - before,
             duration_ms=max(0, (time.monotonic_ns() - t0) // 1_000_000),
         )
 
@@ -336,9 +354,12 @@ def run_traversal(
         for rid, score in vec_results:
             _add(rid, "vector_fallback", semantic_score=score)
         _emit_step(
-            event_log, trace_id,
-            step_number=5, step_name="vector_fallback",
-            candidate_count=len(candidates), new_candidates=len(candidates) - before,
+            event_log,
+            trace_id,
+            step_number=5,
+            step_name="vector_fallback",
+            candidate_count=len(candidates),
+            new_candidates=len(candidates) - before,
             duration_ms=max(0, (time.monotonic_ns() - t0) // 1_000_000),
             skipped=(len(vec_results) == 0 and not vec_results),
         )
@@ -348,27 +369,35 @@ def run_traversal(
     raw = []
     for rid, entry in candidates.items():
         path = _assemble_retrieval_path(rid, entry["steps"], query_d1)
-        raw.append(RawCandidate(
-            record_id=rid,
-            step_surfaced=entry["step_surfaced"],
-            retrieval_path=path,
-            semantic_score=entry["semantic_score"],
-            lexical_score=entry["lexical_score"],
-            sku_d1_match=entry["sku_d1_match"],
-            _steps=entry["steps"],
-        ))
+        raw.append(
+            RawCandidate(
+                record_id=rid,
+                step_surfaced=entry["step_surfaced"],
+                retrieval_path=path,
+                semantic_score=entry["semantic_score"],
+                lexical_score=entry["lexical_score"],
+                sku_d1_match=entry["sku_d1_match"],
+                _steps=entry["steps"],
+            )
+        )
 
     # Cap and sort: prefer highest semantic_score, then lexical_score
-    raw.sort(key=lambda c: (
-        c.semantic_score if c.semantic_score is not None else -1.0,
-        abs(c.lexical_score) if c.lexical_score is not None else 0.0,
-    ), reverse=True)
+    raw.sort(
+        key=lambda c: (
+            c.semantic_score if c.semantic_score is not None else -1.0,
+            abs(c.lexical_score) if c.lexical_score is not None else 0.0,
+        ),
+        reverse=True,
+    )
     raw = raw[: plan.max_candidates]
 
     _emit_step(
-        event_log, trace_id,
-        step_number=6, step_name="trace_annotation",
-        candidate_count=len(raw), new_candidates=0,
+        event_log,
+        trace_id,
+        step_number=6,
+        step_name="trace_annotation",
+        candidate_count=len(raw),
+        new_candidates=0,
         duration_ms=max(0, (time.monotonic_ns() - t0) // 1_000_000),
     )
 

@@ -58,6 +58,7 @@ _SHARED_CHUNK_PREFIX = "chk_test_"
 def _ensure_source_doc(conn: sqlite3.Connection) -> None:
     """Insert shared source + document rows (idempotent via INSERT OR IGNORE)."""
     import time as _time
+
     now = int(_time.time())
     conn.execute(
         "INSERT OR IGNORE INTO sources "
@@ -77,6 +78,7 @@ def _ensure_source_doc(conn: sqlite3.Connection) -> None:
 def _insert_sku_record(conn: sqlite3.Connection, record_id: str, d1: int) -> None:
     """Insert the full FK chain: source + doc + chunk + memory_record + sku_assignment."""
     import time as _time
+
     now = int(_time.time())
     sku_addr = f"0x{d1:x}.0x0.0x0.0x0.0x0.0x0.0x0.0x0.0x0.0x0"
     chunk_id = f"{_SHARED_CHUNK_PREFIX}{record_id}"
@@ -95,15 +97,24 @@ def _insert_sku_record(conn: sqlite3.Connection, record_id: str, d1: int) -> Non
         "(record_id, source_id, document_id, chunk_id, content, content_hash, "
         " token_estimate, sku_address, lifecycle_state, created_at) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)",
-        (record_id, _SHARED_SOURCE_ID, _SHARED_DOC_ID, chunk_id,
-         "test content", "hash_rec", 1, sku_addr, now),
+        (
+            record_id,
+            _SHARED_SOURCE_ID,
+            _SHARED_DOC_ID,
+            chunk_id,
+            "test content",
+            "hash_rec",
+            1,
+            sku_addr,
+            now,
+        ),
     )
     conn.execute(
         "INSERT OR IGNORE INTO sku_assignments "
         "(assignment_id, record_id, sku_address, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, "
         " raw_scores_json, d1_confidence, classifier_version, prompt_version, created_at) "
         "VALUES (?, ?, ?, ?, 0, 0, 0, 0, 0, 0, 0, 0, 0, ?, 0.9, 'test', 'v1', ?)",
-        (f"asgn_{record_id}", record_id, sku_addr, d1, '{}', now),
+        (f"asgn_{record_id}", record_id, sku_addr, d1, "{}", now),
     )
 
 
@@ -403,6 +414,7 @@ class TestRunTraversal:
 
     def test_events_emitted_when_log_provided(self) -> None:
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             log = SQLiteEventLog(db)
@@ -418,6 +430,7 @@ class TestRunTraversal:
         import json
 
         from cerebra.inspector.sqlite_log import SQLiteEventLog
+
         db = _migrated_db()
         try:
             log = SQLiteEventLog(db)
@@ -425,7 +438,8 @@ class TestRunTraversal:
             run_traversal(plan, db, event_log=log)
             events = log.query_by_type("TraversalStepCompleted")
             step4 = [
-                e for e in events
+                e
+                for e in events
                 if json.loads(e["data_json"]).get("step_name") == "sibling_traversal"
             ]
             assert len(step4) == 1

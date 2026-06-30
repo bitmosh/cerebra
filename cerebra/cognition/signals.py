@@ -69,9 +69,7 @@ class SignalEvaluator:
         context: dict[str, Any] | None = None,
     ) -> SignalScore:
         if signal_name not in SIGNAL_NAMES:
-            raise ValueError(
-                f"Unknown signal: {signal_name!r}. Known signals: {SIGNAL_NAMES}"
-            )
+            raise ValueError(f"Unknown signal: {signal_name!r}. Known signals: {SIGNAL_NAMES}")
 
         if signal_name == "EPISTEMIC_HUMILITY":
             score, details = score_epistemic_humility(output_text)

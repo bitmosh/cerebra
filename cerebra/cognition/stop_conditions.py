@@ -20,8 +20,8 @@ class CycleState:
     steps_run: int
     all_steps_completed: bool
     recent_composites: list[float]  # all composite scores in execution order
-    explicit_stop: bool             # set True when Clutch action was "stop"
-    user_interrupted: bool          # set True on SIGINT/SIGTERM
+    explicit_stop: bool  # set True when Clutch action was "stop"
+    user_interrupted: bool  # set True on SIGINT/SIGTERM
     consecutive_low_composites: list[float] = field(default_factory=list)
 
 

@@ -66,14 +66,17 @@ class TestMigration013Schema:
         try:
             run_migrations(db)
             conn = sqlite3.connect(db)
-            cols = {
-                row[1]
-                for row in conn.execute("PRAGMA table_info(predictions)").fetchall()
-            }
+            cols = {row[1] for row in conn.execute("PRAGMA table_info(predictions)").fetchall()}
             expected = {
-                "prediction_id", "session_id", "cycle_id", "step_id",
-                "expected_composite_score", "expected_per_signal",
-                "prediction_basis", "confidence", "made_at",
+                "prediction_id",
+                "session_id",
+                "cycle_id",
+                "step_id",
+                "expected_composite_score",
+                "expected_per_signal",
+                "prediction_basis",
+                "confidence",
+                "made_at",
             }
             assert expected.issubset(cols), f"Missing columns: {expected - cols}"
             conn.close()
@@ -85,14 +88,18 @@ class TestMigration013Schema:
         try:
             run_migrations(db)
             conn = sqlite3.connect(db)
-            cols = {
-                row[1]
-                for row in conn.execute("PRAGMA table_info(outcomes)").fetchall()
-            }
+            cols = {row[1] for row in conn.execute("PRAGMA table_info(outcomes)").fetchall()}
             expected = {
-                "outcome_id", "prediction_id", "session_id", "cycle_id", "step_id",
-                "actual_composite_score", "prediction_error", "error_classification",
-                "per_signal_error", "recorded_at",
+                "outcome_id",
+                "prediction_id",
+                "session_id",
+                "cycle_id",
+                "step_id",
+                "actual_composite_score",
+                "prediction_error",
+                "error_classification",
+                "per_signal_error",
+                "recorded_at",
             }
             assert expected.issubset(cols), f"Missing columns: {expected - cols}"
             conn.close()
@@ -106,9 +113,7 @@ class TestMigration013Schema:
             conn = sqlite3.connect(db)
             indexes = {
                 row[1]
-                for row in conn.execute(
-                    "SELECT * FROM sqlite_master WHERE type='index'"
-                ).fetchall()
+                for row in conn.execute("SELECT * FROM sqlite_master WHERE type='index'").fetchall()
             }
             assert "idx_predictions_session" in indexes
             assert "idx_outcomes_session" in indexes
@@ -181,6 +186,7 @@ class TestMigration013Schema:
         try:
             run_migrations(db)
             from cerebra.storage.db import connect as cerebra_connect
+
             conn = cerebra_connect(db)  # uses PRAGMA foreign_keys=ON
             with pytest.raises(sqlite3.IntegrityError):
                 conn.execute("""

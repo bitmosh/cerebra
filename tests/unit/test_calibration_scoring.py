@@ -1,4 +1,5 @@
 """Unit tests for calibration scoring logic."""
+
 from __future__ import annotations
 
 from cerebra.cognition.sku_categories import D1Category

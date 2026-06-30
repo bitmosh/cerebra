@@ -111,9 +111,7 @@ class FossicStore:
 
     # ── Snapshot ──────────────────────────────────────────────────────────────
 
-    def take_snapshot(
-        self, stream_id: str, branch: str = "main"
-    ) -> SnapshotInfo | None:
+    def take_snapshot(self, stream_id: str, branch: str = "main") -> SnapshotInfo | None:
         """Persist current aggregate state as a snapshot.
 
         Returns None if the stream has no events (NoEventsToSnapshotError),

@@ -20,7 +20,9 @@ from pathlib import Path
 
 import pytest
 
-numpy = pytest.importorskip("numpy", reason="numpy not available — skipping lattice dedup integration tests")
+numpy = pytest.importorskip(
+    "numpy", reason="numpy not available — skipping lattice dedup integration tests"
+)
 
 _VAULT_ROOT = Path.home() / "cerebra-vaults" / "dev"
 _VAULT_DB = _VAULT_ROOT / "data" / "cerebra.db"
@@ -31,11 +33,13 @@ def vault_db() -> Path:
     if not _VAULT_DB.exists():
         pytest.skip(f"Dev vault not found at {_VAULT_DB}")
     from cerebra.storage.migrations import run_migrations
+
     run_migrations(_VAULT_DB)
     return _VAULT_DB
 
 
 # ── seeding helpers ───────────────────────────────────────────────────────────
+
 
 def _seed_sibling_pair(
     db: Path,
@@ -46,6 +50,7 @@ def _seed_sibling_pair(
     score_b: float = 0.70,
 ) -> None:
     from cerebra.storage.db import connect
+
     now = int(time.time())
     src_id = f"src_it_{lineage_id}"
     doc_id = f"doc_it_{lineage_id}"
@@ -59,8 +64,18 @@ def _seed_sibling_pair(
             " detected_type, detection_confidence, parser_status, "
             " lifecycle_state, created_at, schema_version) "
             "VALUES (?,?,?,?,?,?,?,?,?,?)",
-            (src_id, f"/it/sibling_{lineage_id}", "h0", 1, "markdown", 1.0,
-             "done", "active", now, 1),
+            (
+                src_id,
+                f"/it/sibling_{lineage_id}",
+                "h0",
+                1,
+                "markdown",
+                1.0,
+                "done",
+                "active",
+                now,
+                1,
+            ),
         )
         conn.execute(
             "INSERT OR IGNORE INTO documents "
@@ -76,8 +91,21 @@ def _seed_sibling_pair(
                 " depth, content, content_hash, token_estimate, chunk_strategy, "
                 " lifecycle_state, created_at, schema_version) "
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                (chunk_id, doc_id, src_id, "", 0, 0, f"content for {chunk_id}",
-                 f"hc_{chunk_id}", 5, "fixed", "active", now, 1),
+                (
+                    chunk_id,
+                    doc_id,
+                    src_id,
+                    "",
+                    0,
+                    0,
+                    f"content for {chunk_id}",
+                    f"hc_{chunk_id}",
+                    5,
+                    "fixed",
+                    "active",
+                    now,
+                    1,
+                ),
             )
         for rec_id, chunk_id in ((rec_a, chunk_a), (rec_b, chunk_b)):
             conn.execute(
@@ -86,9 +114,19 @@ def _seed_sibling_pair(
                 " content, content_hash, token_estimate, lifecycle_state, "
                 " is_lattice_member, lattice_lineage_id, created_at, schema_version) "
                 "VALUES (?,?,?,?,?,?,?,?,?,1,?,?,1)",
-                (rec_id, "source_chunk", src_id, doc_id, chunk_id,
-                 f"content for {rec_id}", f"hr_{rec_id}", 5, "active",
-                 lineage_id, now),
+                (
+                    rec_id,
+                    "source_chunk",
+                    src_id,
+                    doc_id,
+                    chunk_id,
+                    f"content for {rec_id}",
+                    f"hr_{rec_id}",
+                    5,
+                    "active",
+                    lineage_id,
+                    now,
+                ),
             )
         trace_id = f"trace_it_{lineage_id}"
         conn.execute(
@@ -121,6 +159,7 @@ def _make_scored(
 ):
     from cerebra._primitives.score_composer import CompositeScore
     from cerebra.retrieval.scorer import ScoredCandidate
+
     return ScoredCandidate(
         record_id=record_id,
         step_surfaced="vector",
@@ -135,6 +174,7 @@ def _make_scored(
 
 
 # ── tests ─────────────────────────────────────────────────────────────────────
+
 
 @pytest.mark.integration
 class TestLatticeDedupAgainstVault:
@@ -238,8 +278,7 @@ class TestLatticeDedupAgainstVault:
         conn = connect(vault_db)
         try:
             row = conn.execute(
-                "SELECT lattice_routing_basis FROM retrieval_candidates "
-                "WHERE candidate_id = ?",
+                "SELECT lattice_routing_basis FROM retrieval_candidates " "WHERE candidate_id = ?",
                 (f"cand_{trace_id}_{rec_a}",),
             ).fetchone()
         finally:
@@ -262,6 +301,7 @@ class TestLatticeDedupAgainstVault:
         dedup_siblings(candidates, None, vault_db, trace_id, event_log=event_log)
 
         from cerebra.storage.db import connect
+
         conn = connect(vault_db)
         try:
             count = conn.execute(

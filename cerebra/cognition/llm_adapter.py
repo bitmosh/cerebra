@@ -332,6 +332,7 @@ class OllamaDirectAdapter(LLMAdapter):
 
     def classify_quadrant(self, content: str) -> ClassificationResult:
         from cerebra.cognition.sku_classifier import _build_pass1_prompt
+
         prompt = _build_pass1_prompt(content)
         t0 = time.monotonic()
         raw_response = self._call_ollama_chat(prompt)
@@ -347,6 +348,7 @@ class OllamaDirectAdapter(LLMAdapter):
 
     def classify_within_quadrant(self, content: str, quadrant: str) -> ClassificationResult:
         from cerebra.cognition.sku_classifier import _build_pass2_prompt
+
         prompt = _build_pass2_prompt(content, quadrant)
         t0 = time.monotonic()
         raw_response = self._call_ollama_chat(prompt)

@@ -53,7 +53,9 @@ def _state(
 class TestMaxStepsReached:
     def _evaluator(self, max_steps: int = 10) -> StopConditionEvaluator:
         cfg = CycleConfig(
-            name="t", version=1, description="",
+            name="t",
+            version=1,
+            description="",
             steps=[CycleStep("s", "", StepPromptTemplate("{{ goal }}", "free_form"))],
             max_steps=max_steps,
             stop_conditions=[
@@ -111,12 +113,18 @@ class TestAllStepsCompleted:
 
 class TestCompositeFloorConsecutive:
     def _evaluator(self, threshold: float = 0.30, count: int = 2) -> StopConditionEvaluator:
-        cfg = _make_config([
-            StopCondition("floor", "composite_floor_consecutive", {
-                "threshold": threshold,
-                "consecutive_count": count,
-            })
-        ])
+        cfg = _make_config(
+            [
+                StopCondition(
+                    "floor",
+                    "composite_floor_consecutive",
+                    {
+                        "threshold": threshold,
+                        "consecutive_count": count,
+                    },
+                )
+            ]
+        )
         return StopConditionEvaluator(cfg)
 
     def test_fires_when_last_n_below_threshold(self) -> None:
@@ -197,14 +205,18 @@ class TestUserInterrupt:
 
 class TestEvaluatorOrder:
     def test_first_matching_condition_wins(self) -> None:
-        cfg = _make_config([
-            StopCondition("cap", "max_steps_reached", {}),
-            StopCondition("done", "all_steps_completed", {}),
-        ])
+        cfg = _make_config(
+            [
+                StopCondition("cap", "max_steps_reached", {}),
+                StopCondition("done", "all_steps_completed", {}),
+            ]
+        )
         ev = StopConditionEvaluator(cfg)
         # Both conditions are true; first one should win
         cfg_with_max_1 = CycleConfig(
-            name="t", version=1, description="",
+            name="t",
+            version=1,
+            description="",
             steps=[CycleStep("s", "", StepPromptTemplate("{{ goal }}", "free_form"))],
             max_steps=1,
             stop_conditions=[
@@ -222,7 +234,9 @@ class TestEvaluatorOrder:
         cfg = _make_config([StopCondition("cap", "max_steps_reached", {})])
         ev = StopConditionEvaluator(cfg)
         cfg_with_max_10 = CycleConfig(
-            name="t", version=1, description="",
+            name="t",
+            version=1,
+            description="",
             steps=[CycleStep("s", "", StepPromptTemplate("{{ goal }}", "free_form"))],
             max_steps=10,
             stop_conditions=[StopCondition("cap", "max_steps_reached", {})],

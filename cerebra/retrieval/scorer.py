@@ -45,7 +45,7 @@ class ScoredCandidate:
     """A candidate with its full salience score and metadata, ready for ContextPacket."""
 
     record_id: str
-    step_surfaced: str    # first traversal step that surfaced this record
+    step_surfaced: str  # first traversal step that surfaced this record
     retrieval_path: str
     score: CompositeScore
     source_path: str
@@ -120,16 +120,10 @@ def score_candidates(
             record_ids,
         ).fetchall()
 
-    meta: dict[str, dict] = {
-        row["record_id"]: dict(row) for row in rows
-    }
+    meta: dict[str, dict] = {row["record_id"]: dict(row) for row in rows}
 
     # ── Lexical normalization: collect all raw ranks in the candidate set ─────
-    lex_ranks = [
-        c.lexical_score
-        for c in candidates
-        if c.lexical_score is not None
-    ]
+    lex_ranks = [c.lexical_score for c in candidates if c.lexical_score is not None]
 
     # ── Score each candidate ──────────────────────────────────────────────────
     scored: list[ScoredCandidate] = []
@@ -168,16 +162,18 @@ def score_candidates(
         )
 
         content = m["content"] or ""
-        scored.append(ScoredCandidate(
-            record_id=raw.record_id,
-            step_surfaced=raw.step_surfaced,
-            retrieval_path=raw.retrieval_path,
-            score=score,
-            source_path=m["source_path"] or "",
-            content_excerpt=content[:_CONTENT_EXCERPT_LEN],
-            sku_address=m["sku_address"],
-            created_at=m["created_at"],
-        ))
+        scored.append(
+            ScoredCandidate(
+                record_id=raw.record_id,
+                step_surfaced=raw.step_surfaced,
+                retrieval_path=raw.retrieval_path,
+                score=score,
+                source_path=m["source_path"] or "",
+                content_excerpt=content[:_CONTENT_EXCERPT_LEN],
+                sku_address=m["sku_address"],
+                created_at=m["created_at"],
+            )
+        )
 
     # ── Sort and rank ─────────────────────────────────────────────────────────
     scored.sort(key=lambda c: c.score.composite, reverse=True)
@@ -190,23 +186,25 @@ def score_candidates(
         mean = sum(c.score.composite for c in scored) / len(scored)
         floor = 0.35
         above = sum(1 for c in scored if c.score.composite >= floor)
-        event_log.write(make_event(
-            event_type="SalienceScored",
-            actor="retrieval.scorer",
-            summary=(
-                f"Scored {len(scored)} candidates; "
-                f"top={top:.2f}, mean={mean:.2f}, floor={floor}"
-            ),
-            data={
-                "trace_id": plan.trace_id,
-                "candidate_count": len(scored),
-                "above_floor": above,
-                "top_score": round(top, 4),
-                "mean_score": round(mean, 4),
-                "floor_used": floor,
-                "weights": _WEIGHTS,
-            },
-            subject_id=plan.trace_id,
-        ))
+        event_log.write(
+            make_event(
+                event_type="SalienceScored",
+                actor="retrieval.scorer",
+                summary=(
+                    f"Scored {len(scored)} candidates; "
+                    f"top={top:.2f}, mean={mean:.2f}, floor={floor}"
+                ),
+                data={
+                    "trace_id": plan.trace_id,
+                    "candidate_count": len(scored),
+                    "above_floor": above,
+                    "top_score": round(top, 4),
+                    "mean_score": round(mean, 4),
+                    "floor_used": floor,
+                    "weights": _WEIGHTS,
+                },
+                subject_id=plan.trace_id,
+            )
+        )
 
     return scored

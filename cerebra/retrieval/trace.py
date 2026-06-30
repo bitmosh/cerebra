@@ -77,21 +77,21 @@ def write_trace(
     scored = trace_data.scored_all
     trace_id = plan.trace_id
 
-    above_floor_ids = {
-        c.record_id for c in scored if c.score.composite >= trace_data.floor
-    }
+    above_floor_ids = {c.record_id for c in scored if c.score.composite >= trace_data.floor}
     selected_count = len(above_floor_ids)
     abstained = 1 if selected_count == 0 else 0
 
-    plan_json = json.dumps({
-        "trace_id": plan.trace_id,
-        "raw_query": plan.raw_query,
-        "query_d1": plan.query_d1,
-        "query_d1_d2_d3": plan.query_d1_d2_d3,
-        "mode": plan.mode,
-        "max_candidates": plan.max_candidates,
-        "staleness_warnings": plan.staleness_warnings,
-    })
+    plan_json = json.dumps(
+        {
+            "trace_id": plan.trace_id,
+            "raw_query": plan.raw_query,
+            "query_d1": plan.query_d1,
+            "query_d1_d2_d3": plan.query_d1_d2_d3,
+            "mode": plan.mode,
+            "max_candidates": plan.max_candidates,
+            "staleness_warnings": plan.staleness_warnings,
+        }
+    )
 
     with connect(db_path) as conn:
         # ── retrieval_traces: one row ─────────────────────────────────────────
@@ -150,11 +150,13 @@ def write_trace(
             candidate_id = f"cand_{trace_id}_{c.record_id}"
             selected = 1 if c.record_id in above_floor_ids else 0
             exclusion_reason = None if selected else "below_floor"
-            score_json = json.dumps({
-                "composite": c.score.composite,
-                "components": c.score.components,
-                "weights": c.score.weights,
-            })
+            score_json = json.dumps(
+                {
+                    "composite": c.score.composite,
+                    "components": c.score.components,
+                    "weights": c.score.weights,
+                }
+            )
             conn.execute(
                 """
                 INSERT INTO retrieval_candidates (
@@ -180,17 +182,19 @@ def write_trace(
     write_duration_ms = max(0, (time.monotonic_ns() - t_write_start) // 1_000_000)
 
     if event_log is not None:
-        event_log.write(make_event(
-            event_type="TraceWritten",
-            actor="retrieval.trace",
-            summary=f"Trace written: {trace_id}, {len(scored)} candidates, {selected_count} selected",
-            data={
-                "trace_id": trace_id,
-                "candidate_count": len(scored),
-                "selected_count": selected_count,
-                "duration_ms": write_duration_ms,
-            },
-            subject_id=trace_id,
-        ))
+        event_log.write(
+            make_event(
+                event_type="TraceWritten",
+                actor="retrieval.trace",
+                summary=f"Trace written: {trace_id}, {len(scored)} candidates, {selected_count} selected",
+                data={
+                    "trace_id": trace_id,
+                    "candidate_count": len(scored),
+                    "selected_count": selected_count,
+                    "duration_ms": write_duration_ms,
+                },
+                subject_id=trace_id,
+            )
+        )
 
     return trace_id

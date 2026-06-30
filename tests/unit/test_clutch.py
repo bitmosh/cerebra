@@ -48,9 +48,7 @@ def _make_config_with_rules(rules: list[dict]) -> object:
             }
             for i in range(3)
         ],
-        "stop_conditions": [
-            {"name": "cap", "type": "max_steps_reached", "parameters": {}}
-        ],
+        "stop_conditions": [{"name": "cap", "type": "max_steps_reached", "parameters": {}}],
         "clutch_rules": rules,
     }
     return _parse_config(d)
@@ -176,20 +174,48 @@ class TestClutchEngine:
         return ClutchEngine(cfg)  # type: ignore[arg-type]
 
     def test_first_matching_rule_wins(self) -> None:
-        engine = self._engine([
-            {"name": "r1", "description": "", "predicate_name": "always", "action": "stop", "parameters": {}},
-            {"name": "r2", "description": "", "predicate_name": "always", "action": "accept", "parameters": {}},
-        ])
+        engine = self._engine(
+            [
+                {
+                    "name": "r1",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "stop",
+                    "parameters": {},
+                },
+                {
+                    "name": "r2",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "accept",
+                    "parameters": {},
+                },
+            ]
+        )
         decision = engine.decide(_ctx())
         assert decision.action == "stop"
         assert decision.rule_matched == "r1"
 
     def test_default_accept_when_no_rule_matches(self) -> None:
         # Only rule is first_step but we're at step 2
-        engine = self._engine([
-            {"name": "first_only", "description": "", "predicate_name": "first_step", "action": "stop", "parameters": {}},
-            {"name": "default", "description": "", "predicate_name": "always", "action": "accept", "parameters": {}},
-        ])
+        engine = self._engine(
+            [
+                {
+                    "name": "first_only",
+                    "description": "",
+                    "predicate_name": "first_step",
+                    "action": "stop",
+                    "parameters": {},
+                },
+                {
+                    "name": "default",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "accept",
+                    "parameters": {},
+                },
+            ]
+        )
         ctx = _ctx(step_index=2)
         decision = engine.decide(ctx)
         assert decision.action == "accept"
@@ -197,10 +223,24 @@ class TestClutchEngine:
 
     def test_no_match_returns_default_no_match(self) -> None:
         # Make an engine with no always rule but only step_index_at=99
-        engine = self._engine([
-            {"name": "unreachable", "description": "", "predicate_name": "step_index_at", "action": "stop", "parameters": {"index": 99}},
-            {"name": "accept", "description": "", "predicate_name": "always", "action": "accept", "parameters": {}},
-        ])
+        engine = self._engine(
+            [
+                {
+                    "name": "unreachable",
+                    "description": "",
+                    "predicate_name": "step_index_at",
+                    "action": "stop",
+                    "parameters": {"index": 99},
+                },
+                {
+                    "name": "accept",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "accept",
+                    "parameters": {},
+                },
+            ]
+        )
         # The "always" rule fires so default_no_match won't be hit; test the fallback
         # by building a config where NO rule would match:
         from cerebra.cognition.cycle_config import (
@@ -210,8 +250,11 @@ class TestClutchEngine:
             StepPromptTemplate,
             StopCondition,
         )
+
         cfg = CycleConfig(
-            name="x", version=1, description="",
+            name="x",
+            version=1,
+            description="",
             steps=[CycleStep("s", "", StepPromptTemplate("{{ goal }}", "free_form"))],
             max_steps=5,
             stop_conditions=[StopCondition("cap", "max_steps_reached", {})],
@@ -223,23 +266,41 @@ class TestClutchEngine:
         assert decision.rule_matched == "default_no_match"
 
     def test_decision_frozen(self) -> None:
-        engine = self._engine([
-            {"name": "r", "description": "", "predicate_name": "always", "action": "accept", "parameters": {}},
-        ])
+        engine = self._engine(
+            [
+                {
+                    "name": "r",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "accept",
+                    "parameters": {},
+                },
+            ]
+        )
         decision = engine.decide(_ctx())
         assert isinstance(decision, ClutchDecision)
         with pytest.raises((AttributeError, TypeError)):
             decision.action = "stop"  # type: ignore[misc]
 
     def test_escalate_false_when_rule_matches(self) -> None:
-        engine = self._engine([
-            {"name": "r", "description": "", "predicate_name": "always", "action": "accept", "parameters": {}},
-        ])
+        engine = self._engine(
+            [
+                {
+                    "name": "r",
+                    "description": "",
+                    "predicate_name": "always",
+                    "action": "accept",
+                    "parameters": {},
+                },
+            ]
+        )
         decision = engine.decide(_ctx())
         assert decision.escalate_to_catalyst is False
 
     def test_simple_planning_config_happy_path(self) -> None:
-        loader = __import__("cerebra.cognition.cycle_config", fromlist=["CycleConfigLoader"]).CycleConfigLoader
+        loader = __import__(
+            "cerebra.cognition.cycle_config", fromlist=["CycleConfigLoader"]
+        ).CycleConfigLoader
         cfg = loader().load("simple.planning.v0")
         engine = ClutchEngine(cfg)
 
@@ -249,7 +310,9 @@ class TestClutchEngine:
         assert d.action == "accept"
 
     def test_simple_planning_refine_low_score(self) -> None:
-        loader = __import__("cerebra.cognition.cycle_config", fromlist=["CycleConfigLoader"]).CycleConfigLoader
+        loader = __import__(
+            "cerebra.cognition.cycle_config", fromlist=["CycleConfigLoader"]
+        ).CycleConfigLoader
         cfg = loader().load("simple.planning.v0")
         engine = ClutchEngine(cfg)
 
@@ -258,7 +321,9 @@ class TestClutchEngine:
         assert d.action == "refine"
 
     def test_simple_planning_catastrophic_first_stop(self) -> None:
-        loader = __import__("cerebra.cognition.cycle_config", fromlist=["CycleConfigLoader"]).CycleConfigLoader
+        loader = __import__(
+            "cerebra.cognition.cycle_config", fromlist=["CycleConfigLoader"]
+        ).CycleConfigLoader
         cfg = loader().load("simple.planning.v0")
         engine = ClutchEngine(cfg)
 

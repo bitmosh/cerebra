@@ -47,8 +47,8 @@ class CatalystSelection:
     arm_type: str
     mapped_action: str
     strategy_prompt: str
-    selection_reason: str           # "forced_exploration" | "scored"
-    score: float                    # composite selection score (0 for forced_exploration)
+    selection_reason: str  # "forced_exploration" | "scored"
+    score: float  # composite selection score (0 for forced_exploration)
     score_components: dict[str, float]
 
 

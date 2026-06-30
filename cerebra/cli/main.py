@@ -141,6 +141,7 @@ def ingest(
     if not dry_run:
         try:
             from cerebra.graph.exporter import export_graph
+
             gstats = export_graph(vault_path)
             click.echo(
                 f"  Graph:    {gstats.node_count} nodes, {gstats.edge_count} edges"
@@ -333,6 +334,7 @@ def _d1_label(query_d1: int | None) -> str:
         return "none"
     try:
         from cerebra.cognition.sku_categories import D1Category
+
         return f"{D1Category(query_d1).name} (0x{query_d1:x})"
     except (ValueError, ImportError):
         return f"0x{query_d1:x}"
@@ -355,9 +357,7 @@ def _render_text(
     visible = scored[:limit]
 
     click.echo(
-        f'\nQuery: "{plan.raw_query}"  '
-        f"Mode: {plan.mode}  "
-        f"D1: {_d1_label(plan.query_d1)}"
+        f'\nQuery: "{plan.raw_query}"  ' f"Mode: {plan.mode}  " f"D1: {_d1_label(plan.query_d1)}"
     )
     click.echo(
         f"Candidates: {len(scored)}  "
@@ -371,8 +371,7 @@ def _render_text(
 
     if not visible:
         click.echo(
-            f"\nNo results above salience floor {floor}. "
-            "Try a broader query or lower --floor.",
+            f"\nNo results above salience floor {floor}. " "Try a broader query or lower --floor.",
             err=True,
         )
         return
@@ -425,16 +424,24 @@ def _render_json(scored: list, limit: int, explain: bool) -> None:
 @click.argument("query")
 @click.option("--vault", default=None, help="Vault path (overrides env + config).")
 @click.option(
-    "--limit", default=10, show_default=True,
+    "--limit",
+    default=10,
+    show_default=True,
     help="Maximum results to show (1–200).",
 )
 @click.option(
-    "--floor", "relevance_floor", default=0.35, show_default=True,
+    "--floor",
+    "relevance_floor",
+    default=0.35,
+    show_default=True,
     help="Minimum salience score to include in results.",
 )
 @click.option(
-    "--format", "output_format",
-    type=click.Choice(["text", "json"]), default="text", show_default=True,
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    show_default=True,
     help="Output format.",
 )
 @click.option("--explain", is_flag=True, default=False, help="Show per-component score breakdown.")
@@ -513,25 +520,28 @@ def search(
 
     # Lattice sibling dedup: collapse sibling groups to winner (after trace write)
     from cerebra.retrieval.lattice_dedup import dedup_siblings
+
     scored_all = dedup_siblings(scored_all, plan.query_d1, db_path, plan.trace_id, event_log)
 
     best_score = max((c.score.composite for c in scored_all), default=0.0)
     if best_score < relevance_floor:
-        event_log.write(make_event(
-            event_type="RetrievalAbstained",
-            actor="retrieval",
-            summary=f"Abstained: best score {best_score:.4f} < floor {relevance_floor}",
-            data={
-                "trace_id": plan.trace_id,
-                "query": plan.raw_query,
-                "mode": plan.mode,
-                "query_sku_d1": plan.query_d1,
-                "candidate_count": len(scored_all),
-                "best_score_seen": round(best_score, 6),
-                "floor": relevance_floor,
-            },
-            subject_id=plan.trace_id,
-        ))
+        event_log.write(
+            make_event(
+                event_type="RetrievalAbstained",
+                actor="retrieval",
+                summary=f"Abstained: best score {best_score:.4f} < floor {relevance_floor}",
+                data={
+                    "trace_id": plan.trace_id,
+                    "query": plan.raw_query,
+                    "mode": plan.mode,
+                    "query_sku_d1": plan.query_d1,
+                    "candidate_count": len(scored_all),
+                    "best_score_seen": round(best_score, 6),
+                    "floor": relevance_floor,
+                },
+                subject_id=plan.trace_id,
+            )
+        )
         click.echo(
             f"No relevant results above floor {relevance_floor:.2f} "
             f"(best score: {best_score:.2f})",
@@ -554,8 +564,16 @@ def search(
 
 @cli.command()
 @click.option("--vault", default=None, help="Vault path (overrides env + config).")
-@click.option("--lexical", "do_lexical", is_flag=True, default=False, help="Rebuild the FTS5 lexical index.")
-@click.option("--vector", "do_vector", is_flag=True, default=False, help="Rebuild the vector (embedding) index.")
+@click.option(
+    "--lexical", "do_lexical", is_flag=True, default=False, help="Rebuild the FTS5 lexical index."
+)
+@click.option(
+    "--vector",
+    "do_vector",
+    is_flag=True,
+    default=False,
+    help="Rebuild the vector (embedding) index.",
+)
 @click.pass_context
 def reindex(ctx: click.Context, vault: str | None, do_lexical: bool, do_vector: bool) -> None:
     """Rebuild search indexes for the vault.
@@ -596,6 +614,7 @@ def reindex(ctx: click.Context, vault: str | None, do_lexical: bool, do_vector: 
             run_migrations(db_path)
 
             from cerebra.storage.db import connect
+
             with connect(db_path) as conn:
                 total = conn.execute(
                     "SELECT COUNT(*) FROM memory_records WHERE lifecycle_state = 'active'"
@@ -618,24 +637,37 @@ def reindex(ctx: click.Context, vault: str | None, do_lexical: bool, do_vector: 
 @click.argument("query")
 @click.option("--vault", default=None, help="Vault path (overrides env + config).")
 @click.option(
-    "--limit", default=10, show_default=True,
+    "--limit",
+    default=10,
+    show_default=True,
     help="Maximum records in selected_memory (1–200).",
 )
 @click.option(
-    "--floor", "relevance_floor", default=0.35, show_default=True,
+    "--floor",
+    "relevance_floor",
+    default=0.35,
+    show_default=True,
     help="Minimum salience score to include in selected_memory.",
 )
 @click.option(
-    "--format", "output_format",
-    type=click.Choice(["text", "json"]), default="text", show_default=True,
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    show_default=True,
     help="Output format.",
 )
 @click.option(
-    "--out", "out_file", default=None,
+    "--out",
+    "out_file",
+    default=None,
     help="Write JSON packet to FILE instead of stdout (implies --format json).",
 )
 @click.option(
-    "--no-promote", "no_promote", is_flag=True, default=False,
+    "--no-promote",
+    "no_promote",
+    is_flag=True,
+    default=False,
     help="Skip T1 auto-promotion into working memory. Retrieval only.",
 )
 def context(
@@ -719,6 +751,7 @@ def context(
 
     # Lattice sibling dedup: collapse sibling groups to winner (after trace write)
     from cerebra.retrieval.lattice_dedup import dedup_siblings
+
     scored_all = dedup_siblings(scored_all, plan.query_d1, db_path, plan.trace_id, event_log)
 
     best_score = max((c.score.composite for c in scored_all), default=0.0)
@@ -726,21 +759,23 @@ def context(
 
     try:
         if is_abstained:
-            event_log.write(make_event(
-                event_type="RetrievalAbstained",
-                actor="retrieval",
-                summary=f"Abstained: best score {best_score:.4f} < floor {relevance_floor}",
-                data={
-                    "trace_id": plan.trace_id,
-                    "query": plan.raw_query,
-                    "mode": plan.mode,
-                    "query_sku_d1": plan.query_d1,
-                    "candidate_count": len(scored_all),
-                    "best_score_seen": round(best_score, 6),
-                    "floor": relevance_floor,
-                },
-                subject_id=plan.trace_id,
-            ))
+            event_log.write(
+                make_event(
+                    event_type="RetrievalAbstained",
+                    actor="retrieval",
+                    summary=f"Abstained: best score {best_score:.4f} < floor {relevance_floor}",
+                    data={
+                        "trace_id": plan.trace_id,
+                        "query": plan.raw_query,
+                        "mode": plan.mode,
+                        "query_sku_d1": plan.query_d1,
+                        "candidate_count": len(scored_all),
+                        "best_score_seen": round(best_score, 6),
+                        "floor": relevance_floor,
+                    },
+                    subject_id=plan.trace_id,
+                )
+            )
             packet = build_abstained_packet(trace_data, best_score, event_log=event_log)
         else:
             above_floor = [c for c in scored_all if c.score.composite >= relevance_floor]
@@ -764,6 +799,7 @@ def context(
             from cerebra.cognition.working_memory import (
                 new_session as _new_session,
             )
+
             with vault_lock(vault_path):
                 session_id = get_active_session(db_path, str(vault_path))
                 if session_id is None:
@@ -782,6 +818,7 @@ def context(
         try:
             from cerebra.cognition.truth_tower import TruthTower
             from cerebra.cognition.working_memory import get_active_session
+
             session_id = get_active_session(db_path, str(vault_path))
             if session_id:
                 tower_field = TruthTower(db_path, session_id).to_tower_field()
@@ -822,8 +859,11 @@ def session() -> None:
 @session.command("show")
 @click.option("--vault", default=None, help="Vault path (overrides env + config).")
 @click.option(
-    "--format", "output_format",
-    type=click.Choice(["text", "json"]), default="text", show_default=True,
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    show_default=True,
     help="Output format.",
 )
 def session_show(vault: str | None, output_format: str) -> None:
@@ -877,22 +917,29 @@ def session_show(vault: str | None, output_format: str) -> None:
     t2 = tower_counts.get(2, 0)
 
     if output_format == "json":
-        click.echo(json.dumps({
-            "session_id": session_id,
-            "vault_path": row["vault_path"],
-            "status": row["status"],
-            "started_at": row["started_at"],
-            "last_active_at": row["last_active_at"],
-            "wm_item_count": wm_total,
-            "wm_by_slot": wm_counts,
-            "t1_item_count": t1,
-            "t2_item_count": t2,
-        }, indent=2))
+        click.echo(
+            json.dumps(
+                {
+                    "session_id": session_id,
+                    "vault_path": row["vault_path"],
+                    "status": row["status"],
+                    "started_at": row["started_at"],
+                    "last_active_at": row["last_active_at"],
+                    "wm_item_count": wm_total,
+                    "wm_by_slot": wm_counts,
+                    "t1_item_count": t1,
+                    "t2_item_count": t2,
+                },
+                indent=2,
+            )
+        )
         return
 
     started = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(row["started_at"]))
     last_active = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(row["last_active_at"]))
-    slot_detail = ", ".join(f"{k}: {v}" for k, v in sorted(wm_counts.items())) if wm_counts else "empty"
+    slot_detail = (
+        ", ".join(f"{k}: {v}" for k, v in sorted(wm_counts.items())) if wm_counts else "empty"
+    )
 
     click.echo(f"Session:      {session_id}")
     click.echo(f"Vault:        {row['vault_path']}")
@@ -984,8 +1031,11 @@ def _memory_vault_db(vault_flag: str | None) -> tuple[Path, Path]:
 @memory.command("status")
 @click.option("--vault", default=None, help="Vault path (overrides env + config).")
 @click.option(
-    "--format", "output_format",
-    type=click.Choice(["text", "json"]), default="text", show_default=True,
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    show_default=True,
     help="Output format.",
 )
 def memory_status(vault: str | None, output_format: str) -> None:
@@ -1019,19 +1069,31 @@ def memory_status(vault: str | None, output_format: str) -> None:
         d = wm.to_dict()
         d["vault_path"] = str(vault_path)
         tower_field = tower.to_tower_field()
-        d["truth_tower"] = tower_field if tower_field is not None else {
-            "t1_items": [], "t2_items": [],
-            "t1_count": 0, "t2_count": 0, "stale_count": 0,
-        }
+        d["truth_tower"] = (
+            tower_field
+            if tower_field is not None
+            else {
+                "t1_items": [],
+                "t2_items": [],
+                "t1_count": 0,
+                "t2_count": 0,
+                "stale_count": 0,
+            }
+        )
         click.echo(json.dumps(d, indent=2))
-        event_log.write(make_event(
-            "WorkingMemoryRendered",
-            actor="cli",
-            summary=f"status (json) session={session_id}",
-            data={"session_id": session_id, "format": "json",
-                  "total_items": d["total_item_count"]},
-            session_id=session_id,
-        ))
+        event_log.write(
+            make_event(
+                "WorkingMemoryRendered",
+                actor="cli",
+                summary=f"status (json) session={session_id}",
+                data={
+                    "session_id": session_id,
+                    "format": "json",
+                    "total_items": d["total_item_count"],
+                },
+                session_id=session_id,
+            )
+        )
         return
 
     # Text mode: load items with tower-citation status in one query
@@ -1055,13 +1117,15 @@ def memory_status(vault: str | None, output_format: str) -> None:
     # Build per-slot dict
     by_slot: dict[str, list[dict]] = {s: [] for s in SLOT_CAPACITIES}
     for r in rows:
-        by_slot[r["slot_type"]].append({
-            "item_id": r["item_id"],
-            "content_summary": r["content_summary"],
-            "salience_score": r["salience_score"],
-            "is_pinned": bool(r["is_pinned"]),
-            "is_tower_cited": bool(r["is_tower_cited"]),
-        })
+        by_slot[r["slot_type"]].append(
+            {
+                "item_id": r["item_id"],
+                "content_summary": r["content_summary"],
+                "salience_score": r["salience_score"],
+                "is_pinned": bool(r["is_pinned"]),
+                "is_tower_cited": bool(r["is_tower_cited"]),
+            }
+        )
 
     total = sum(len(v) for v in by_slot.values())
     click.echo(f"Working Memory  session: {session_id}")
@@ -1084,9 +1148,7 @@ def memory_status(vault: str | None, output_format: str) -> None:
             summary = item["content_summary"]
             if len(summary) > 120:
                 summary = summary[:120] + "…"
-            click.echo(
-                f"  {item['item_id']}  score: {item['salience_score']:.4f}{markers}"
-            )
+            click.echo(f"  {item['item_id']}  score: {item['salience_score']:.4f}{markers}")
             click.echo(f"    {summary}")
 
     # Tower section
@@ -1141,13 +1203,15 @@ def memory_status(vault: str | None, output_format: str) -> None:
                 )
                 click.echo(f"      {t2_summary}")
 
-    event_log.write(make_event(
-        "WorkingMemoryRendered",
-        actor="cli",
-        summary=f"status (text) session={session_id}",
-        data={"session_id": session_id, "format": "text", "total_items": total},
-        session_id=session_id,
-    ))
+    event_log.write(
+        make_event(
+            "WorkingMemoryRendered",
+            actor="cli",
+            summary=f"status (text) session={session_id}",
+            data={"session_id": session_id, "format": "text", "total_items": total},
+            session_id=session_id,
+        )
+    )
 
 
 @memory.command("promote")
@@ -1156,12 +1220,18 @@ def memory_status(vault: str | None, output_format: str) -> None:
 @click.option("--slot", "slot_type", default=None, help="Slot to promote into.")
 @click.option("--text", "free_text", default=None, help="Synthetic item content (no record_id).")
 @click.option("--pin", is_flag=True, default=False, help="Pin item (non-evictable).")
-@click.option("--salience", "salience_score", type=float, default=None,
-              help="Salience override (0.0–1.0).")
-@click.option("--tier", type=click.Choice(["1", "2"]), default=None,
-              help="Tower tier for truth tower promotion (2 = T2, requires --cite).")
-@click.option("--cite", "cite_id", default=None,
-              help="T1 tower_item_id to cite (required with --tier 2).")
+@click.option(
+    "--salience", "salience_score", type=float, default=None, help="Salience override (0.0–1.0)."
+)
+@click.option(
+    "--tier",
+    type=click.Choice(["1", "2"]),
+    default=None,
+    help="Tower tier for truth tower promotion (2 = T2, requires --cite).",
+)
+@click.option(
+    "--cite", "cite_id", default=None, help="T1 tower_item_id to cite (required with --tier 2)."
+)
 def memory_promote(
     record_id: str | None,
     vault: str | None,
@@ -1269,9 +1339,7 @@ def memory_promote(
             event_log = SQLiteEventLog(db_path)
             tower = TruthTower(db_path, session_id)
             try:
-                t2_item = tower.promote_to_t2(
-                    wm_item, cite_id, is_pinned=pin, event_log=event_log
-                )
+                t2_item = tower.promote_to_t2(wm_item, cite_id, is_pinned=pin, event_log=event_log)
             except TowerPromotionError as e:
                 click.echo(f"Error: {e}", err=True)
                 sys.exit(2)
@@ -1298,8 +1366,10 @@ def memory_promote(
         click.echo("Error: --slot is required.", err=True)
         sys.exit(2)
     if slot_type not in SLOT_CAPACITIES:
-        click.echo(f"Error: unknown slot '{slot_type}'. "
-                   f"Valid: {', '.join(sorted(SLOT_CAPACITIES))}.", err=True)
+        click.echo(
+            f"Error: unknown slot '{slot_type}'. " f"Valid: {', '.join(sorted(SLOT_CAPACITIES))}.",
+            err=True,
+        )
         sys.exit(2)
 
     vault_path, db_path = _memory_vault_db(vault)
@@ -1395,12 +1465,26 @@ def memory_evict(item_id: str, vault: str | None) -> None:
 @click.argument("config_name")
 @click.option("--goal", required=True, help="Goal for this cognitive cycle.")
 @click.option("--vault", default=None, help="Vault path (overrides env + config).")
-@click.option("--continue", "continue_session", default=None, metavar="SESSION_ID",
-              help="[stub] Continue from a prior session (Phase 9).")
-@click.option("--max-steps", "max_steps_override", default=None, type=int,
-              help="Override max_steps from the cycle config.")
-@click.option("--dry-run", is_flag=True, default=False,
-              help="Validate config and session setup; do not run the cycle.")
+@click.option(
+    "--continue",
+    "continue_session",
+    default=None,
+    metavar="SESSION_ID",
+    help="[stub] Continue from a prior session (Phase 9).",
+)
+@click.option(
+    "--max-steps",
+    "max_steps_override",
+    default=None,
+    type=int,
+    help="Override max_steps from the cycle config.",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    default=False,
+    help="Validate config and session setup; do not run the cycle.",
+)
 @click.option("--quiet", is_flag=True, default=False, help="Suppress progress output.")
 @click.option("--verbose", is_flag=True, default=False, help="Emit per-step detail.")
 def run_cycle(
@@ -1476,8 +1560,10 @@ def run_cycle(
     if max_steps_override is not None:
         cycle_config = dataclasses.replace(cycle_config, max_steps=max_steps_override)
 
-    _verbose(f"Config: {cycle_config.name} v{cycle_config.version}  "
-             f"steps: {len(cycle_config.steps)}  max: {cycle_config.max_steps}")
+    _verbose(
+        f"Config: {cycle_config.name} v{cycle_config.version}  "
+        f"steps: {len(cycle_config.steps)}  max: {cycle_config.max_steps}"
+    )
 
     if continue_session is not None:
         _out(f"Note: --continue is a stub in v0.1; SESSION_ID {continue_session!r} ignored.")
@@ -1671,7 +1757,9 @@ def export() -> None:
 @export.command("graph")
 @click.option("--vault", default=None, help="Vault path (overrides env + config).")
 @click.option(
-    "--out", "out_path", default=None,
+    "--out",
+    "out_path",
+    default=None,
     help="Output path (default: {vault}/.cerebra/graph.json).",
 )
 @click.option("--json", "output_json", is_flag=True, default=False, help="Output stats as JSON.")
@@ -1709,8 +1797,10 @@ def export_graph_cmd(vault: str | None, out_path: str | None, output_json: bool)
         return
 
     click.echo(f"Graph export complete ({stats.elapsed_ms}ms):")
-    click.echo(f"  Nodes:       {stats.node_count}  ({stats.spine_count} sources, "
-               f"{stats.record_count} records)")
+    click.echo(
+        f"  Nodes:       {stats.node_count}  ({stats.spine_count} sources, "
+        f"{stats.record_count} records)"
+    )
     click.echo(f"  Edges:       {stats.edge_count}")
     for etype, count in stats.edges_by_type.items():
         click.echo(f"    {etype}: {count}")

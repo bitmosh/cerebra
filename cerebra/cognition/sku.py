@@ -138,7 +138,9 @@ class SKUAssignment:
     output_tokens: int | None
     created_at: int
     pass_count: int = 1
-    raw_scores_json_override: str | None = None  # two-pass combined JSON; if set, used instead of raw_scores
+    raw_scores_json_override: str | None = (
+        None  # two-pass combined JSON; if set, used instead of raw_scores
+    )
 
     @property
     def sku_address_str(self) -> str:
@@ -162,7 +164,11 @@ class SKUAssignment:
             "d8": addr.d8,
             "d9": addr.d9,
             "d10": addr.d10,
-            "raw_scores_json": self.raw_scores_json_override if self.raw_scores_json_override is not None else json.dumps(self.raw_scores),
+            "raw_scores_json": (
+                self.raw_scores_json_override
+                if self.raw_scores_json_override is not None
+                else json.dumps(self.raw_scores)
+            ),
             "d1_confidence": self.d1_confidence,
             "classifier_version": self.classifier_version,
             "prompt_version": self.prompt_version,

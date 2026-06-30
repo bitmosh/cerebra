@@ -27,10 +27,10 @@ if TYPE_CHECKING:
 class ClutchDecision:
     """Result of ClutchEngine.decide()."""
 
-    action: str        # one of CLUTCH_ACTIONS
+    action: str  # one of CLUTCH_ACTIONS
     rule_matched: str  # name of the rule that fired (or "default_no_match")
     escalate_to_catalyst: bool = False  # True when no rule matches (Step 2 wires actual invocation)
-    cascade_depth: int = 0             # 0-indexed position of the matching rule in the cascade
+    cascade_depth: int = 0  # 0-indexed position of the matching rule in the cascade
 
 
 # ── ClutchCycleState ──────────────────────────────────────────────────────────
@@ -52,16 +52,16 @@ class ClutchCycleState:
 class ClutchContext:
     """Runtime context passed to each predicate during ClutchEngine evaluation."""
 
-    step_index: int         # 0-based position in cycle config's steps list
-    step_count: int         # total steps defined in the cycle config
+    step_index: int  # 0-based position in cycle config's steps list
+    step_count: int  # total steps defined in the cycle config
     composite_score: float  # 0.0 to 1.0 from EvaluationComposer
     last_clutch_action: str | None
-    total_steps_run: int    # total LLM executions so far in this cycle
+    total_steps_run: int  # total LLM executions so far in this cycle
     # Phase 9 Step 1 additions — all optional for backward compat with existing tests:
-    evaluation: EvaluationPacket | None = None   # per_signal_scores for signal_* predicates
-    outcome: OutcomeRecord | None = None          # error_classification for prediction_* predicates
+    evaluation: EvaluationPacket | None = None  # per_signal_scores for signal_* predicates
+    outcome: OutcomeRecord | None = None  # error_classification for prediction_* predicates
     cycle_state: ClutchCycleState = field(default_factory=ClutchCycleState)
-    cycle_config: CycleConfig | None = None      # step name lookup for step_at predicate
+    cycle_config: CycleConfig | None = None  # step name lookup for step_at predicate
 
 
 # ── Built-in predicates (Phase 8 — 6) ────────────────────────────────────────

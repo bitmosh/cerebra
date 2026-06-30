@@ -223,11 +223,13 @@ def _ingest_file(
             "entity_table": "sources",
             "lifecycle_state": "active",
             "origin_event_id": None,
-            "payload_json": json.dumps({
-                "canonical_path": source.canonical_path,
-                "detected_type": detection.detected_type,
-                "size_bytes": source.size_bytes,
-            }),
+            "payload_json": json.dumps(
+                {
+                    "canonical_path": source.canonical_path,
+                    "detected_type": detection.detected_type,
+                    "size_bytes": source.size_bytes,
+                }
+            ),
             "created_at": now,
             "updated_at": now,
         },
@@ -279,9 +281,7 @@ def _ingest_file(
     artifact_path = write_artifact(doc, artifacts_dir)
 
     # Plain-text artifact (for retrieval layer)
-    write_text_artifact(
-        vault_path, doc.document_id, doc.raw_content, event_log=event_log
-    )
+    write_text_artifact(vault_path, doc.document_id, doc.raw_content, event_log=event_log)
 
     doc_evt_id = emit(
         "DocumentNormalized",
@@ -325,11 +325,13 @@ def _ingest_file(
             "entity_table": "documents",
             "lifecycle_state": "active",
             "origin_event_id": doc_evt_id,
-            "payload_json": json.dumps({
-                "document_type": doc.document_type,
-                "title": doc.title,
-                "artifact_path": str(artifact_path),
-            }),
+            "payload_json": json.dumps(
+                {
+                    "document_type": doc.document_type,
+                    "title": doc.title,
+                    "artifact_path": str(artifact_path),
+                }
+            ),
             "created_at": now,
             "updated_at": now,
         },
@@ -415,12 +417,14 @@ def _ingest_file(
                 "entity_table": "chunks",
                 "lifecycle_state": "active",
                 "origin_event_id": chunk_evt_id,
-                "payload_json": json.dumps({
-                    "chunk_index": c.chunk_index,
-                    "heading_path": c.heading_path,
-                    "depth": c.depth,
-                    "token_estimate": c.token_estimate,
-                }),
+                "payload_json": json.dumps(
+                    {
+                        "chunk_index": c.chunk_index,
+                        "heading_path": c.heading_path,
+                        "depth": c.depth,
+                        "token_estimate": c.token_estimate,
+                    }
+                ),
                 "created_at": now,
                 "updated_at": now,
             },
@@ -553,9 +557,7 @@ def _ingest_file(
         chunk_node_id_or_none: str | None = chunk_node_ids.get(r.chunk_id)
         if chunk_node_id_or_none is not None:
             chunk_node_id = chunk_node_id_or_none
-            chunk_for_record = next(
-                (c for c in chunks if c.chunk_id == r.chunk_id), None
-            )
+            chunk_for_record = next((c for c in chunks if c.chunk_id == r.chunk_id), None)
             derived_from = upsert_edge(
                 db_path,
                 {

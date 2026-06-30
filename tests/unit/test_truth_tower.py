@@ -65,7 +65,21 @@ def _seed_memory_record(db_path: Path, record_id: str, chunk_id: str = "") -> st
             " depth, content, content_hash, token_estimate, chunk_strategy, "
             " lifecycle_state, created_at, schema_version) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (chunk_id, doc_id, src_id, "", 0, 0, "test content", "hc0", 5, "fixed", "active", now, 1),
+            (
+                chunk_id,
+                doc_id,
+                src_id,
+                "",
+                0,
+                0,
+                "test content",
+                "hc0",
+                5,
+                "fixed",
+                "active",
+                now,
+                1,
+            ),
         )
         conn.execute(
             "INSERT OR IGNORE INTO memory_records "
@@ -73,8 +87,19 @@ def _seed_memory_record(db_path: Path, record_id: str, chunk_id: str = "") -> st
             " content, content_hash, token_estimate, lifecycle_state, "
             " created_at, schema_version) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            (record_id, "source_chunk", src_id, doc_id, chunk_id,
-             "test content", "hr0", 5, "active", now, 1),
+            (
+                record_id,
+                "source_chunk",
+                src_id,
+                doc_id,
+                chunk_id,
+                "test content",
+                "hr0",
+                5,
+                "active",
+                now,
+                1,
+            ),
         )
         conn.commit()
     finally:
@@ -160,6 +185,7 @@ def _count_events(db_path: Path, event_type: str) -> int:
 
 def _get_event_log(db_path: Path):  # type: ignore[return]
     from cerebra.inspector.sqlite_log import SQLiteEventLog
+
     return SQLiteEventLog(db_path)
 
 
@@ -196,11 +222,20 @@ class TestTowerItemDataclass:
         import json
 
         item = TowerItem(
-            tower_item_id="tti_abc", session_id="sess_x", tier=2,
-            wm_item_id="wmi_1", record_id=None, retrieval_trace_id=None,
-            content_summary="s", salience_score=0.5, sku_address=None,
-            t1_citation_id="tti_t1", is_pinned=True, is_stale=False,
-            promoted_at=999, evicted_at=None,
+            tower_item_id="tti_abc",
+            session_id="sess_x",
+            tier=2,
+            wm_item_id="wmi_1",
+            record_id=None,
+            retrieval_trace_id=None,
+            content_summary="s",
+            salience_score=0.5,
+            sku_address=None,
+            t1_citation_id="tti_t1",
+            is_pinned=True,
+            is_stale=False,
+            promoted_at=999,
+            evicted_at=None,
         )
         assert json.dumps(item.to_dict())
 
@@ -280,7 +315,9 @@ class TestPromoteToT1:
         assert len(result) == 1
         active = tower.load_tier(1)
         assert len(active) == cap
-        assert all(i.record_id != "rec_09" for i in active), "lowest-salience item should have been evicted"
+        assert all(
+            i.record_id != "rec_09" for i in active
+        ), "lowest-salience item should have been evicted"
 
     def test_tower_initialized_emitted_only_on_first_t1(self) -> None:
         db, sid = _fresh_db()
@@ -407,11 +444,16 @@ class TestPromoteToT2:
         el = _get_event_log(db)
         tower.promote_to_t2(wm_item, t1.tower_item_id, event_log=el)
         # TowerItemPromoted fires for both T1 (from setup) and T2 if same el — recount
-        events = connect(db).execute(
-            "SELECT data_json FROM inspector_events WHERE event_type = 'TowerItemPromoted'"
-        ).fetchall()
+        events = (
+            connect(db)
+            .execute(
+                "SELECT data_json FROM inspector_events WHERE event_type = 'TowerItemPromoted'"
+            )
+            .fetchall()
+        )
         connect(db).close()
         import json
+
         t2_events = [e for e in events if json.loads(e[0]).get("tier") == 2]
         assert len(t2_events) == 1
 

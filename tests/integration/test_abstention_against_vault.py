@@ -36,12 +36,18 @@ class TestSearchAbstentionAgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["search", "weather forecast for tomorrow", "--vault", str(vault_root),
-             "--floor", "0.45"],
+            [
+                "search",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+            ],
         )
-        assert result.exit_code == 1, (
-            f"Expected exit 1 (abstain), got {result.exit_code}.\n{result.output}"
-        )
+        assert (
+            result.exit_code == 1
+        ), f"Expected exit 1 (abstain), got {result.exit_code}.\n{result.output}"
         assert "No relevant results above floor" in result.output
         assert "0.45" in result.output
 
@@ -53,12 +59,11 @@ class TestSearchAbstentionAgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["search", "weather forecast for tomorrow",
-             "--vault", str(vault_root)],
+            ["search", "weather forecast for tomorrow", "--vault", str(vault_root)],
         )
-        assert result.exit_code == 0, (
-            f"Expected exit 0 (no abstain), got {result.exit_code}.\n{result.output}"
-        )
+        assert (
+            result.exit_code == 0
+        ), f"Expected exit 0 (no abstain), got {result.exit_code}.\n{result.output}"
 
     def test_leeway_query_does_not_abstain_with_high_floor(self, vault_root: Path) -> None:
         """cerebra search 'leeway network' --floor 0.45 → exit 0 (score ~0.47)."""
@@ -70,9 +75,9 @@ class TestSearchAbstentionAgainstVault:
             cli,
             ["search", "leeway network", "--vault", str(vault_root), "--floor", "0.45"],
         )
-        assert result.exit_code == 0, (
-            f"Expected exit 0 (no abstain), got {result.exit_code}.\n{result.output}"
-        )
+        assert (
+            result.exit_code == 0
+        ), f"Expected exit 0 (no abstain), got {result.exit_code}.\n{result.output}"
 
     def test_weather_abstention_message_contains_best_score(self, vault_root: Path) -> None:
         """The abstention message includes the actual best score seen."""
@@ -82,8 +87,14 @@ class TestSearchAbstentionAgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["search", "weather forecast for tomorrow", "--vault", str(vault_root),
-             "--floor", "0.45"],
+            [
+                "search",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+            ],
         )
         assert result.exit_code == 1
         # Message format: "No relevant results above floor 0.45 (best score: X.XX)"
@@ -100,12 +111,20 @@ class TestContextAbstentionAgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["context", "weather forecast for tomorrow", "--vault", str(vault_root),
-             "--floor", "0.45", "--format", "json"],
+            [
+                "context",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+                "--format",
+                "json",
+            ],
         )
-        assert result.exit_code == 1, (
-            f"Expected exit 1 (abstain), got {result.exit_code}.\n{result.output}"
-        )
+        assert (
+            result.exit_code == 1
+        ), f"Expected exit 1 (abstain), got {result.exit_code}.\n{result.output}"
         packet = json.loads(result.output)
         assert packet["is_abstained"] is True
         assert packet["selected_memory"] == []
@@ -119,18 +138,37 @@ class TestContextAbstentionAgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["context", "weather forecast for tomorrow", "--vault", str(vault_root),
-             "--floor", "0.45", "--format", "json"],
+            [
+                "context",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 1
         packet = json.loads(result.output)
 
         required = (
-            "context_packet_id", "packet_version", "schema_version",
-            "created_at", "query", "mode", "is_abstained",
-            "abstention_rationale", "retrieval_trace_id", "origin_event_ids",
-            "selected_memory", "token_estimate", "selected_count",
-            "candidate_count", "excluded_candidate_count", "best_score_seen",
+            "context_packet_id",
+            "packet_version",
+            "schema_version",
+            "created_at",
+            "query",
+            "mode",
+            "is_abstained",
+            "abstention_rationale",
+            "retrieval_trace_id",
+            "origin_event_ids",
+            "selected_memory",
+            "token_estimate",
+            "selected_count",
+            "candidate_count",
+            "excluded_candidate_count",
+            "best_score_seen",
         )
         for field in required:
             assert field in packet, f"Missing required field in abstained packet: {field}"
@@ -147,12 +185,18 @@ class TestContextAbstentionAgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["context", "leeway network", "--vault", str(vault_root),
-             "--floor", "0.45", "--format", "json"],
+            [
+                "context",
+                "leeway network",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+                "--format",
+                "json",
+            ],
         )
-        assert result.exit_code == 0, (
-            f"Expected exit 0, got {result.exit_code}.\n{result.output}"
-        )
+        assert result.exit_code == 0, f"Expected exit 0, got {result.exit_code}.\n{result.output}"
         packet = json.loads(result.output)
         assert packet["is_abstained"] is False
 
@@ -164,8 +208,14 @@ class TestContextAbstentionAgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["context", "weather forecast for tomorrow", "--vault", str(vault_root),
-             "--floor", "0.45"],
+            [
+                "context",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+            ],
         )
         assert result.exit_code == 1
         assert "Abstained" in result.output
@@ -182,8 +232,16 @@ class TestRetrievalAbstainedEventAgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["context", "weather forecast for tomorrow", "--vault", str(vault_root),
-             "--floor", "0.45", "--format", "json"],
+            [
+                "context",
+                "weather forecast for tomorrow",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 1
 
@@ -212,8 +270,16 @@ class TestRetrievalAbstainedEventAgainstVault:
 
         result = CliRunner().invoke(
             cli,
-            ["context", "leeway network", "--vault", str(vault_root),
-             "--floor", "0.45", "--format", "json"],
+            [
+                "context",
+                "leeway network",
+                "--vault",
+                str(vault_root),
+                "--floor",
+                "0.45",
+                "--format",
+                "json",
+            ],
         )
         assert result.exit_code == 0, result.output
 
@@ -228,4 +294,6 @@ class TestRetrievalAbstainedEventAgainstVault:
                 (trace_id,),
             ).fetchall()
 
-        assert len(rows) == 0, "RetrievalAbstained event should NOT be present for non-abstaining query"
+        assert (
+            len(rows) == 0
+        ), "RetrievalAbstained event should NOT be present for non-abstaining query"

@@ -27,15 +27,22 @@ def _make_scored(
 ) -> MagicMock:
     """Build a mock ScoredCandidate."""
     from cerebra._primitives.score_composer import CompositeScore
+
     score = CompositeScore(
         composite=composite,
         components={
-            "semantic": 0.80, "lexical": 0.50,
-            "sku_match": 1.0, "recency": 0.90, "lifecycle": 1.0,
+            "semantic": 0.80,
+            "lexical": 0.50,
+            "sku_match": 1.0,
+            "recency": 0.90,
+            "lifecycle": 1.0,
         },
         weights={
-            "semantic": 0.40, "lexical": 0.25,
-            "sku_match": 0.15, "recency": 0.10, "lifecycle": 0.10,
+            "semantic": 0.40,
+            "lexical": 0.25,
+            "sku_match": 0.15,
+            "recency": 0.10,
+            "lifecycle": 0.10,
         },
     )
     c = MagicMock()
@@ -86,8 +93,10 @@ def _patched_runner(scored_list: list, plan: MagicMock | None = None):
                 ),
                 patch("cerebra.retrieval.trace.write_trace", return_value="trace_testtest001"),
                 patch("pathlib.Path.exists", return_value=True),
-                patch("cerebra.retrieval.lattice_dedup.dedup_siblings",
-                      side_effect=lambda scored, *a, **kw: scored),
+                patch(
+                    "cerebra.retrieval.lattice_dedup.dedup_siblings",
+                    side_effect=lambda scored, *a, **kw: scored,
+                ),
             ):
                 yield
 
@@ -290,9 +299,7 @@ class TestSearchJsonOutput:
         runner = CliRunner()
         scored = [_make_scored()]
         with _patched_runner(scored):
-            result = runner.invoke(
-                cli, ["search", "test query", "--format", "json", "--explain"]
-            )
+            result = runner.invoke(cli, ["search", "test query", "--format", "json", "--explain"])
         obj = json.loads(result.output.strip().splitlines()[0])
         assert "explain" in obj
 

@@ -182,7 +182,7 @@ def update_fts_index(
 
 # ── Search ────────────────────────────────────────────────────────────────────
 
-_FTS5_SAFE = re.compile(r'[^a-zA-Z0-9\s]')
+_FTS5_SAFE = re.compile(r"[^a-zA-Z0-9\s]")
 
 
 def _sanitize_fts_query(query: str) -> str:

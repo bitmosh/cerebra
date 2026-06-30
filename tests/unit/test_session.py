@@ -99,6 +99,7 @@ class TestSessionManagement:
             assert active is not None
 
             import sqlite3
+
             conn = sqlite3.connect(db)
             count = conn.execute(
                 "SELECT COUNT(*) FROM sessions WHERE vault_path='/vault/test' AND status='active'"
@@ -170,6 +171,7 @@ class TestSessionEventEmission:
         db = self._fresh_db()
         try:
             from cerebra.inspector.sqlite_log import SQLiteEventLog
+
             event_log = SQLiteEventLog(db)
             sid = new_session(db, "/vault/test", event_log=event_log)
 
@@ -280,5 +282,3 @@ class TestSessionItemCounts:
             assert counts == {}
         finally:
             db.unlink(missing_ok=True)
-
-

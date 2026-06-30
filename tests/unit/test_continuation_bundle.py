@@ -150,6 +150,7 @@ class TestBundleDistiller:
 
     def test_bundle_size_matches_json_content(self) -> None:
         import json
+
         d = BundleDistiller()
         bundle = d.distill("sess_p", "goal", recursion_depth=0, step_outputs=["step1 out"])
         raw = {
@@ -269,6 +270,7 @@ def _make_bundle(parent_session_id: str, **overrides) -> ContinuationBundle:
 class TestMigration015:
     def test_table_exists_after_migration(self, db_path: Path) -> None:
         import sqlite3
+
         conn = sqlite3.connect(db_path)
         row = conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='continuation_bundles'"
@@ -278,6 +280,7 @@ class TestMigration015:
 
     def test_indexes_created(self, db_path: Path) -> None:
         import sqlite3
+
         conn = sqlite3.connect(db_path)
         indexes = {
             row[0]
@@ -292,19 +295,20 @@ class TestMigration015:
 
     def test_migration_version_is_15(self) -> None:
         from cerebra.storage.migrations import Migration015_ContinuationBundles
+
         assert Migration015_ContinuationBundles.version == 15
 
     def test_migration_in_all_migrations(self) -> None:
         from cerebra.storage.migrations import ALL_MIGRATIONS, Migration015_ContinuationBundles
+
         types = [type(m) for m in ALL_MIGRATIONS]
         assert Migration015_ContinuationBundles in types
 
     def test_applied_migration_version_recorded(self, db_path: Path) -> None:
         import sqlite3
+
         conn = sqlite3.connect(db_path)
-        row = conn.execute(
-            "SELECT version FROM applied_migrations WHERE version = 15"
-        ).fetchone()
+        row = conn.execute("SELECT version FROM applied_migrations WHERE version = 15").fetchone()
         conn.close()
         assert row is not None
 
@@ -356,11 +360,11 @@ class TestBundlePersistence:
         write_bundle(db_path, b2)
         write_bundle(db_path, b3)
         bundles = list_bundles_for_session(db_path, session_id)
-        assert [b.created_at for b in bundles] == [
-            1000000000001, 1000000000002, 1000000000003
-        ]
+        assert [b.created_at for b in bundles] == [1000000000001, 1000000000002, 1000000000003]
 
-    def test_link_child_session(self, db_path: Path, session_id: str, store: FossicStore, tmp_path: Path) -> None:
+    def test_link_child_session(
+        self, db_path: Path, session_id: str, store: FossicStore, tmp_path: Path
+    ) -> None:
         bundle = _make_bundle(session_id)
         write_bundle(db_path, bundle)
 

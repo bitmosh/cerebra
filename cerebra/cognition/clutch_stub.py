@@ -18,23 +18,24 @@ if TYPE_CHECKING:
 class ClutchContext:
     """Runtime context passed to each predicate during Clutch evaluation."""
 
-    step_index: int        # 0-based position in cycle config's steps list
-    step_count: int        # total steps defined in the cycle config
-    composite_score: float # 0.0 to 1.0 from EvaluationComposer
+    step_index: int  # 0-based position in cycle config's steps list
+    step_count: int  # total steps defined in the cycle config
+    composite_score: float  # 0.0 to 1.0 from EvaluationComposer
     last_clutch_action: str | None
-    total_steps_run: int   # total LLM executions so far in this cycle
+    total_steps_run: int  # total LLM executions so far in this cycle
 
 
 @dataclass(frozen=True)
 class ClutchDecision:
     """Result of ClutchStubEngine.decide()."""
 
-    action: str        # one of CLUTCH_ACTIONS
+    action: str  # one of CLUTCH_ACTIONS
     rule_matched: str  # name of the rule that fired (or "default_no_match")
     escalate_to_catalyst: bool = False  # always False in Phase 8 stub
 
 
 # ── Built-in predicates ───────────────────────────────────────────────────────
+
 
 def _at_terminal_step(ctx: ClutchContext, params: dict[str, Any]) -> bool:
     """True if current step is the last in the config AND composite >= min_composite."""

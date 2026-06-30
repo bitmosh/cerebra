@@ -145,9 +145,7 @@ class TruthTower:
         ).fetchall()
         return {r["chunk_id"] for r in rows}
 
-    def _evict_one_t1(
-        self, conn: sqlite3.Connection, now: int
-    ) -> tuple[str, float, int] | None:
+    def _evict_one_t1(self, conn: sqlite3.Connection, now: int) -> tuple[str, float, int] | None:
         """
         Evict the lowest-salience non-pinned T1 item.
         Returns (tower_item_id, salience_score, pending_stale_count) or None if all pinned.
@@ -168,9 +166,7 @@ class TruthTower:
         )
         return to_evict.tower_item_id, to_evict.salience_score, pending_stale
 
-    def _evict_one_t2(
-        self, conn: sqlite3.Connection, now: int
-    ) -> tuple[str, float] | None:
+    def _evict_one_t2(self, conn: sqlite3.Connection, now: int) -> tuple[str, float] | None:
         """Evict the lowest-salience non-pinned T2 item. Returns (id, salience) or None."""
         candidates = [i for i in self._load_tier_conn(conn, 2) if not i.is_pinned]
         if not candidates:
@@ -209,6 +205,7 @@ class TruthTower:
             return []
 
         from cerebra.retrieval.lattice_dedup import dedup_memory_items
+
         memory_items = dedup_memory_items(memory_items, self.db_path)
 
         if not memory_items:
@@ -257,8 +254,14 @@ class TruthTower:
                     " sku_address, is_pinned, promoted_at, schema_version) "
                     "VALUES (?, ?, 1, NULL, ?, ?, ?, ?, ?, 0, ?, 1)",
                     (
-                        tid, self.session_id, mi.record_id, trace_id,
-                        mi.content_excerpt[:400], mi.score, mi.sku_address, now,
+                        tid,
+                        self.session_id,
+                        mi.record_id,
+                        trace_id,
+                        mi.content_excerpt[:400],
+                        mi.score,
+                        mi.sku_address,
+                        now,
                     ),
                 )
                 seen_chunk_ids.add(mi.chunk_id)
@@ -280,17 +283,19 @@ class TruthTower:
                         evicted_at=None,
                     )
                 )
-                promotion_data.append({
-                    "session_id": self.session_id,
-                    "tower_item_id": tid,
-                    "tier": 1,
-                    "record_id": mi.record_id,
-                    "salience_score": mi.score,
-                    "t1_citation_id": None,
-                    "retrieval_trace_id": trace_id,
-                    "source": "context_auto",
-                    "_tid": tid,
-                })
+                promotion_data.append(
+                    {
+                        "session_id": self.session_id,
+                        "tower_item_id": tid,
+                        "tier": 1,
+                        "record_id": mi.record_id,
+                        "salience_score": mi.score,
+                        "t1_citation_id": None,
+                        "retrieval_trace_id": trace_id,
+                        "source": "context_auto",
+                        "_tid": tid,
+                    }
+                )
 
             conn.commit()
         finally:
@@ -303,7 +308,8 @@ class TruthTower:
             if was_first_t1:
                 event_log.write(
                     make_event(
-                        "TowerInitialized", "truth_tower",
+                        "TowerInitialized",
+                        "truth_tower",
                         f"TowerInitialized for session {self.session_id}",
                         {
                             "session_id": self.session_id,
@@ -321,7 +327,8 @@ class TruthTower:
                 self.mark_stale_from_t1_eviction(evicted_id, event_log)
                 event_log.write(
                     make_event(
-                        "TowerItemEvicted", "truth_tower",
+                        "TowerItemEvicted",
+                        "truth_tower",
                         f"T1 evicted (capacity): {evicted_id}",
                         {
                             "session_id": self.session_id,
@@ -340,7 +347,8 @@ class TruthTower:
                 tid = str(pdata.pop("_tid"))
                 event_log.write(
                     make_event(
-                        "TowerItemPromoted", "truth_tower",
+                        "TowerItemPromoted",
+                        "truth_tower",
                         f"T1 promoted: {pdata['record_id']} (score={pdata['salience_score']:.3f})",
                         pdata,
                         session_id=self.session_id,
@@ -382,9 +390,7 @@ class TruthTower:
             ).fetchone()
 
             if cited_row is None:
-                raise TowerPromotionError(
-                    f"Cited T1 item {t1_citation_id!r} does not exist"
-                )
+                raise TowerPromotionError(f"Cited T1 item {t1_citation_id!r} does not exist")
             if cited_row["session_id"] != self.session_id:
                 raise TowerPromotionError(
                     f"Cited item {t1_citation_id!r} belongs to session "
@@ -418,9 +424,15 @@ class TruthTower:
                 " t1_citation_id, is_pinned, promoted_at, schema_version) "
                 "VALUES (?, ?, 2, ?, ?, ?, ?, NULL, ?, ?, ?, 1)",
                 (
-                    tid, self.session_id, wm_item.item_id, wm_item.record_id,
-                    wm_item.content_summary[:400], salience,
-                    t1_citation_id, int(is_pinned), now,
+                    tid,
+                    self.session_id,
+                    wm_item.item_id,
+                    wm_item.record_id,
+                    wm_item.content_summary[:400],
+                    salience,
+                    t1_citation_id,
+                    int(is_pinned),
+                    now,
                 ),
             )
             conn.commit()
@@ -449,7 +461,8 @@ class TruthTower:
                 ev_id, ev_sal = capacity_eviction
                 event_log.write(
                     make_event(
-                        "TowerItemEvicted", "truth_tower",
+                        "TowerItemEvicted",
+                        "truth_tower",
                         f"T2 evicted (capacity): {ev_id}",
                         {
                             "session_id": self.session_id,
@@ -465,7 +478,8 @@ class TruthTower:
                 )
             event_log.write(
                 make_event(
-                    "TowerCrossReferenceAdded", "truth_tower",
+                    "TowerCrossReferenceAdded",
+                    "truth_tower",
                     f"T2 {tid} cites T1 {t1_citation_id}",
                     {
                         "session_id": self.session_id,
@@ -480,7 +494,8 @@ class TruthTower:
             )
             event_log.write(
                 make_event(
-                    "TowerItemPromoted", "truth_tower",
+                    "TowerItemPromoted",
+                    "truth_tower",
                     f"T2 promoted: {tid} citing T1 {t1_citation_id}",
                     {
                         "session_id": self.session_id,
@@ -544,7 +559,8 @@ class TruthTower:
         if event_log is not None:
             event_log.write(
                 make_event(
-                    "TowerItemEvicted", "truth_tower",
+                    "TowerItemEvicted",
+                    "truth_tower",
                     f"T{tier} evicted ({reason}): {tower_item_id}",
                     {
                         "session_id": self.session_id,
@@ -611,7 +627,8 @@ class TruthTower:
                 staled_id = str(data["staled_item_id"])
                 event_log.write(
                     make_event(
-                        "TowerItemStaled", "truth_tower",
+                        "TowerItemStaled",
+                        "truth_tower",
                         f"T2 {staled_id} staled: T1 {t1_item_id} evicted",
                         data,
                         session_id=self.session_id,
@@ -671,9 +688,7 @@ class TruthTower:
             )
             lines.append(f"       {t1['content_summary'][:120]}")
 
-            for t2_idx, t2 in enumerate(
-                t2_by_t1.get(t1["tower_item_id"], []), start=1
-            ):
+            for t2_idx, t2 in enumerate(t2_by_t1.get(t1["tower_item_id"], []), start=1):
                 stale = " [stale]" if t2["is_stale"] else ""
                 lines.append(
                     f"  T2 [{t2_idx}] ^T1[{t1_idx}]  {t2['source_path']}  "
@@ -689,7 +704,8 @@ class TruthTower:
         if event_log is not None:
             event_log.write(
                 make_event(
-                    "TowerRendered", "truth_tower",
+                    "TowerRendered",
+                    "truth_tower",
                     f"Tower rendered: {t1_count} T1, {t2_count} T2 ({stale_count} stale)",
                     {
                         "session_id": self.session_id,
@@ -730,7 +746,8 @@ class TruthTower:
         if event_log is not None:
             event_log.write(
                 make_event(
-                    "TowerRendered", "truth_tower",
+                    "TowerRendered",
+                    "truth_tower",
                     f"Tower field: {len(t1_items)} T1, {len(t2_items)} T2 ({stale_count} stale)",
                     {
                         "session_id": self.session_id,

@@ -31,6 +31,7 @@ def leeway_scored(vault_db: Path):
     from cerebra.retrieval.planner import query_plan
     from cerebra.retrieval.scorer import score_candidates
     from cerebra.retrieval.traversal import run_traversal
+
     plan = query_plan("leeway network", vault_db)
     raw = run_traversal(plan, vault_db)
     return score_candidates(raw, plan, vault_db), plan
@@ -46,16 +47,16 @@ class TestScorerAgainstVault:
     def test_all_composites_in_unit_interval(self, leeway_scored) -> None:
         scored, _ = leeway_scored
         for c in scored:
-            assert 0.0 <= c.score.composite <= 1.0, (
-                f"Composite {c.score.composite:.4f} out of [0,1] for {c.record_id}"
-            )
+            assert (
+                0.0 <= c.score.composite <= 1.0
+            ), f"Composite {c.score.composite:.4f} out of [0,1] for {c.record_id}"
 
     def test_sorted_by_composite_descending(self, leeway_scored) -> None:
         scored, _ = leeway_scored
         composites = [c.score.composite for c in scored]
-        assert composites == sorted(composites, reverse=True), (
-            "Scored candidates must be sorted by composite score descending"
-        )
+        assert composites == sorted(
+            composites, reverse=True
+        ), "Scored candidates must be sorted by composite score descending"
 
     def test_ranks_are_sequential(self, leeway_scored) -> None:
         scored, _ = leeway_scored
@@ -69,8 +70,7 @@ class TestScorerAgainstVault:
         expected = {"semantic", "lexical", "sku_match", "recency", "lifecycle"}
         for c in scored:
             assert set(c.score.components.keys()) == expected, (
-                f"Missing components for {c.record_id}: "
-                f"got {set(c.score.components.keys())}"
+                f"Missing components for {c.record_id}: " f"got {set(c.score.components.keys())}"
             )
 
     def test_weights_sum_to_one(self, leeway_scored) -> None:
@@ -113,11 +113,12 @@ class TestScorerAgainstVault:
         from cerebra.retrieval.planner import query_plan
         from cerebra.retrieval.scorer import score_candidates
         from cerebra.retrieval.traversal import run_traversal
+
         plan = query_plan("retrieval architecture design", vault_db)
         raw = run_traversal(plan, vault_db)
         scored = score_candidates(raw, plan, vault_db)
         if not scored:
             pytest.skip("No candidates from vault")
-        assert scored[0].score.composite >= 0.30, (
-            f"Top score {scored[0].score.composite:.4f} unexpectedly low for architecture query"
-        )
+        assert (
+            scored[0].score.composite >= 0.30
+        ), f"Top score {scored[0].score.composite:.4f} unexpectedly low for architecture query"

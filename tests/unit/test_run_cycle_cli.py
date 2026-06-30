@@ -82,35 +82,40 @@ def _invoke(runner: CliRunner, vault: Path, args: list[str]) -> Any:
 class TestRunCycleCLIHappyPath:
     def test_exit_0_on_accept(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "design a search feature"],
         )
         assert result.exit_code == 0, result.output
 
     def test_prints_session_id(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "design a feature"],
         )
         assert "Session:" in result.output
 
     def test_prints_cycle_id(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "design a feature"],
         )
         assert "Cycle:" in result.output
 
     def test_prints_outcome(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "design a feature"],
         )
         assert "Outcome:" in result.output
 
     def test_quiet_suppresses_progress(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "design a feature", "--quiet"],
         )
         assert result.exit_code == 0, result.output
@@ -119,7 +124,8 @@ class TestRunCycleCLIHappyPath:
 
     def test_verbose_prints_step_detail(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "design a feature", "--verbose"],
         )
         assert result.exit_code == 0, result.output
@@ -127,14 +133,16 @@ class TestRunCycleCLIHappyPath:
 
     def test_max_steps_override(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "design a feature", "--max-steps", "1"],
         )
         assert result.exit_code in (0, 1), result.output
 
     def test_continue_stub_prints_note(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "design a feature", "--continue", "sess_abc"],
         )
         assert "stub" in result.output.lower()
@@ -146,28 +154,32 @@ class TestRunCycleCLIHappyPath:
 class TestRunCycleDryRun:
     def test_dry_run_exit_0(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "design a feature", "--dry-run"],
         )
         assert result.exit_code == 0, result.output
 
     def test_dry_run_prints_config_name(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "my goal", "--dry-run"],
         )
         assert "simple.planning.v0" in result.output
 
     def test_dry_run_prints_goal(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "my goal", "--dry-run"],
         )
         assert "my goal" in result.output
 
     def test_dry_run_no_cycle_executed(self, runner: CliRunner, vault: Path) -> None:
         result = _invoke(
-            runner, vault,
+            runner,
+            vault,
             ["simple.planning.v0", "--goal", "design a feature", "--dry-run"],
         )
         assert "no cycle executed" in result.output.lower()
@@ -189,8 +201,7 @@ class TestRunCycleCLIErrors:
         with patch("cerebra.cognition.llm_adapter.OllamaDirectAdapter", return_value=_StubLLM()):
             result = runner.invoke(
                 cli,
-                ["run-cycle", "--vault", str(vault), "nonexistent.config.v0",
-                 "--goal", "goal"],
+                ["run-cycle", "--vault", str(vault), "nonexistent.config.v0", "--goal", "goal"],
                 catch_exceptions=False,
             )
         assert result.exit_code == 2, result.output
@@ -200,8 +211,7 @@ class TestRunCycleCLIErrors:
         with patch("cerebra.cognition.llm_adapter.OllamaDirectAdapter", return_value=_StubLLM()):
             result = runner.invoke(
                 cli,
-                ["run-cycle", "--vault", str(bad_vault), "simple.planning.v0",
-                 "--goal", "goal"],
+                ["run-cycle", "--vault", str(bad_vault), "simple.planning.v0", "--goal", "goal"],
                 catch_exceptions=False,
             )
         assert result.exit_code == 2, result.output

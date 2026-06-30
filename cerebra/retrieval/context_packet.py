@@ -93,7 +93,7 @@ class ContextPacket:
     uncertainties: list[str]
     excluded_candidate_count: int
     best_score_seen: float | None = None  # abstained packets only
-    truth_tower: dict | None = None       # populated post-retrieval by T1 auto-promotion
+    truth_tower: dict | None = None  # populated post-retrieval by T1 auto-promotion
 
     def to_dict(self) -> dict:
         d: dict = {
@@ -202,18 +202,20 @@ def build_context_packet(
     items: list[MemoryItem] = []
     for c in visible:
         m = db_meta.get(c.record_id, {})
-        items.append(MemoryItem(
-            record_id=c.record_id,
-            source_id=m.get("source_id") or "",
-            chunk_id=m.get("chunk_id") or "",
-            content_excerpt=c.content_excerpt[:EXCERPT_MAX_CHARS],
-            source_path=_relative_path(c.source_path, vault_root),
-            sku_address=c.sku_address,
-            score=round(c.score.composite, 6),
-            score_components={k: round(v, 6) for k, v in c.score.components.items()},
-            retrieval_path=c.retrieval_path,
-            rank=c.rank or 0,
-        ))
+        items.append(
+            MemoryItem(
+                record_id=c.record_id,
+                source_id=m.get("source_id") or "",
+                chunk_id=m.get("chunk_id") or "",
+                content_excerpt=c.content_excerpt[:EXCERPT_MAX_CHARS],
+                source_path=_relative_path(c.source_path, vault_root),
+                sku_address=c.sku_address,
+                score=round(c.score.composite, 6),
+                score_components={k: round(v, 6) for k, v in c.score.components.items()},
+                retrieval_path=c.retrieval_path,
+                rank=c.rank or 0,
+            )
+        )
 
     token_estimate = sum(len(item.content_excerpt) for item in items) // 4
 
@@ -246,22 +248,24 @@ def build_context_packet(
 
     # Emit ContextPacketBuilt with the pre-generated event_id
     if event_log is not None:
-        event_log.write(InspectorEvent(
-            event_type="ContextPacketBuilt",
-            actor="retrieval.context_packet",
-            summary=f"ContextPacket built: {len(items)} records selected, ~{token_estimate} tokens",
-            data={
-                "context_packet_id": packet_id,
-                "trace_id": trace_id,
-                "query": plan.raw_query,
-                "selected_count": len(items),
-                "candidate_count": len(trace_data.scored_all),
-                "token_estimate": token_estimate,
-                "is_abstained": False,
-            },
-            event_id=built_event_id,
-            subject_id=packet_id,
-        ))
+        event_log.write(
+            InspectorEvent(
+                event_type="ContextPacketBuilt",
+                actor="retrieval.context_packet",
+                summary=f"ContextPacket built: {len(items)} records selected, ~{token_estimate} tokens",
+                data={
+                    "context_packet_id": packet_id,
+                    "trace_id": trace_id,
+                    "query": plan.raw_query,
+                    "selected_count": len(items),
+                    "candidate_count": len(trace_data.scored_all),
+                    "token_estimate": token_estimate,
+                    "is_abstained": False,
+                },
+                event_id=built_event_id,
+                subject_id=packet_id,
+            )
+        )
 
     return packet
 
@@ -295,8 +299,7 @@ def build_abstained_packet(
     origin_event_ids.append(built_event_id)
 
     rationale = (
-        f"No candidates above salience floor {floor}; "
-        f"best score was {best_score_seen:.2f}"
+        f"No candidates above salience floor {floor}; " f"best score was {best_score_seen:.2f}"
     )
 
     packet = ContextPacket(
@@ -320,22 +323,24 @@ def build_abstained_packet(
     )
 
     if event_log is not None:
-        event_log.write(InspectorEvent(
-            event_type="ContextPacketBuilt",
-            actor="retrieval.context_packet",
-            summary=f"ContextPacket built (abstained): best score {best_score_seen:.2f} < floor {floor}",
-            data={
-                "context_packet_id": packet_id,
-                "trace_id": trace_id,
-                "query": plan.raw_query,
-                "selected_count": 0,
-                "candidate_count": len(trace_data.scored_all),
-                "token_estimate": 0,
-                "is_abstained": True,
-            },
-            event_id=built_event_id,
-            subject_id=packet_id,
-        ))
+        event_log.write(
+            InspectorEvent(
+                event_type="ContextPacketBuilt",
+                actor="retrieval.context_packet",
+                summary=f"ContextPacket built (abstained): best score {best_score_seen:.2f} < floor {floor}",
+                data={
+                    "context_packet_id": packet_id,
+                    "trace_id": trace_id,
+                    "query": plan.raw_query,
+                    "selected_count": 0,
+                    "candidate_count": len(trace_data.scored_all),
+                    "token_estimate": 0,
+                    "is_abstained": True,
+                },
+                event_id=built_event_id,
+                subject_id=packet_id,
+            )
+        )
 
     return packet
 
@@ -362,17 +367,11 @@ def _render_tower_lines(truth_tower: dict) -> list[str]:
     )
     for idx, t1 in enumerate(t1_items, start=1):
         trace = t1.get("retrieval_trace_id") or "n/a"
-        lines.append(
-            f"  T1 [{idx}]  score: {t1['salience_score']:.2f}  |  trace: {trace}"
-        )
+        lines.append(f"  T1 [{idx}]  score: {t1['salience_score']:.2f}  |  trace: {trace}")
         lines.append(f"       {t1['content_summary'][:120]}")
-        for t2_idx, t2 in enumerate(
-            t2_by_t1.get(t1["tower_item_id"], []), start=1
-        ):
+        for t2_idx, t2 in enumerate(t2_by_t1.get(t1["tower_item_id"], []), start=1):
             stale = " [stale]" if t2["is_stale"] else ""
-            lines.append(
-                f"    T2 [{t2_idx}] ^T1[{idx}]  score: {t2['salience_score']:.2f}{stale}"
-            )
+            lines.append(f"    T2 [{t2_idx}] ^T1[{idx}]  score: {t2['salience_score']:.2f}{stale}")
             lines.append(f"         {t2['content_summary'][:120]}")
     return lines
 
@@ -413,7 +412,9 @@ def render_text(packet: ContextPacket, limit: int = 10) -> str:
         excerpt = item.content_excerpt.replace("\n", " ")
         if len(excerpt) > 80:
             excerpt = excerpt[:79] + "…"
-        lines.append(f"[{item.rank}] {item.source_path}  |  Score: {item.score:.2f}  |  {item.retrieval_path}")
+        lines.append(
+            f"[{item.rank}] {item.source_path}  |  Score: {item.score:.2f}  |  {item.retrieval_path}"
+        )
         lines.append(f"    {excerpt}")
         lines.append("")
 

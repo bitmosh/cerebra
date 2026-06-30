@@ -268,12 +268,14 @@ class TestEdgeCrud:
     def test_edge_requires_existing_source_node(self, db: Path) -> None:
         upsert_node(db, _node("gn_doc", node_type="Document"))
         import sqlite3
+
         with pytest.raises((sqlite3.IntegrityError, sqlite3.OperationalError)):
             upsert_edge(db, _edge("ge_001", "gn_nonexistent", "gn_doc"))
 
     def test_edge_requires_existing_target_node(self, db: Path) -> None:
         upsert_node(db, _node("gn_src"))
         import sqlite3
+
         with pytest.raises((sqlite3.IntegrityError, sqlite3.OperationalError)):
             upsert_edge(db, _edge("ge_001", "gn_src", "gn_nonexistent"))
 

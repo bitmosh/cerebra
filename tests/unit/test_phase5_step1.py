@@ -53,8 +53,16 @@ class TestConstants:
 
     def test_slot_names_match_schema_check(self) -> None:
         expected = {
-            "goal", "constraint", "context", "hypothesis", "evidence",
-            "contradiction", "recent_output", "question", "procedure", "interrupt",
+            "goal",
+            "constraint",
+            "context",
+            "hypothesis",
+            "evidence",
+            "contradiction",
+            "recent_output",
+            "question",
+            "procedure",
+            "interrupt",
         }
         assert set(SLOT_CAPACITIES.keys()) == expected
 
@@ -96,17 +104,27 @@ class TestPhase5EventTypes:
 
     def test_wm_events_present(self) -> None:
         for name in (
-            "WorkingMemoryCreated", "AttentionItemProposed", "AttentionItemPromoted",
-            "AttentionItemEvicted", "AttentionItemDeferred", "InterruptCandidateCreated",
-            "WorkingMemoryRendered", "WorkingMemoryCleared",
+            "WorkingMemoryCreated",
+            "AttentionItemProposed",
+            "AttentionItemPromoted",
+            "AttentionItemEvicted",
+            "AttentionItemDeferred",
+            "InterruptCandidateCreated",
+            "WorkingMemoryRendered",
+            "WorkingMemoryCleared",
         ):
             assert name in PHASE_5_EVENT_TYPES, name
 
     def test_tower_events_present(self) -> None:
         for name in (
-            "TowerInitialized", "TowerItemPromoted", "TowerItemEvicted",
-            "TowerCrossReferenceAdded", "TowerItemStaled", "TowerTierRebuilt",
-            "TowerCollapsed", "TowerRendered",
+            "TowerInitialized",
+            "TowerItemPromoted",
+            "TowerItemEvicted",
+            "TowerCrossReferenceAdded",
+            "TowerItemStaled",
+            "TowerTierRebuilt",
+            "TowerCollapsed",
+            "TowerRendered",
         ):
             assert name in PHASE_5_EVENT_TYPES, name
 

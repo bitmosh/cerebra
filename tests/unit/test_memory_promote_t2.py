@@ -24,6 +24,7 @@ from cerebra.storage.migrations import run_migrations
 
 # ── DB seeding helpers ────────────────────────────────────────────────────────
 
+
 def _seed_memory_record(db_path: Path, record_id: str) -> None:
     now = int(time.time())
     src_id = f"src_{record_id}"
@@ -52,7 +53,21 @@ def _seed_memory_record(db_path: Path, record_id: str) -> None:
             " depth, content, content_hash, token_estimate, chunk_strategy, "
             " lifecycle_state, created_at, schema_version) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (chunk_id, doc_id, src_id, "", 0, 0, "test content", "hc0", 5, "fixed", "active", now, 1),
+            (
+                chunk_id,
+                doc_id,
+                src_id,
+                "",
+                0,
+                0,
+                "test content",
+                "hc0",
+                5,
+                "fixed",
+                "active",
+                now,
+                1,
+            ),
         )
         conn.execute(
             "INSERT OR IGNORE INTO memory_records "
@@ -60,8 +75,19 @@ def _seed_memory_record(db_path: Path, record_id: str) -> None:
             " content, content_hash, token_estimate, lifecycle_state, "
             " created_at, schema_version) "
             "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-            (record_id, "source_chunk", src_id, doc_id, chunk_id,
-             "test content", "hr0", 5, "active", now, 1),
+            (
+                record_id,
+                "source_chunk",
+                src_id,
+                doc_id,
+                chunk_id,
+                "test content",
+                "hr0",
+                5,
+                "active",
+                now,
+                1,
+            ),
         )
         conn.commit()
     finally:
@@ -115,6 +141,7 @@ def _make_mi(record_id: str, score: float = 0.70) -> _FakeMemoryItem:
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
+
 
 @pytest.fixture()
 def vault(tmp_path: Path) -> Path:
@@ -179,15 +206,22 @@ def _run_real_log(vault: Path, *args: str):
 
 # ── Happy path ────────────────────────────────────────────────────────────────
 
+
 class TestT2HappyPath:
     def test_promote_by_wm_item_id(
         self, vault: Path, session_id: str, wm_item_id: str, t1_item_id: str
     ) -> None:
         result = _run(
             vault,
-            "memory", "promote", wm_item_id,
-            "--tier", "2", "--cite", t1_item_id,
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            wm_item_id,
+            "--tier",
+            "2",
+            "--cite",
+            t1_item_id,
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 0, result.output
         assert "Promoted to T2:" in result.output
@@ -195,9 +229,7 @@ class TestT2HappyPath:
         assert session_id in result.output
         assert "Pinned:    no" in result.output
 
-    def test_promote_by_record_id(
-        self, vault: Path, session_id: str, t1_item_id: str
-    ) -> None:
+    def test_promote_by_record_id(self, vault: Path, session_id: str, t1_item_id: str) -> None:
         db = vault / "data" / "cerebra.db"
         _seed_memory_record(db, "rec_test01")
         wm = WorkingMemory(db, session_id)
@@ -210,9 +242,15 @@ class TestT2HappyPath:
 
         result = _run(
             vault,
-            "memory", "promote", "rec_test01",
-            "--tier", "2", "--cite", t1_item_id,
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            "rec_test01",
+            "--tier",
+            "2",
+            "--cite",
+            t1_item_id,
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 0, result.output
         assert "Promoted to T2:" in result.output
@@ -222,9 +260,16 @@ class TestT2HappyPath:
     ) -> None:
         result = _run(
             vault,
-            "memory", "promote", wm_item_id,
-            "--tier", "2", "--cite", t1_item_id, "--pin",
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            wm_item_id,
+            "--tier",
+            "2",
+            "--cite",
+            t1_item_id,
+            "--pin",
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 0, result.output
         assert "Pinned:    yes" in result.output
@@ -240,9 +285,15 @@ class TestT2HappyPath:
     ) -> None:
         _run(
             vault,
-            "memory", "promote", wm_item_id,
-            "--tier", "2", "--cite", t1_item_id,
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            wm_item_id,
+            "--tier",
+            "2",
+            "--cite",
+            t1_item_id,
+            "--vault",
+            str(vault),
         )
         db = vault / "data" / "cerebra.db"
         tower = TruthTower(db, session_id)
@@ -253,27 +304,34 @@ class TestT2HappyPath:
 
 # ── Validation errors ─────────────────────────────────────────────────────────
 
+
 class TestT2ValidationErrors:
-    def test_missing_cite_flag(
-        self, vault: Path, session_id: str, wm_item_id: str
-    ) -> None:
+    def test_missing_cite_flag(self, vault: Path, session_id: str, wm_item_id: str) -> None:
         result = _run(
             vault,
-            "memory", "promote", wm_item_id,
-            "--tier", "2",
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            wm_item_id,
+            "--tier",
+            "2",
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 2
         assert "--cite is required" in result.output
 
-    def test_cited_t1_not_found(
-        self, vault: Path, session_id: str, wm_item_id: str
-    ) -> None:
+    def test_cited_t1_not_found(self, vault: Path, session_id: str, wm_item_id: str) -> None:
         result = _run(
             vault,
-            "memory", "promote", wm_item_id,
-            "--tier", "2", "--cite", "twi_nonexistent00000",
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            wm_item_id,
+            "--tier",
+            "2",
+            "--cite",
+            "twi_nonexistent00000",
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 2
         assert "Error:" in result.output
@@ -285,9 +343,7 @@ class TestT2ValidationErrors:
         db = vault / "data" / "cerebra.db"
         wm = WorkingMemory(db, session_id)
         all_items = wm.load_all_active()
-        wm_item = next(
-            i for items in all_items.values() for i in items if i.item_id == wm_item_id
-        )
+        wm_item = next(i for items in all_items.values() for i in items if i.item_id == wm_item_id)
         tower = TruthTower(db, session_id)
         t2_item = tower.promote_to_t2(wm_item, t1_item_id)
 
@@ -301,9 +357,15 @@ class TestT2ValidationErrors:
 
         result = _run(
             vault,
-            "memory", "promote", item2.item_id,
-            "--tier", "2", "--cite", t2_item.tower_item_id,
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            item2.item_id,
+            "--tier",
+            "2",
+            "--cite",
+            t2_item.tower_item_id,
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 2
         assert "Error:" in result.output
@@ -323,12 +385,22 @@ class TestT2ValidationErrors:
 
         result = _run(
             vault,
-            "memory", "promote", wm_item_id,
-            "--tier", "2", "--cite", t1_item_id,
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            wm_item_id,
+            "--tier",
+            "2",
+            "--cite",
+            t1_item_id,
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 2
-        assert "evicted" in result.output.lower() or "born-stale" in result.output.lower() or "Error:" in result.output
+        assert (
+            "evicted" in result.output.lower()
+            or "born-stale" in result.output.lower()
+            or "Error:" in result.output
+        )
 
     def test_wm_item_evicted(
         self, vault: Path, session_id: str, wm_item_id: str, t1_item_id: str
@@ -344,33 +416,47 @@ class TestT2ValidationErrors:
 
         result = _run(
             vault,
-            "memory", "promote", wm_item_id,
-            "--tier", "2", "--cite", t1_item_id,
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            wm_item_id,
+            "--tier",
+            "2",
+            "--cite",
+            t1_item_id,
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 2
         assert "evicted" in result.output.lower()
 
-    def test_wm_item_not_in_session(
-        self, vault: Path, session_id: str, t1_item_id: str
-    ) -> None:
+    def test_wm_item_not_in_session(self, vault: Path, session_id: str, t1_item_id: str) -> None:
         result = _run(
             vault,
-            "memory", "promote", "wmi_doesnotexist0",
-            "--tier", "2", "--cite", t1_item_id,
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            "wmi_doesnotexist0",
+            "--tier",
+            "2",
+            "--cite",
+            t1_item_id,
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 2
         assert "not found" in result.output.lower()
 
-    def test_ambiguous_positional_arg(
-        self, vault: Path, session_id: str, t1_item_id: str
-    ) -> None:
+    def test_ambiguous_positional_arg(self, vault: Path, session_id: str, t1_item_id: str) -> None:
         result = _run(
             vault,
-            "memory", "promote", "badprefix_abc123",
-            "--tier", "2", "--cite", t1_item_id,
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            "badprefix_abc123",
+            "--tier",
+            "2",
+            "--cite",
+            t1_item_id,
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 2
         assert "rec_" in result.output or "wmi_" in result.output
@@ -383,9 +469,15 @@ class TestT2ValidationErrors:
 
         result = _run(
             tmp_path,
-            "memory", "promote", "wmi_abc",
-            "--tier", "2", "--cite", "twi_fake",
-            "--vault", str(tmp_path),
+            "memory",
+            "promote",
+            "wmi_abc",
+            "--tier",
+            "2",
+            "--cite",
+            "twi_fake",
+            "--vault",
+            str(tmp_path),
         )
         assert result.exit_code == 2
         assert "session" in result.output.lower()
@@ -393,9 +485,13 @@ class TestT2ValidationErrors:
     def test_tier1_still_unimplemented(self, vault: Path) -> None:
         result = _run(
             vault,
-            "memory", "promote", "wmi_abc",
-            "--tier", "1",
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            "wmi_abc",
+            "--tier",
+            "1",
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 2
         assert "not yet implemented" in result.output.lower()
@@ -403,18 +499,26 @@ class TestT2ValidationErrors:
 
 # ── Event emission ────────────────────────────────────────────────────────────
 
+
 class TestT2EventEmission:
     def test_tower_item_promoted_event_fires(
         self, vault: Path, session_id: str, wm_item_id: str, t1_item_id: str
     ) -> None:
         """TowerItemPromoted with tier=2 fires after a successful T2 promotion."""
         import json
+
         db = vault / "data" / "cerebra.db"
         result = _run_real_log(
             vault,
-            "memory", "promote", wm_item_id,
-            "--tier", "2", "--cite", t1_item_id,
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            wm_item_id,
+            "--tier",
+            "2",
+            "--cite",
+            t1_item_id,
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 0, result.output
         conn = connect(db)
@@ -437,9 +541,15 @@ class TestT2EventEmission:
         db = vault / "data" / "cerebra.db"
         result = _run_real_log(
             vault,
-            "memory", "promote", wm_item_id,
-            "--tier", "2", "--cite", t1_item_id,
-            "--vault", str(vault),
+            "memory",
+            "promote",
+            wm_item_id,
+            "--tier",
+            "2",
+            "--cite",
+            t1_item_id,
+            "--vault",
+            str(vault),
         )
         assert result.exit_code == 0, result.output
         conn = connect(db)
@@ -454,6 +564,7 @@ class TestT2EventEmission:
 
 
 # ── Idempotency / lockfile ────────────────────────────────────────────────────
+
 
 class TestT2Lockfile:
     def test_lockfile_acquired_on_write(
@@ -472,9 +583,15 @@ class TestT2Lockfile:
             result = CliRunner().invoke(
                 cli,
                 [
-                    "memory", "promote", wm_item_id,
-                    "--tier", "2", "--cite", t1_item_id,
-                    "--vault", str(vault),
+                    "memory",
+                    "promote",
+                    wm_item_id,
+                    "--tier",
+                    "2",
+                    "--cite",
+                    t1_item_id,
+                    "--vault",
+                    str(vault),
                 ],
                 catch_exceptions=False,
             )

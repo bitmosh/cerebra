@@ -87,9 +87,7 @@ class WorkingMemory:
         ).fetchone()
         return row is not None
 
-    def _load_slot_conn(
-        self, conn: sqlite3.Connection, slot_type: str
-    ) -> list[WorkingMemoryItem]:
+    def _load_slot_conn(self, conn: sqlite3.Connection, slot_type: str) -> list[WorkingMemoryItem]:
         rows = conn.execute(
             "SELECT item_id, session_id, slot_type, record_id, content_summary, "
             "       salience_score, is_pinned, promoted_at, evicted_at "
@@ -164,8 +162,14 @@ class WorkingMemory:
                 " salience_score, is_pinned, promoted_at, schema_version) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)",
                 (
-                    item_id, self.session_id, slot_type, record_id,
-                    content_summary, salience_score, int(is_pinned), now,
+                    item_id,
+                    self.session_id,
+                    slot_type,
+                    record_id,
+                    content_summary,
+                    salience_score,
+                    int(is_pinned),
+                    now,
                 ),
             )
 
@@ -174,10 +178,7 @@ class WorkingMemory:
 
             # Step 3: evict if over capacity
             if len(active) > capacity:
-                candidates = [
-                    i for i in active
-                    if i.item_id != item_id and not i.is_pinned
-                ]
+                candidates = [i for i in active if i.item_id != item_id and not i.is_pinned]
                 if not candidates:
                     # All existing spots are pinned — roll back, then defer
                     conn.execute(
@@ -195,8 +196,7 @@ class WorkingMemory:
                     was_tower_cited = self._is_tower_cited(conn, to_evict.item_id)
 
                     conn.execute(
-                        "UPDATE working_memory_items SET evicted_at = ? "
-                        "WHERE item_id = ?",
+                        "UPDATE working_memory_items SET evicted_at = ? " "WHERE item_id = ?",
                         (now, to_evict.item_id),
                     )
                     evicted_item_id = to_evict.item_id
@@ -237,8 +237,7 @@ class WorkingMemory:
                     )
                 )
             raise PromotionError(
-                f"Cannot promote: all {capacity} item(s) in slot "
-                f"{slot_type!r} are pinned"
+                f"Cannot promote: all {capacity} item(s) in slot " f"{slot_type!r} are pinned"
             )
 
         if eviction_event_data is not None and event_log is not None:
@@ -384,9 +383,7 @@ class WorkingMemory:
                 summary = item.content_summary
                 if len(summary) > 120:
                     summary = summary[:120] + "…"
-                lines.append(
-                    f"  {item.item_id}  score: {item.salience_score:.4f}{pin_mark}"
-                )
+                lines.append(f"  {item.item_id}  score: {item.salience_score:.4f}{pin_mark}")
                 lines.append(f"    {summary}")
 
         if total == 0:
@@ -401,8 +398,7 @@ class WorkingMemory:
             "session_id": self.session_id,
             "total_item_count": sum(len(v) for v in all_items.values()),
             "slots": {
-                slot: [item.to_dict() for item in items]
-                for slot, items in all_items.items()
+                slot: [item.to_dict() for item in items] for slot, items in all_items.items()
             },
         }
 
@@ -436,8 +432,7 @@ def new_session(
         ).fetchone()
         if existing:
             conn.execute(
-                "UPDATE sessions SET status = 'closed', last_active_at = ? "
-                "WHERE session_id = ?",
+                "UPDATE sessions SET status = 'closed', last_active_at = ? " "WHERE session_id = ?",
                 (now, existing["session_id"]),
             )
 
@@ -506,8 +501,7 @@ def close_session(db_path: Path, session_id: str) -> None:
     conn = connect(db_path)
     try:
         conn.execute(
-            "UPDATE sessions SET status = 'closed', last_active_at = ? "
-            "WHERE session_id = ?",
+            "UPDATE sessions SET status = 'closed', last_active_at = ? " "WHERE session_id = ?",
             (now, session_id),
         )
         conn.commit()

@@ -89,7 +89,9 @@ def writer(db_path: Path) -> EpisodeWriter:
     return EpisodeWriter(db_path)
 
 
-def _open_session(manager: SessionManager, vault: Path, cycle_config: str = "d1.test.v0") -> tuple[RuntimeSession, bytes]:
+def _open_session(
+    manager: SessionManager, vault: Path, cycle_config: str = "d1.test.v0"
+) -> tuple[RuntimeSession, bytes]:
     return manager.open_session(
         goal="design a caching layer",
         cycle_config=cycle_config,
@@ -137,12 +139,22 @@ def _two_step_config() -> CycleConfig:
 
 class TestEpisodePersistenceOnAccept:
     def test_accept_cycle_writes_episode(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         result = runtime.run()
         assert result.outcome == "accept"
@@ -150,49 +162,88 @@ class TestEpisodePersistenceOnAccept:
         assert len(episodes) == 1
 
     def test_episode_content_matches_llm_output(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
             _StubLLM(text="specific output text"),
-            opened_event_id=eid, episode_writer=writer,
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         episodes = writer.list_for_runtime_session(session.session_id)
         assert episodes[0].content == "specific output text"
 
     def test_episode_runtime_session_id_matches(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         episodes = writer.list_for_runtime_session(session.session_id)
         assert episodes[0].runtime_session_id == session.session_id
 
     def test_episode_step_name_matches(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         episodes = writer.list_for_runtime_session(session.session_id)
         assert episodes[0].step_name == "plan"
 
     def test_two_step_accept_writes_two_episodes(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault, "d1.twostep.v0")
         runtime = CycleRuntime(
-            _two_step_config(), session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            _two_step_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         result = runtime.run()
         assert result.outcome == "accept"
@@ -200,12 +251,22 @@ class TestEpisodePersistenceOnAccept:
         assert len(episodes) == 2
 
     def test_two_step_episode_step_names(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault, "d1.twostep.v0")
         runtime = CycleRuntime(
-            _two_step_config(), session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            _two_step_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         episodes = writer.list_for_runtime_session(session.session_id)
@@ -213,10 +274,17 @@ class TestEpisodePersistenceOnAccept:
         assert names == {"plan", "evaluate"}
 
     def test_stop_outcome_writes_no_episodes(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         stop_cfg = CycleConfig(
-            name="d1.stop.v0", version=1, description="",
+            name="d1.stop.v0",
+            version=1,
+            description="",
             steps=[CycleStep("plan", "", StepPromptTemplate("{{ goal }}", "free_form"))],
             max_steps=5,
             stop_conditions=[
@@ -227,20 +295,35 @@ class TestEpisodePersistenceOnAccept:
         )
         session, eid = _open_session(manager, vault, "d1.stop.v0")
         runtime = CycleRuntime(
-            stop_cfg, session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            stop_cfg,
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         result = runtime.run()
         assert result.outcome == "stop"
         assert writer.list_for_runtime_session(session.session_id) == []
 
     def test_episode_metadata_has_step_index(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         episodes = writer.list_for_runtime_session(session.session_id)
@@ -248,12 +331,22 @@ class TestEpisodePersistenceOnAccept:
         assert "step_index" in episodes[0].metadata
 
     def test_episode_metadata_has_step_executions_count(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         episodes = writer.list_for_runtime_session(session.session_id)
@@ -261,13 +354,23 @@ class TestEpisodePersistenceOnAccept:
         assert "step_executions_count" in episodes[0].metadata
 
     def test_no_wm_session_episode_still_persists(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         """Episodes persist even without an active working memory session (nullable FK)."""
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         episodes = writer.list_for_runtime_session(session.session_id)
@@ -282,17 +385,26 @@ class TestEpisodePersistenceOnAccept:
 class TestMemoryWriteFromCycleEvent:
     def _read_events(self, store: FossicStore, session_id: str) -> list[Any]:
         from fossic import ReadQuery
-        return store._store.read_range(
-            ReadQuery(stream_id=f"cerebra/agent-trace/{session_id}")
-        )
+
+        return store._store.read_range(ReadQuery(stream_id=f"cerebra/agent-trace/{session_id}"))
 
     def test_memory_write_event_record_id_starts_with_ep(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         events = self._read_events(store, session.session_id)
@@ -302,13 +414,23 @@ class TestMemoryWriteFromCycleEvent:
         assert payload["record_id"].startswith("ep_")
 
     def test_memory_write_event_record_id_in_db(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         """The record_id in the event must exist in cycle_episode_records (no more stub)."""
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         events = self._read_events(store, session.session_id)
@@ -319,12 +441,22 @@ class TestMemoryWriteFromCycleEvent:
         assert loaded is not None, f"record_id {record_id!r} not in cycle_episode_records"
 
     def test_memory_write_event_table_target_field(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store, _StubLLM(),
-            opened_event_id=eid, episode_writer=writer,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         events = self._read_events(store, session.session_id)
@@ -338,26 +470,44 @@ class TestMemoryWriteFromCycleEvent:
 
 class TestCitationExtraction:
     def test_extract_citations_finds_rec_ids(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
             _StubLLM(text="Based on rec_aabbccddeeff, the answer is yes."),
-            opened_event_id=eid, episode_writer=writer,
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         episodes = writer.list_for_runtime_session(session.session_id)
         assert episodes[0].cited_record_ids == ["rec_aabbccddeeff"]
 
     def test_extract_citations_empty_for_no_pattern(
-        self, vault: Path, db_path: Path, store: FossicStore, manager: SessionManager, writer: EpisodeWriter
+        self,
+        vault: Path,
+        db_path: Path,
+        store: FossicStore,
+        manager: SessionManager,
+        writer: EpisodeWriter,
     ) -> None:
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store,
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
             _StubLLM(text="No citations in this output."),
-            opened_event_id=eid, episode_writer=writer,
+            opened_event_id=eid,
+            episode_writer=writer,
         )
         runtime.run()
         episodes = writer.list_for_runtime_session(session.session_id)
@@ -374,7 +524,11 @@ class TestEpisodeWriterDefaultInjection:
         """CycleRuntime auto-constructs EpisodeWriter if not injected."""
         session, eid = _open_session(manager, vault)
         runtime = CycleRuntime(
-            _minimal_accept_config(), session, db_path, store, _StubLLM(),
+            _minimal_accept_config(),
+            session,
+            db_path,
+            store,
+            _StubLLM(),
             opened_event_id=eid,
             # No episode_writer passed
         )

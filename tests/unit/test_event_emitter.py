@@ -73,27 +73,19 @@ class TestEmitCycleEvent:
         assert store._store.stream_exists("cerebra/agent-trace/ses-001")
         assert not store._store.stream_exists("cerebra/agent-trace/other")
 
-    def test_first_event_no_causation(
-        self, emitter: EventEmitter, store: FossicStore
-    ) -> None:
+    def test_first_event_no_causation(self, emitter: EventEmitter, store: FossicStore) -> None:
         from fossic import ReadQuery
 
         emitter.emit_cycle_event("StepStarted", _u())
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/ses-001")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/ses-001"))
         assert events[0].causation_id is None
 
-    def test_second_event_auto_chained(
-        self, emitter: EventEmitter, store: FossicStore
-    ) -> None:
+    def test_second_event_auto_chained(self, emitter: EventEmitter, store: FossicStore) -> None:
         from fossic import ReadQuery
 
         eid1 = emitter.emit_cycle_event("StepStarted", _u())
         emitter.emit_cycle_event("StepExecuted", _u())
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/ses-001")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/ses-001"))
         assert events[1].causation_id is not None
         assert events[1].causation_id.as_bytes() == eid1
 
@@ -105,9 +97,7 @@ class TestEmitCycleEvent:
         emitter.emit_cycle_event("StepStarted", _u())
         eid_explicit = store.append("other/stream", "E", _u())
         emitter.emit_cycle_event("StepExecuted", _u(), causation_id=eid_explicit)
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/ses-001")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/ses-001"))
         assert events[1].causation_id.as_bytes() == eid_explicit
 
     def test_causation_chain_grows_three_events(
@@ -118,9 +108,7 @@ class TestEmitCycleEvent:
         e1 = emitter.emit_cycle_event("A", _u())
         e2 = emitter.emit_cycle_event("B", _u())
         emitter.emit_cycle_event("C", _u())
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/ses-001")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/ses-001"))
         assert events[1].causation_id.as_bytes() == e1
         assert events[2].causation_id.as_bytes() == e2
 
@@ -131,15 +119,11 @@ class TestEmitCycleEvent:
         e2 = emitter.emit_cycle_event("B", _u())
         assert emitter._last_event_id == e2
 
-    def test_indexed_tags_forwarded(
-        self, emitter: EventEmitter, store: FossicStore
-    ) -> None:
+    def test_indexed_tags_forwarded(self, emitter: EventEmitter, store: FossicStore) -> None:
         from fossic import ReadQuery
 
         emitter.emit_cycle_event("E", _u(), indexed_tags={"k": "v"})
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/ses-001")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/ses-001"))
         assert events[0].indexed_tags() == {"k": "v"}
 
     def test_different_sessions_isolated(self, store: FossicStore) -> None:
@@ -151,12 +135,8 @@ class TestEmitCycleEvent:
         e2 = EventEmitter(store, "ses-B", "cyc-2")
         e1.emit_cycle_event("E", _u({"from": "A"}))
         e2.emit_cycle_event("E", _u({"from": "B"}))
-        a_events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/ses-A")
-        )
-        b_events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/agent-trace/ses-B")
-        )
+        a_events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/ses-A"))
+        b_events = store._store.read_range(ReadQuery(stream_id="cerebra/agent-trace/ses-B"))
         assert len(a_events) == 1
         assert len(b_events) == 1
         assert a_events[0].payload()["from"] == "A"
@@ -176,23 +156,17 @@ class TestEmitLatticeEvent:
         emitter.emit_lattice_event("lineage-1", "LatticeCommit", _u())
         assert store._store.stream_exists("cerebra/lattice/lineage-1")
 
-    def test_no_auto_causation(
-        self, emitter: EventEmitter, store: FossicStore
-    ) -> None:
+    def test_no_auto_causation(self, emitter: EventEmitter, store: FossicStore) -> None:
         from fossic import ReadQuery
 
         emitter.emit_lattice_event("lin", "E", _u())
         emitter.emit_lattice_event("lin", "E", _u())  # unique payload → 2 events
-        events = store._store.read_range(
-            ReadQuery(stream_id="cerebra/lattice/lin")
-        )
+        events = store._store.read_range(ReadQuery(stream_id="cerebra/lattice/lin"))
         assert len(events) == 2
         # Second lattice event has no auto-causation (unlike cycle events).
         assert events[1].causation_id is None
 
-    def test_explicit_causation_stored(
-        self, emitter: EventEmitter, store: FossicStore
-    ) -> None:
+    def test_explicit_causation_stored(self, emitter: EventEmitter, store: FossicStore) -> None:
         from fossic import ReadQuery
 
         eid1 = emitter.emit_lattice_event("lin", "E", _u())
@@ -200,16 +174,12 @@ class TestEmitLatticeEvent:
         events = store._store.read_range(ReadQuery(stream_id="cerebra/lattice/lin"))
         assert events[1].causation_id.as_bytes() == eid1
 
-    def test_does_not_pollute_cycle_stream(
-        self, emitter: EventEmitter, store: FossicStore
-    ) -> None:
+    def test_does_not_pollute_cycle_stream(self, emitter: EventEmitter, store: FossicStore) -> None:
         emitter.emit_lattice_event("lin", "E", _u())
         cycle_stream = "cerebra/agent-trace/ses-001"
         assert not store._store.stream_exists(cycle_stream)
 
-    def test_indexed_tags_forwarded(
-        self, emitter: EventEmitter, store: FossicStore
-    ) -> None:
+    def test_indexed_tags_forwarded(self, emitter: EventEmitter, store: FossicStore) -> None:
         from fossic import ReadQuery
 
         emitter.emit_lattice_event("lin", "E", _u(), indexed_tags={"cat": "x"})
@@ -241,17 +211,13 @@ class TestTriggerLatticeSnapshots:
     def test_empty_set_no_error(self, emitter: EventEmitter) -> None:
         emitter.trigger_lattice_snapshots_at_cycle_boundary(set())
 
-    def test_below_threshold_no_snapshot(
-        self, emitter: EventEmitter, store: FossicStore
-    ) -> None:
+    def test_below_threshold_no_snapshot(self, emitter: EventEmitter, store: FossicStore) -> None:
         self._fill_stream(emitter, "lin-a", LATTICE_SNAPSHOT_CADENCE - 1)
         emitter.trigger_lattice_snapshots_at_cycle_boundary({"lin-a"})
         # No snapshot → last_snapshot_version stays 0
         assert store.last_snapshot_version("cerebra/lattice/lin-a") == 0
 
-    def test_at_threshold_fires_snapshot(
-        self, emitter: EventEmitter, store: FossicStore
-    ) -> None:
+    def test_at_threshold_fires_snapshot(self, emitter: EventEmitter, store: FossicStore) -> None:
         self._fill_stream(emitter, "lin-b", LATTICE_SNAPSHOT_CADENCE)
         emitter.trigger_lattice_snapshots_at_cycle_boundary({"lin-b"})
         lsv = store.last_snapshot_version("cerebra/lattice/lin-b")
@@ -265,9 +231,7 @@ class TestTriggerLatticeSnapshots:
         lsv = store.last_snapshot_version("cerebra/lattice/lin-c")
         assert lsv == LATTICE_SNAPSHOT_CADENCE + 10
 
-    def test_multiple_lineages_independent(
-        self, emitter: EventEmitter, store: FossicStore
-    ) -> None:
+    def test_multiple_lineages_independent(self, emitter: EventEmitter, store: FossicStore) -> None:
         # lin-x at threshold, lin-y below threshold
         self._fill_stream(emitter, "lin-x", LATTICE_SNAPSHOT_CADENCE)
         self._fill_stream(emitter, "lin-y", LATTICE_SNAPSHOT_CADENCE - 5)
@@ -275,9 +239,7 @@ class TestTriggerLatticeSnapshots:
         assert store.last_snapshot_version("cerebra/lattice/lin-x") == LATTICE_SNAPSHOT_CADENCE
         assert store.last_snapshot_version("cerebra/lattice/lin-y") == 0
 
-    def test_delta_from_last_snapshot(
-        self, emitter: EventEmitter, store: FossicStore
-    ) -> None:
+    def test_delta_from_last_snapshot(self, emitter: EventEmitter, store: FossicStore) -> None:
         # Fill to CADENCE, snapshot. Then add CADENCE-1 more. Should NOT snapshot again.
         n = LATTICE_SNAPSHOT_CADENCE
         self._fill_stream(emitter, "lin-d", n, start=0)

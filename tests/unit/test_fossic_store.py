@@ -205,9 +205,7 @@ class TestCurrentVersion:
             store.append("s/inc", "E", _u())  # unique payload avoids CCE dedup
             assert store.current_version("s/inc") == i + 1
 
-    def test_independent_streams_independent_versions(
-        self, store: FossicStore
-    ) -> None:
+    def test_independent_streams_independent_versions(self, store: FossicStore) -> None:
         store.append("s/x", "E", _u())
         store.append("s/x", "E", _u())  # unique → 2 events on s/x
         store.append("s/y", "E", _u())
@@ -224,23 +222,17 @@ class TestLastSnapshotVersion:
         store.append("cerebra/lattice/abc", "E", _u())
         assert store.last_snapshot_version("cerebra/lattice/abc") == 0
 
-    def test_no_snapshot_yet_returns_zero(
-        self, store_with_reducer: FossicStore
-    ) -> None:
+    def test_no_snapshot_yet_returns_zero(self, store_with_reducer: FossicStore) -> None:
         store_with_reducer.append("cerebra/lattice/abc", "E", _u())
         assert store_with_reducer.last_snapshot_version("cerebra/lattice/abc") == 0
 
-    def test_after_snapshot_returns_event_count(
-        self, store_with_reducer: FossicStore
-    ) -> None:
+    def test_after_snapshot_returns_event_count(self, store_with_reducer: FossicStore) -> None:
         store_with_reducer.append("cerebra/lattice/abc", "E", _u())
         store_with_reducer.append("cerebra/lattice/abc", "E", _u())  # unique payload
         store_with_reducer.take_snapshot("cerebra/lattice/abc")
         assert store_with_reducer.last_snapshot_version("cerebra/lattice/abc") == 2
 
-    def test_matches_current_version_after_snapshot(
-        self, store_with_reducer: FossicStore
-    ) -> None:
+    def test_matches_current_version_after_snapshot(self, store_with_reducer: FossicStore) -> None:
         for _ in range(7):
             store_with_reducer.append("cerebra/lattice/xyz", "E", _u())
         store_with_reducer.take_snapshot("cerebra/lattice/xyz")
@@ -259,9 +251,7 @@ class TestTakeSnapshot:
         result = store_with_reducer.take_snapshot("cerebra/lattice/empty")
         assert result is None
 
-    def test_with_events_returns_snapshot_info(
-        self, store_with_reducer: FossicStore
-    ) -> None:
+    def test_with_events_returns_snapshot_info(self, store_with_reducer: FossicStore) -> None:
         from fossic import SnapshotInfo
 
         store_with_reducer.append("cerebra/lattice/snap", "E", _u())
@@ -269,9 +259,7 @@ class TestTakeSnapshot:
         assert result is not None
         assert isinstance(result, SnapshotInfo)
 
-    def test_snapshot_version_is_0_based_event_index(
-        self, store_with_reducer: FossicStore
-    ) -> None:
+    def test_snapshot_version_is_0_based_event_index(self, store_with_reducer: FossicStore) -> None:
         for _ in range(3):
             store_with_reducer.append("cerebra/lattice/v3", "E", _u())
         info = store_with_reducer.take_snapshot("cerebra/lattice/v3")

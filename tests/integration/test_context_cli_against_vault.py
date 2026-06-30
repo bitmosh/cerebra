@@ -11,7 +11,9 @@ from pathlib import Path
 
 import pytest
 
-numpy = pytest.importorskip("numpy", reason="numpy not available — skipping context CLI vault tests")
+numpy = pytest.importorskip(
+    "numpy", reason="numpy not available — skipping context CLI vault tests"
+)
 
 _VAULT_ROOT = Path.home() / "cerebra-vaults" / "dev"
 _VAULT_DB = _VAULT_ROOT / "data" / "cerebra.db"
@@ -47,7 +49,17 @@ class TestContextCliAgainstVault:
         from cerebra.storage.db import connect
 
         result = CliRunner().invoke(
-            cli, ["context", "leeway network", "--vault", str(vault_root), "--format", "json", "--limit", "3"]
+            cli,
+            [
+                "context",
+                "leeway network",
+                "--vault",
+                str(vault_root),
+                "--format",
+                "json",
+                "--limit",
+                "3",
+            ],
         )
         assert result.exit_code == 0, result.output
 
@@ -96,17 +108,36 @@ class TestContextCliAgainstVault:
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
-            cli, ["context", "cognitive cycle runtime design", "--vault", str(vault_root),
-                  "--format", "json", "--limit", "5"]
+            cli,
+            [
+                "context",
+                "cognitive cycle runtime design",
+                "--vault",
+                str(vault_root),
+                "--format",
+                "json",
+                "--limit",
+                "5",
+            ],
         )
         assert result.exit_code == 0, result.output
 
         packet = json.loads(result.output)
         required = (
-            "context_packet_id", "packet_version", "schema_version",
-            "created_at", "query", "mode", "is_abstained", "retrieval_trace_id",
-            "origin_event_ids", "selected_memory", "token_estimate",
-            "selected_count", "candidate_count", "excluded_candidate_count",
+            "context_packet_id",
+            "packet_version",
+            "schema_version",
+            "created_at",
+            "query",
+            "mode",
+            "is_abstained",
+            "retrieval_trace_id",
+            "origin_event_ids",
+            "selected_memory",
+            "token_estimate",
+            "selected_count",
+            "candidate_count",
+            "excluded_candidate_count",
         )
         for field in required:
             assert field in packet, f"Missing required field: {field}"
@@ -127,8 +158,17 @@ class TestContextCliAgainstVault:
 
         try:
             result = CliRunner().invoke(
-                cli, ["context", "leeway network", "--vault", str(vault_root),
-                      "--out", str(out_path), "--limit", "3"]
+                cli,
+                [
+                    "context",
+                    "leeway network",
+                    "--vault",
+                    str(vault_root),
+                    "--out",
+                    str(out_path),
+                    "--limit",
+                    "3",
+                ],
             )
             assert result.exit_code == 0, result.output
             assert out_path.exists(), "--out FILE was not created"

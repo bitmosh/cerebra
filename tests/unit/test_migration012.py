@@ -55,14 +55,18 @@ class TestMigration012Schema:
         try:
             run_migrations(db)
             conn = sqlite3.connect(db)
-            cols = {
-                row[1]
-                for row in conn.execute("PRAGMA table_info(evaluations)").fetchall()
-            }
+            cols = {row[1] for row in conn.execute("PRAGMA table_info(evaluations)").fetchall()}
             expected = {
-                "evaluation_id", "session_id", "cycle_id", "step_id",
-                "composite_score", "per_signal_scores", "weights_used",
-                "composite_floor_violated", "confidence", "composed_at",
+                "evaluation_id",
+                "session_id",
+                "cycle_id",
+                "step_id",
+                "composite_score",
+                "per_signal_scores",
+                "weights_used",
+                "composite_floor_violated",
+                "confidence",
+                "composed_at",
             }
             assert expected.issubset(cols), f"Missing columns: {expected - cols}"
             conn.close()

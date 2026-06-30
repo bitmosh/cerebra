@@ -125,9 +125,7 @@ class TestTruthTowerAgainstVault:
             conn.close()
         assert "truth_tower_items" in tables
 
-    def test_promote_real_records_to_t1(
-        self, vault_db: Path, tower: TruthTower
-    ) -> None:
+    def test_promote_real_records_to_t1(self, vault_db: Path, tower: TruthTower) -> None:
         """Promote real vault records into T1 — FK constraints must pass."""
         rows = _first_real_records(vault_db, n=2)
         if not rows:
@@ -157,7 +155,9 @@ class TestTruthTowerAgainstVault:
 
         t1 = t1_items[0]
         wm = WorkingMemory(vault_db, session_id)
-        wm_item = wm.promote("evidence", rows[0]["record_id"], "Integration T2 evidence", salience_score=0.65)
+        wm_item = wm.promote(
+            "evidence", rows[0]["record_id"], "Integration T2 evidence", salience_score=0.65
+        )
 
         t2 = tower.promote_to_t2(wm_item, t1.tower_item_id)
         assert t2.tier == 2
@@ -179,7 +179,9 @@ class TestTruthTowerAgainstVault:
 
         t1 = t1_items[0]
         wm = WorkingMemory(vault_db, session_id)
-        wm_item = wm.promote("hypothesis", None, "T2 hypothesis citing real T1", salience_score=0.55)
+        wm_item = wm.promote(
+            "hypothesis", None, "T2 hypothesis citing real T1", salience_score=0.55
+        )
         tower.promote_to_t2(wm_item, t1.tower_item_id)
 
         stale_count = tower.mark_stale_from_t1_eviction(t1.tower_item_id)
@@ -189,9 +191,7 @@ class TestTruthTowerAgainstVault:
         citing = [i for i in t2_active if i.t1_citation_id == t1.tower_item_id]
         assert all(c.is_stale for c in citing)
 
-    def test_render_chronological_nonempty(
-        self, vault_db: Path, tower: TruthTower
-    ) -> None:
+    def test_render_chronological_nonempty(self, vault_db: Path, tower: TruthTower) -> None:
         """render_chronological must return a non-empty string after a T1 promotion."""
         rows = _first_real_records(vault_db, n=2)
         if not rows:

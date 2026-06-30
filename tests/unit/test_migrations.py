@@ -195,6 +195,7 @@ class TestMigration007:
             from cerebra.storage.migrations import (
                 ALL_MIGRATIONS,
             )
+
             conn = _sq3.connect(db)
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS applied_migrations"
@@ -223,7 +224,9 @@ class TestMigration007:
             run_migrations(db)
 
             conn = _sq3.connect(db)
-            pending = {r[0] for r in conn.execute("SELECT record_id FROM pending_embeddings").fetchall()}
+            pending = {
+                r[0] for r in conn.execute("SELECT record_id FROM pending_embeddings").fetchall()
+            }
             conn.close()
             assert "rec_a" in pending
             assert "rec_b" in pending
@@ -265,6 +268,7 @@ class TestMigration007:
             import sqlite3 as _sq3
 
             from cerebra.storage.migrations import ALL_MIGRATIONS
+
             conn = _sq3.connect(db)
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS applied_migrations"
@@ -292,7 +296,9 @@ class TestMigration007:
             run_migrations(db)
 
             conn = _sq3.connect(db)
-            pending = {r[0] for r in conn.execute("SELECT record_id FROM pending_embeddings").fetchall()}
+            pending = {
+                r[0] for r in conn.execute("SELECT record_id FROM pending_embeddings").fetchall()
+            }
             conn.close()
             assert "rec_active" in pending
             assert "rec_archived" not in pending
