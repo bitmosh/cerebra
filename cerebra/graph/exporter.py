@@ -303,7 +303,7 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
     }
 
     # Index record rows by record_id for edge building (only exported records)
-    record_index: dict[str, dict] = {}
+    record_index: dict[str, dict[str, Any]] = {}
     for row in record_rows:
         if row["record_id"] in exported_record_ids:
             record_index[row["record_id"]] = dict(row)
@@ -328,7 +328,7 @@ def build_graph(db_path: Path, vault_path: Path) -> dict[str, Any]:
         edges_by_type["contains"] += 1
 
     # describes: adjacent records within the same document, by chunk_index
-    by_document: dict[str, list[dict]] = {}
+    by_document: dict[str, list[dict[str, Any]]] = {}
     for _rec_id, rec in record_index.items():
         doc_id = rec["document_id"]
         by_document.setdefault(doc_id, []).append(rec)

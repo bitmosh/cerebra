@@ -115,9 +115,9 @@ class ProxyLLMAdapter(LLMAdapter):
     ) -> None:
         # Use 127.0.0.1 (IPv4) not localhost — Docker port forwarding only works on
         # IPv4; localhost resolves to ::1 (IPv6) first and the connection hangs.
-        self._base_url = (
-            base_url or os.environ.get("LITELLM_BASE_URL", "http://127.0.0.1:4000")
-        ).rstrip("/")
+        url = base_url or os.environ.get("LITELLM_BASE_URL", "http://127.0.0.1:4000")
+        assert url is not None  # default ensures non-None
+        self._base_url = url.rstrip("/")
         self._api_key = api_key or os.environ.get("LITELLM_API_KEY", "sk-fake")
         # timeout: None = use TIMEOUT_SECONDS (300s for cold-load backfill).
         # Pass a shorter value for calibration tests on a warm model.
@@ -260,9 +260,9 @@ class OllamaDirectAdapter(LLMAdapter):
     ) -> None:
         # Use 127.0.0.1 (IPv4) not localhost — Docker port forwarding only works
         # on IPv4; localhost resolves to ::1 first and the connection hangs.
-        self._base_url = (
-            base_url or os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
-        ).rstrip("/")
+        url = base_url or os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+        assert url is not None  # default ensures non-None
+        self._base_url = url.rstrip("/")
         self._model = model or os.environ.get(
             "OLLAMA_MODEL", "huggingface.co/unsloth/granite-4.1-3b-GGUF:Q4_K_M"
         )

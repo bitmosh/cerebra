@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import fnmatch
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from fossic import (
     Append,
@@ -88,7 +88,7 @@ class FossicStore:
                 indexed_tags=indexed_tags,
             )
         )
-        return eid.as_bytes()
+        return cast(bytes, eid.as_bytes())
 
     # ── Reducer / aggregate ───────────────────────────────────────────────────
 
@@ -148,7 +148,7 @@ class FossicStore:
             return 0
         # snapshot.version is the 0-based index of the last snapshotted event;
         # +1 converts to the inclusive event count at snapshot time.
-        return info.version + 1
+        return cast(int, info.version + 1)
 
     # ── Internal helpers ──────────────────────────────────────────────────────
 

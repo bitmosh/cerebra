@@ -20,7 +20,7 @@ import socketserver
 import threading
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import click
 
@@ -194,7 +194,7 @@ def _make_handler(
             if not length:
                 return {}
             try:
-                return json.loads(self.rfile.read(length))
+                return cast("dict[str, Any] | None", json.loads(self.rfile.read(length)))
             except json.JSONDecodeError:
                 return None
 

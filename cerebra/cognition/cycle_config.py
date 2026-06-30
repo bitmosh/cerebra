@@ -14,7 +14,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -111,7 +111,7 @@ def render_template(template: str, context: dict[str, Any]) -> str:
             var_name = m.group(1).strip()
             block_content = m.group(2)
             val = context.get(var_name)
-            return block_content if val else ""
+            return cast(str, block_content) if val else ""
 
         return re.sub(
             r"\{%\s*if\s+(\w+)\s*%\}(.*?)\{%\s*endif\s*%\}",

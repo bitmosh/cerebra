@@ -7,11 +7,15 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import click
 
 from cerebra.config import VaultNotFoundError, resolve_vault
 from cerebra.vault.init import VaultAlreadyExistsError, init_vault
+
+if TYPE_CHECKING:
+    from cerebra.memory.lifecycle import LifecycleManager
 
 
 def _is_inside_git_repo(path: Path) -> bool:
@@ -345,8 +349,8 @@ def _truncate(s: str, n: int) -> str:
 
 
 def _render_text(
-    scored: list,
-    plan,
+    scored: list[Any],
+    plan: Any,
     above_floor: int,
     duration_ms: int,
     limit: int,
@@ -401,10 +405,10 @@ def _render_text(
             click.echo(f"  #{c.rank}: {parts}")
 
 
-def _render_json(scored: list, limit: int, explain: bool) -> None:
+def _render_json(scored: list[Any], limit: int, explain: bool) -> None:
     """Render JSON (ndjson) output — one candidate per line."""
     for c in scored[:limit]:
-        obj: dict = {
+        obj: dict[str, Any] = {
             "rank": c.rank,
             "score": round(c.score.composite, 6),
             "record_id": c.record_id,
@@ -788,7 +792,7 @@ def context(
 
     # T1 auto-promotion (§4 D3): promote selected_memory into truth tower.
     # Lockfile is acquired only for the write phase, not the retrieval phase.
-    tower_field: dict | None = None
+    tower_field: dict[str, Any] | None = None
     if not is_abstained and not no_promote and packet.selected_memory:
         try:
             from cerebra.cli.lockfile import vault_lock
@@ -1115,7 +1119,7 @@ def memory_status(vault: str | None, output_format: str) -> None:
         conn.close()
 
     # Build per-slot dict
-    by_slot: dict[str, list[dict]] = {s: [] for s in SLOT_CAPACITIES}
+    by_slot: dict[str, list[dict[str, Any]]] = {s: [] for s in SLOT_CAPACITIES}
     for r in rows:
         by_slot[r["slot_type"]].append(
             {
@@ -1161,7 +1165,7 @@ def memory_status(vault: str | None, output_format: str) -> None:
         click.echo(
             f"\nTruth Tower  ({len(t1_items)} T1, {len(t2_items)} T2, {stale_count} stale):\n"
         )
-        t2_by_t1: dict[str, list] = {}
+        t2_by_t1: dict[str, list[Any]] = {}
         for t2 in t2_items:
             if t2.t1_citation_id:
                 t2_by_t1.setdefault(t2.t1_citation_id, []).append(t2)
@@ -1647,7 +1651,7 @@ def lifecycle() -> None:
     """Manage memory record lifecycle states (archive, tombstone, restore)."""
 
 
-def _lifecycle_manager(vault_flag: str | None):  # type: ignore[return]
+def _lifecycle_manager(vault_flag: str | None) -> LifecycleManager:
     """Resolve vault + db_path and return a LifecycleManager with an event log."""
     import sys
 

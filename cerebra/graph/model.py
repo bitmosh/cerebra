@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -18,7 +19,7 @@ class ExportStats:
     out_path: Path = field(default_factory=lambda: Path("."))
     elapsed_ms: int = 0
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, Any]:
         return {
             "node_count": self.node_count,
             "edge_count": self.edge_count,

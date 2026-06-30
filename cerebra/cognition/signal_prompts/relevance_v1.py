@@ -5,6 +5,8 @@ Maps to Thread 4 (Fit to Purpose): does the output serve what was actually asked
 
 from __future__ import annotations
 
+from typing import Any
+
 PROMPT_VERSION = "relevance_v1"
 
 PROMPT_TEMPLATE = """\
@@ -47,5 +49,5 @@ overall_score must be a float between 0.0 (completely irrelevant) and 1.0 (highl
 """
 
 
-def render(output: str, context: dict | None = None) -> str:
+def render(output: str, context: dict[str, Any] | None = None) -> str:
     return PROMPT_TEMPLATE.format(output=output, context=context or {})

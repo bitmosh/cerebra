@@ -24,6 +24,7 @@ import time
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from cerebra.inspector.event import InspectorEvent
 from cerebra.inspector.sqlite_log import SQLiteEventLog
@@ -52,7 +53,7 @@ class MemoryItem:
     retrieval_path: str
     rank: int
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "record_id": self.record_id,
             "source_id": self.source_id,
@@ -93,10 +94,10 @@ class ContextPacket:
     uncertainties: list[str]
     excluded_candidate_count: int
     best_score_seen: float | None = None  # abstained packets only
-    truth_tower: dict | None = None  # populated post-retrieval by T1 auto-promotion
+    truth_tower: dict[str, Any] | None = None  # populated post-retrieval by T1 auto-promotion
 
-    def to_dict(self) -> dict:
-        d: dict = {
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = {
             "context_packet_id": self.context_packet_id,
             "packet_version": self.packet_version,
             "schema_version": self.schema_version,
@@ -182,7 +183,7 @@ def build_context_packet(
     excluded_count = len(trace_data.scored_all) - len(visible)
 
     # Fetch source_id and chunk_id from the DB (not stored on ScoredCandidate)
-    db_meta: dict[str, dict] = {}
+    db_meta: dict[str, dict[str, Any]] = {}
     if visible:
         record_ids = [c.record_id for c in visible]
         placeholders = ",".join("?" * len(record_ids))
@@ -348,14 +349,14 @@ def build_abstained_packet(
 # ── Plain-text renderer ────────────────────────────────────────────────────────
 
 
-def _render_tower_lines(truth_tower: dict) -> list[str]:
+def _render_tower_lines(truth_tower: dict[str, Any]) -> list[str]:
     """Render a truth_tower dict (from to_tower_field()) as text lines."""
-    t1_items: list[dict] = truth_tower.get("t1_items", [])
-    t2_items: list[dict] = truth_tower.get("t2_items", [])
+    t1_items: list[dict[str, Any]] = truth_tower.get("t1_items", [])
+    t2_items: list[dict[str, Any]] = truth_tower.get("t2_items", [])
     if not t1_items and not t2_items:
         return []
 
-    t2_by_t1: dict[str, list[dict]] = {}
+    t2_by_t1: dict[str, list[dict[str, Any]]] = {}
     for t2 in t2_items:
         t2_by_t1.setdefault(t2["t1_citation_id"], []).append(t2)
 

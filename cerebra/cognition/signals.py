@@ -99,7 +99,7 @@ class SignalEvaluator:
 
         raw_score_val = response.get("overall_score", None)
         try:
-            raw_float = float(raw_score_val)  # type: ignore[arg-type]
+            raw_float = float(raw_score_val)
         except (TypeError, ValueError):
             raw_float = 0.5
             clamped = True
