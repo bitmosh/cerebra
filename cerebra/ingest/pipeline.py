@@ -367,7 +367,7 @@ def _ingest_file(
     emit(
         "GraphEdgeCreated",
         "graph_store",
-        f"Edge: Source CONTAINS Document",
+        "Edge: Source CONTAINS Document",
         {
             "edge_id": src_contains_doc,
             "edge_type": "CONTAINS",
@@ -459,7 +459,7 @@ def _ingest_file(
         emit(
             "GraphEdgeCreated",
             "graph_store",
-            f"Edge: Document CONTAINS Chunk",
+            "Edge: Document CONTAINS Chunk",
             {
                 "edge_id": doc_contains_chunk,
                 "edge_type": "CONTAINS",
@@ -491,7 +491,7 @@ def _ingest_file(
         emit(
             "GraphEdgeCreated",
             "graph_store",
-            f"Edge: Chunk PART_OF Document",
+            "Edge: Chunk PART_OF Document",
             {
                 "edge_id": chunk_part_of_doc,
                 "edge_type": "PART_OF",
@@ -587,7 +587,7 @@ def _ingest_file(
             emit(
                 "GraphEdgeCreated",
                 "graph_store",
-                f"Edge: MemoryRecord DERIVED_FROM Chunk",
+                "Edge: MemoryRecord DERIVED_FROM Chunk",
                 {
                     "edge_id": derived_from,
                     "edge_type": "DERIVED_FROM",

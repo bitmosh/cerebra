@@ -29,8 +29,8 @@ def vault_db() -> Path:
 def leeway_scored(vault_db: Path):
     """Score candidates for the STOP gate query 'leeway network'."""
     from cerebra.retrieval.planner import query_plan
-    from cerebra.retrieval.traversal import run_traversal
     from cerebra.retrieval.scorer import score_candidates
+    from cerebra.retrieval.traversal import run_traversal
     plan = query_plan("leeway network", vault_db)
     raw = run_traversal(plan, vault_db)
     return score_candidates(raw, plan, vault_db), plan
@@ -44,7 +44,6 @@ class TestScorerAgainstVault:
         assert len(scored) >= 0  # may be 0 if FTS not built; valid
 
     def test_all_composites_in_unit_interval(self, leeway_scored) -> None:
-        from cerebra.retrieval.scorer import ScoredCandidate
         scored, _ = leeway_scored
         for c in scored:
             assert 0.0 <= c.score.composite <= 1.0, (
@@ -112,8 +111,8 @@ class TestScorerAgainstVault:
 
     def test_architecture_query_has_high_top_score(self, vault_db: Path) -> None:
         from cerebra.retrieval.planner import query_plan
-        from cerebra.retrieval.traversal import run_traversal
         from cerebra.retrieval.scorer import score_candidates
+        from cerebra.retrieval.traversal import run_traversal
         plan = query_plan("retrieval architecture design", vault_db)
         raw = run_traversal(plan, vault_db)
         scored = score_candidates(raw, plan, vault_db)

@@ -16,7 +16,6 @@ from cerebra.cognition.cycle_config import (
     render_template,
 )
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 

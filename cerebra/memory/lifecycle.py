@@ -30,7 +30,6 @@ from cerebra.inspector.sqlite_log import SQLiteEventLog
 from cerebra.storage.db import connect
 from cerebra.storage.lexical import FTS_TABLE
 
-
 # ── State machine ─────────────────────────────────────────────────────────────
 
 LIFECYCLE_STATES: frozenset[str] = frozenset({"active", "archived", "tombstoned"})

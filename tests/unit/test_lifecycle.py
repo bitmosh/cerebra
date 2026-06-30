@@ -10,7 +10,11 @@ from pathlib import Path
 
 import pytest
 
-from cerebra.cognition._constants import SYNTHETIC_CHUNK_ID, SYNTHETIC_DOCUMENT_ID, SYNTHETIC_SOURCE_ID
+from cerebra.cognition._constants import (
+    SYNTHETIC_CHUNK_ID,
+    SYNTHETIC_DOCUMENT_ID,
+    SYNTHETIC_SOURCE_ID,
+)
 from cerebra.memory.lifecycle import (
     VALID_TRANSITIONS,
     InvalidTransitionError,
@@ -18,7 +22,6 @@ from cerebra.memory.lifecycle import (
     RecordNotFoundError,
 )
 from cerebra.storage.migrations import run_migrations
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 

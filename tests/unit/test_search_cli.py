@@ -7,7 +7,6 @@ using Click's CliRunner. Retrieval is mocked so tests are fast and offline.
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -15,7 +14,6 @@ import pytest
 from click.testing import CliRunner
 
 from cerebra.cli.main import cli
-
 
 # ── Test fixtures ──────────────────────────────────────────────────────────────
 

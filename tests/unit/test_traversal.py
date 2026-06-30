@@ -8,19 +8,18 @@ from pathlib import Path
 
 import pytest
 
-from cerebra.retrieval.planner import QueryPlan, query_plan
+from cerebra.retrieval.planner import QueryPlan
 from cerebra.retrieval.traversal import (
     RawCandidate,
     _assemble_retrieval_path,
     _step1_construct_sku_query,
     _step2_exact_sku,
     _step3_partial_sku,
-    traverse_siblings,
     run_traversal,
+    traverse_siblings,
 )
-from cerebra.storage.migrations import run_migrations
 from cerebra.storage.db import connect
-
+from cerebra.storage.migrations import run_migrations
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -417,6 +416,7 @@ class TestRunTraversal:
 
     def test_step4_event_skipped(self) -> None:
         import json
+
         from cerebra.inspector.sqlite_log import SQLiteEventLog
         db = _migrated_db()
         try:

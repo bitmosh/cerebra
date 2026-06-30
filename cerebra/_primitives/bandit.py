@@ -18,8 +18,8 @@ strings; no hardcoded categories.
 
 import math
 import random
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 
 @dataclass

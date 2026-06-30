@@ -17,6 +17,8 @@ from cerebra.cognition._constants import (
 )
 from cerebra.inspector.event import (
     ALL_KNOWN_EVENT_TYPES,
+)
+from cerebra.inspector.event import (
     PHASE_6_EVENT_TYPES as INSPECTOR_PHASE_6_EVENT_TYPES,
 )
 
@@ -35,13 +37,13 @@ class TestSignalNames:
             "PRECISION",
             "EPISTEMIC_HUMILITY",
         }
-        assert SIGNAL_NAMES == expected
+        assert expected == SIGNAL_NAMES
 
     def test_is_frozenset(self) -> None:
         assert isinstance(SIGNAL_NAMES, frozenset)
 
     def test_matches_weight_keys(self) -> None:
-        assert SIGNAL_NAMES == frozenset(SIGNAL_DEFAULT_WEIGHTS.keys())
+        assert frozenset(SIGNAL_DEFAULT_WEIGHTS.keys()) == SIGNAL_NAMES
 
 
 @pytest.mark.unit
@@ -83,7 +85,7 @@ class TestSignalDefaultWeights:
 @pytest.mark.unit
 class TestCompositeScoreFloor:
     def test_value(self) -> None:
-        assert COMPOSITE_SCORE_FLOOR == pytest.approx(0.30)
+        assert pytest.approx(0.30) == COMPOSITE_SCORE_FLOOR
 
     def test_is_float(self) -> None:
         assert isinstance(COMPOSITE_SCORE_FLOOR, float)
@@ -147,7 +149,7 @@ class TestClutchActions:
             "pause",
             "stop",
         }
-        assert CLUTCH_ACTIONS == expected
+        assert expected == CLUTCH_ACTIONS
 
     def test_ten_actions(self) -> None:
         assert len(CLUTCH_ACTIONS) == 10

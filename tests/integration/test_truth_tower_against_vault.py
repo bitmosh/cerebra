@@ -25,7 +25,6 @@ from cerebra.cognition.truth_tower import TruthTower
 from cerebra.cognition.working_memory import WorkingMemory, new_session
 from cerebra.storage.db import connect
 
-
 # ── vault fixture ─────────────────────────────────────────────────────────────
 
 

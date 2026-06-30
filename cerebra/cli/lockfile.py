@@ -10,9 +10,9 @@ from __future__ import annotations
 import fcntl
 import os
 import sys
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator
 
 import click
 

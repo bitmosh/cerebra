@@ -181,7 +181,7 @@ class PredictionPipeline:
         if input.cycle_config_defaults is not None:
             return "cycle_config_default", dict(input.cycle_config_defaults), 0.7
 
-        baseline = {name: 0.65 for name in SIGNAL_NAMES}
+        baseline = dict.fromkeys(SIGNAL_NAMES, 0.65)
         return "static_baseline", baseline, 0.5
 
     def _compose_expected(self, expected_per_signal: dict[str, float]) -> float:

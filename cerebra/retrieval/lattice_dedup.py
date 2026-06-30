@@ -49,7 +49,7 @@ def dedup_siblings(
     query_d1: str | None,
     db_path: Path,
     trace_id: str,
-    event_log: "SQLiteEventLog | None" = None,
+    event_log: SQLiteEventLog | None = None,
 ) -> list[ScoredCandidate]:
     """Collapse lattice sibling groups to one winner per lineage.
 
@@ -155,9 +155,9 @@ def dedup_siblings(
 
 
 def dedup_memory_items(
-    items: list["MemoryItem"],
+    items: list[MemoryItem],
     db_path: Path,
-) -> list["MemoryItem"]:
+) -> list[MemoryItem]:
     """Dedup lattice siblings in a MemoryItem list.
 
     Used by TruthTower.promote_to_t1() where no query context is available.
@@ -192,8 +192,8 @@ def dedup_memory_items(
     if not lineage_map:
         return items  # D6: no-op
 
-    lineage_groups: dict[str, list["MemoryItem"]] = defaultdict(list)
-    non_lattice: list["MemoryItem"] = []
+    lineage_groups: dict[str, list[MemoryItem]] = defaultdict(list)
+    non_lattice: list[MemoryItem] = []
 
     for mi in items:
         if mi.record_id in lineage_map:
@@ -201,7 +201,7 @@ def dedup_memory_items(
         else:
             non_lattice.append(mi)
 
-    winners_mi: list["MemoryItem"] = []
+    winners_mi: list[MemoryItem] = []
     for group in lineage_groups.values():
         if len(group) == 1:
             winners_mi.append(group[0])

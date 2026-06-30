@@ -11,12 +11,8 @@ Tests for:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
-
-import pytest
 
 from cerebra.cognition.clutch import (
     BUILTIN_PREDICATES,
@@ -25,8 +21,14 @@ from cerebra.cognition.clutch import (
     ClutchDecision,
     ClutchEngine,
 )
-from cerebra.cognition.cycle_config import CycleConfig, CycleStep, StepPromptTemplate, ClutchRule, StopCondition, _parse_config
-
+from cerebra.cognition.cycle_config import (
+    ClutchRule,
+    CycleConfig,
+    CycleStep,
+    StepPromptTemplate,
+    StopCondition,
+    _parse_config,
+)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 

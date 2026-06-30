@@ -101,7 +101,7 @@ class EvaluationComposer:
 
 
 def emit_evaluation_events(
-    emitter: "EventEmitter",
+    emitter: EventEmitter,
     signal_scores: list[SignalScore],
     packet: EvaluationPacket,
     step_executed_event_id: bytes,

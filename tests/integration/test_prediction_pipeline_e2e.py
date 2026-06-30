@@ -61,7 +61,7 @@ def pipeline(composer: EvaluationComposer) -> PredictionPipeline:
 
 
 def _fake_evaluation(step_id: str, composite: float) -> EvaluationPacket:
-    per_signal = {name: composite for name in SIGNAL_NAMES}
+    per_signal = dict.fromkeys(SIGNAL_NAMES, composite)
     return EvaluationPacket(
         evaluation_id=f"eval_{next(_SEQ)}",
         session_id="sess_e2e",

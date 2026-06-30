@@ -55,6 +55,7 @@ class TestMemoryPromoteT2AgainstVault:
     ) -> None:
         """context populates T1 → memory promote --tier 2 --cite → T2 visible in tower."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.working_memory import WorkingMemory
 
@@ -97,6 +98,7 @@ class TestMemoryPromoteT2AgainstVault:
     ) -> None:
         """Evict the T1, then try to cite it for T2 → exit 2 with clear error."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.working_memory import WorkingMemory
 

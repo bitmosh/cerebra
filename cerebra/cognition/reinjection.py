@@ -14,7 +14,6 @@ from typing import Any
 
 from cerebra.cognition._constants import BUILTIN_REINJECTION_PREDICATE_NAMES
 
-
 # ── ReinjectionDecision ───────────────────────────────────────────────────────
 
 

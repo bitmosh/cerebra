@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import fnmatch
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from fossic import (
     Append,
@@ -46,7 +46,7 @@ class FossicStore:
         self._reducers: dict[str, Any] = {}
 
     @classmethod
-    def at_platform_path(cls, db_path: Path) -> "FossicStore":
+    def at_platform_path(cls, db_path: Path) -> FossicStore:
         """Open FossicStore at an explicit path (e.g., the platform store).
 
         Used when Cerebra should write to ~/.lattica/fossic/store.db instead
@@ -65,9 +65,9 @@ class FossicStore:
         stream_id: str,
         event_type: str,
         payload: dict[str, Any],
-        causation_id: Optional[bytes] = None,
-        external_id: Optional[str] = None,
-        indexed_tags: Optional[dict[str, Any]] = None,
+        causation_id: bytes | None = None,
+        external_id: str | None = None,
+        indexed_tags: dict[str, Any] | None = None,
     ) -> bytes:
         """Append an event to a stream, auto-declaring the stream if needed.
 
@@ -75,7 +75,7 @@ class FossicStore:
         causation_id is accepted as bytes and converted to EventId internally.
         """
         self._ensure_stream(stream_id)
-        causation_eid: Optional[EventId] = (
+        causation_eid: EventId | None = (
             EventId.from_hex(causation_id.hex()) if causation_id is not None else None
         )
         eid = self._store.append(
@@ -113,7 +113,7 @@ class FossicStore:
 
     def take_snapshot(
         self, stream_id: str, branch: str = "main"
-    ) -> Optional[SnapshotInfo]:
+    ) -> SnapshotInfo | None:
         """Persist current aggregate state as a snapshot.
 
         Returns None if the stream has no events (NoEventsToSnapshotError),
@@ -166,7 +166,7 @@ class FossicStore:
         stream_pattern: str | None = None,
         event_type: str | None = None,
         branch: str = "main",
-        from_version: Optional[int] = None,
+        from_version: int | None = None,
     ) -> list[dict[str, Any]]:
         """Read events from a stream or pattern. Returns plain dicts with keys:
         event_type, payload, version, stream_id.

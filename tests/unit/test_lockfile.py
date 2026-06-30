@@ -89,9 +89,8 @@ class TestVaultLock:
         vault = self._temp_vault()
         try:
             lp = lock_path(vault)
-            with pytest.raises(RuntimeError):
-                with vault_lock(vault):
-                    raise RuntimeError("test error")
+            with pytest.raises(RuntimeError), vault_lock(vault):
+                raise RuntimeError("test error")
             assert not lp.exists()
         finally:
             import shutil

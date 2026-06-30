@@ -13,7 +13,6 @@ from cerebra.retrieval.trace import TraceData, write_trace
 from cerebra.storage.db import connect
 from cerebra.storage.migrations import run_migrations
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 
@@ -43,7 +42,7 @@ def _make_scored(
     rank: int = 1,
     step_surfaced: str = "vector_fallback",
     retrieval_path: str = "vector_fallback",
-) -> "ScoredCandidate":
+) -> ScoredCandidate:
     from cerebra._primitives.score_composer import CompositeScore
     from cerebra.retrieval.scorer import ScoredCandidate
     score = CompositeScore(
@@ -390,7 +389,6 @@ class TestTraceCandidateRows:
 class TestTraceTransactional:
     def test_partial_write_does_not_persist(self) -> None:
         """If the candidate INSERT fails, neither the trace nor step rows persist."""
-        from unittest.mock import patch
         db = _migrated_db()
         try:
             scored = [_make_scored()]
@@ -428,16 +426,15 @@ class TestTraceTransactional:
         import sqlite3
         db = _migrated_db()
         try:
-            with connect(db) as conn:
-                with pytest.raises(sqlite3.IntegrityError):
-                    conn.execute(
-                        """
+            with connect(db) as conn, pytest.raises(sqlite3.IntegrityError):
+                conn.execute(
+                    """
                         INSERT INTO retrieval_steps
                         (step_id, trace_id, step_number, step_name,
                          candidate_count, new_candidates, duration_ms, skipped)
                         VALUES ('s1', 'trace_nonexistent', 1, 'exact_sku', 0, 0, 0, 0)
                         """
-                    )
+                )
         finally:
             db.unlink(missing_ok=True)
 
@@ -446,17 +443,16 @@ class TestTraceTransactional:
         import sqlite3
         db = _migrated_db()
         try:
-            with connect(db) as conn:
-                with pytest.raises(sqlite3.IntegrityError):
-                    conn.execute(
-                        """
+            with connect(db) as conn, pytest.raises(sqlite3.IntegrityError):
+                conn.execute(
+                    """
                         INSERT INTO retrieval_candidates
                         (candidate_id, trace_id, record_id, step_surfaced,
                          retrieval_path, salience_score, score_json, selected)
                         VALUES ('c1', 'trace_nonexistent', 'rec_001', 'vector_fallback',
                                 'vector_fallback', 0.75, '{}', 1)
                         """
-                    )
+                )
         finally:
             db.unlink(missing_ok=True)
 

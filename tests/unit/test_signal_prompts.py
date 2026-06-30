@@ -10,12 +10,12 @@ import pytest
 
 from cerebra.cognition.signal_prompts import (
     coherence_v1,
+    epistemic_humility_v1,
     generativity_v1,
     groundedness_v1,
     precision_v1,
     relevance_v1,
 )
-from cerebra.cognition.signal_prompts import epistemic_humility_v1
 
 
 @pytest.mark.unit

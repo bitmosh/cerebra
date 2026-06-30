@@ -23,7 +23,6 @@ from cerebra.cognition.session import SessionManager
 from cerebra.storage.fossic_store import FossicStore
 from cerebra.storage.migrations import run_migrations
 
-
 # ── ContinuationBundle dataclass ──────────────────────────────────────────────
 
 

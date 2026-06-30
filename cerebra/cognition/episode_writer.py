@@ -25,7 +25,6 @@ from cerebra.cognition._constants import (
 )
 from cerebra.storage.embeddings import queue_for_embedding
 
-
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 

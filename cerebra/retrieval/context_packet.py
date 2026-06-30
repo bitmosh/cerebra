@@ -22,12 +22,11 @@ from __future__ import annotations
 
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from cerebra.inspector.event import InspectorEvent
 from cerebra.inspector.sqlite_log import SQLiteEventLog
-from cerebra.retrieval.planner import QueryPlan
 from cerebra.retrieval.scorer import ScoredCandidate
 from cerebra.retrieval.trace import TraceData
 from cerebra.storage.db import connect

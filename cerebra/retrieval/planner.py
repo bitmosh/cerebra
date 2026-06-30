@@ -15,7 +15,6 @@ See docs/agent/plans/v01_phase4_design.md §2 and §7.
 from __future__ import annotations
 
 import re
-import time
 import tomllib
 import uuid
 from dataclasses import dataclass, field

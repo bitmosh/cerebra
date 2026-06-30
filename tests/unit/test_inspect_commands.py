@@ -21,7 +21,6 @@ from cerebra.cli.inspect import inspect as inspect_group
 from cerebra.storage.db import connect
 from cerebra.storage.migrations import run_migrations
 
-
 # ── helpers ────────────────────────────────────────────────────────────────────
 
 
@@ -579,7 +578,8 @@ class TestParseLast:
         assert _parse_last(None) is None
 
     def test_invalid_raises(self):
-        from cerebra.cli.inspect import _parse_last
         import click
+
+        from cerebra.cli.inspect import _parse_last
         with pytest.raises(click.BadParameter):
             _parse_last("bogus")

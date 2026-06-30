@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sqlite3
 import tempfile
 from pathlib import Path
 
@@ -16,7 +15,6 @@ from cerebra.retrieval.planner import (
     query_plan,
 )
 from cerebra.storage.migrations import run_migrations
-
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -277,6 +275,7 @@ class TestQueryPlan:
 
     def test_events_share_trace_id(self) -> None:
         import json
+
         from cerebra.inspector.sqlite_log import SQLiteEventLog
         db = _migrated_db()
         try:

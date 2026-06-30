@@ -25,7 +25,6 @@ from cerebra.inspector.event import (
 )
 from cerebra.storage.migrations import ALL_MIGRATIONS, run_migrations
 
-
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 
@@ -76,7 +75,7 @@ class TestConstants:
         assert TOWER_CAPACITIES[2] == 5
 
     def test_synthetic_salience_default(self) -> None:
-        assert SYNTHETIC_ITEM_DEFAULT_SALIENCE == pytest.approx(0.8)
+        assert pytest.approx(0.8) == SYNTHETIC_ITEM_DEFAULT_SALIENCE
 
 
 # ── event vocabulary ──────────────────────────────────────────────────────────

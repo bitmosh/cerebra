@@ -29,6 +29,7 @@ from cerebra._primitives import (
     triangulate,
     triangulate_with_components,
 )
+from cerebra.cognition.catalyst import CatalystEngine, CatalystSelection
 
 # Phase 2 — SKU addressing
 from cerebra.cognition.llm_adapter import (
@@ -52,7 +53,6 @@ from cerebra.cognition.sku_classifier import (
     BackfillReport,
     SKUClassifier,
 )
-from cerebra.cognition.catalyst import CatalystEngine, CatalystSelection
 from cerebra.cognition.sku_relationships import D4Relationship
 
 __all__ = [

@@ -10,7 +10,6 @@ from cerebra.cognition.catalyst import CatalystEngine
 from cerebra.cognition.cycle_config import CatalystArm
 from cerebra.storage.migrations import run_migrations
 
-
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 

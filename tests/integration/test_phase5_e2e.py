@@ -48,7 +48,7 @@ def _db(vault_root: Path) -> Path:
     return vault_root / "data" / "cerebra.db"
 
 
-def _cli(*args: str, vault: Path) -> "subprocess.CompletedProcess[str]":
+def _cli(*args: str, vault: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["cerebra", *args, "--vault", str(vault)],
         capture_output=True, text=True, timeout=30,
@@ -62,6 +62,7 @@ class TestFullWorkingMemoryFlow:
     def test_promote_evict_status_cycle(self, vault_root: Path) -> None:
         """Promote 3 items, status shows 3; evict 1, status shows 2."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.working_memory import WorkingMemory
 
@@ -89,6 +90,7 @@ class TestFullWorkingMemoryFlow:
     def test_pinned_capacity_blocks_promotion(self, vault_root: Path) -> None:
         """Fill a slot with pinned items, then attempt another → PromotionError exit 2."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.working_memory import WorkingMemory
 
@@ -110,6 +112,7 @@ class TestFullWorkingMemoryFlow:
     def test_synthetic_text_item_defaults(self, vault_root: Path) -> None:
         """--text --slot stores content_summary and uses the default salience."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.working_memory import WorkingMemory
 
@@ -136,6 +139,7 @@ class TestFullTowerFlow:
     def test_context_t1_t2_visible_in_status(self, vault_root: Path) -> None:
         """context → T1, memory promote --tier 2 --cite → both visible in memory status."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.truth_tower import TruthTower
         from cerebra.cognition.working_memory import WorkingMemory
@@ -181,6 +185,7 @@ class TestFullTowerFlow:
     def test_t1_eviction_staleness_cascade(self, vault_root: Path) -> None:
         """Evict a T1 → dependent T2 items become stale; visible in memory status."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.truth_tower import TruthTower
         from cerebra.cognition.working_memory import WorkingMemory
@@ -221,6 +226,7 @@ class TestFullTowerFlow:
     def test_multiple_t2_same_t1_all_stale(self, vault_root: Path) -> None:
         """Multiple T2 items citing the same T1 all become stale when T1 is evicted."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.truth_tower import TruthTower
         from cerebra.cognition.working_memory import WorkingMemory
@@ -263,6 +269,7 @@ class TestSessionLifecycle:
     def test_session_show_no_session(self, vault_root: Path) -> None:
         """After reset to a fresh vault state with no active session, show says so."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.storage.db import connect
 
@@ -283,6 +290,7 @@ class TestSessionLifecycle:
     def test_session_show_populated(self, vault_root: Path) -> None:
         """session show with an active populated session shows all required fields."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.working_memory import WorkingMemory
 
@@ -312,6 +320,7 @@ class TestSessionLifecycle:
     def test_session_reset_creates_new_empty_session(self, vault_root: Path) -> None:
         """session reset closes old session; new session has no WM items."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.working_memory import WorkingMemory, get_active_session
 
@@ -342,6 +351,7 @@ class TestContextSessionInteraction:
     def test_context_creates_session_and_populates_t1(self, vault_root: Path) -> None:
         """First cerebra context creates a session and populates T1."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.truth_tower import TruthTower
         from cerebra.cognition.working_memory import get_active_session
@@ -370,6 +380,7 @@ class TestContextSessionInteraction:
     def test_no_promote_leaves_t1_unchanged(self, vault_root: Path) -> None:
         """context --no-promote does not change T1 count."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.cognition.truth_tower import TruthTower
         from cerebra.cognition.working_memory import get_active_session

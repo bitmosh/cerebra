@@ -31,6 +31,7 @@ class TestSearchAbstentionAgainstVault:
     def test_weather_query_abstains_with_high_floor(self, vault_root: Path) -> None:
         """cerebra search 'weather forecast for tomorrow' --floor 0.45 → exit 1."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -47,6 +48,7 @@ class TestSearchAbstentionAgainstVault:
     def test_weather_query_does_not_abstain_with_default_floor(self, vault_root: Path) -> None:
         """cerebra search 'weather forecast for tomorrow' (default floor 0.35) → exit 0."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -61,6 +63,7 @@ class TestSearchAbstentionAgainstVault:
     def test_leeway_query_does_not_abstain_with_high_floor(self, vault_root: Path) -> None:
         """cerebra search 'leeway network' --floor 0.45 → exit 0 (score ~0.47)."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -74,6 +77,7 @@ class TestSearchAbstentionAgainstVault:
     def test_weather_abstention_message_contains_best_score(self, vault_root: Path) -> None:
         """The abstention message includes the actual best score seen."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -91,6 +95,7 @@ class TestContextAbstentionAgainstVault:
     def test_weather_context_abstains_json_format(self, vault_root: Path) -> None:
         """cerebra context 'weather...' --floor 0.45 --format json → exit 1, abstained packet."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -109,6 +114,7 @@ class TestContextAbstentionAgainstVault:
     def test_weather_context_abstained_packet_shape(self, vault_root: Path) -> None:
         """Abstained packet from context has all required §5 fields."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -136,6 +142,7 @@ class TestContextAbstentionAgainstVault:
     def test_leeway_context_not_abstained(self, vault_root: Path) -> None:
         """cerebra context 'leeway network' --floor 0.45 → exit 0, is_abstained=False."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -152,6 +159,7 @@ class TestContextAbstentionAgainstVault:
     def test_weather_context_text_format_abstained(self, vault_root: Path) -> None:
         """cerebra context 'weather...' --floor 0.45 (text) → exit 1, 'Abstained' in output."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
 
         result = CliRunner().invoke(
@@ -168,6 +176,7 @@ class TestRetrievalAbstainedEventAgainstVault:
     def test_abstained_event_written_to_db_on_weather_query(self, vault_root: Path) -> None:
         """Running an abstaining query writes a RetrievalAbstained event to inspector_events."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.storage.db import connect
 
@@ -197,6 +206,7 @@ class TestRetrievalAbstainedEventAgainstVault:
     def test_abstained_event_not_written_for_leeway_query(self, vault_root: Path) -> None:
         """A non-abstaining query does NOT produce a RetrievalAbstained event."""
         from click.testing import CliRunner
+
         from cerebra.cli.main import cli
         from cerebra.storage.db import connect
 
@@ -218,4 +228,4 @@ class TestRetrievalAbstainedEventAgainstVault:
                 (trace_id,),
             ).fetchall()
 
-        assert len(rows) == 0, f"RetrievalAbstained event should NOT be present for non-abstaining query"
+        assert len(rows) == 0, "RetrievalAbstained event should NOT be present for non-abstaining query"

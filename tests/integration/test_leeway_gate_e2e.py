@@ -17,7 +17,6 @@ from cerebra.governance.types import ProposedAction
 from cerebra.storage.fossic_store import FossicStore
 from cerebra.storage.migrations import run_migrations
 
-
 # ── fixtures ──────────────────────────────────────────────────────────────────
 
 

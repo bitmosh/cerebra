@@ -10,11 +10,9 @@ import pytest
 from cerebra.cognition.event_emitter import EventEmitter
 from cerebra.governance.defaults import DEFAULT_CONSTITUTIONAL_RULES, DEFAULT_LEEWAY_RULES
 from cerebra.governance.gate_events import emit_leeway_grant_applied
-from cerebra.governance.models import LeewayRule
 from cerebra.governance.pre_action_gate import LeewayPreActionGate
 from cerebra.governance.types import ProposedAction
 from cerebra.storage.fossic_store import FossicStore
-
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 

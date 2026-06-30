@@ -28,7 +28,13 @@ from cerebra.cognition.sku_classifier import (
     HIGH_CONF_THRESHOLD,
 )
 from cerebra.vault.init import init_vault
-from tests.fixtures.sku_fixtures import SKU_FIXTURES, CLEAR_FIXTURES, AMBIGUOUS_FIXTURES, HARD_FIXTURES, SKUFixture
+from tests.fixtures.sku_fixtures import (
+    AMBIGUOUS_FIXTURES,
+    CLEAR_FIXTURES,
+    HARD_FIXTURES,
+    SKU_FIXTURES,
+    SKUFixture,
+)
 
 pytestmark = pytest.mark.skipif(
     not os.environ.get("CEREBRA_INTEGRATION_LLM"),

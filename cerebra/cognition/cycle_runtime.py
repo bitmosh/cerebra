@@ -22,9 +22,8 @@ from typing import Any
 from cerebra.cognition._constants import ELEVATED_SALIENCE
 from cerebra.cognition.catalyst import CatalystEngine, CatalystSelection
 from cerebra.cognition.clutch import ClutchContext, ClutchCycleState, ClutchEngine
-from cerebra.cognition.continuation_bundle import BundleDistiller, write_bundle, link_child_session
+from cerebra.cognition.continuation_bundle import BundleDistiller, link_child_session, write_bundle
 from cerebra.cognition.cycle_config import CycleConfig, render_template
-from cerebra.cognition.reinjection import ReinjectionTriggerEvaluator
 from cerebra.cognition.episode_writer import EpisodeWriter
 from cerebra.cognition.evaluation import EvaluationComposer, emit_evaluation_events
 from cerebra.cognition.event_emitter import EventEmitter
@@ -37,6 +36,7 @@ from cerebra.cognition.predictions import (
     write_outcome,
     write_prediction,
 )
+from cerebra.cognition.reinjection import ReinjectionTriggerEvaluator
 from cerebra.cognition.session import RuntimeSession
 from cerebra.cognition.signals import SignalEvaluator
 from cerebra.cognition.stop_conditions import CycleState, StopConditionEvaluator

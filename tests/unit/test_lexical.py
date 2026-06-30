@@ -9,7 +9,8 @@ from pathlib import Path
 import pytest
 
 from cerebra.inspector.sqlite_log import SQLiteEventLog
-from cerebra.storage.index_state import get_state, mark_updated, seed_index_state
+from cerebra.storage.db import connect
+from cerebra.storage.index_state import get_state, seed_index_state
 from cerebra.storage.lexical import (
     FTS_TABLE,
     build_fts_index,
@@ -18,8 +19,6 @@ from cerebra.storage.lexical import (
     update_fts_index,
 )
 from cerebra.storage.migrations import run_migrations
-from cerebra.storage.db import connect
-
 
 # ── Fixtures and helpers ───────────────────────────────────────────────────────
 
