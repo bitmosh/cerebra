@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: ["**"]
 
+# Cancel in-progress runs when new commits land on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name: Lint
@@ -48,4 +53,14 @@ jobs:
       - name: Install deps
         run: pip install -e ".[dev]"
       - name: pytest
-        run: pytest -m "not integration"
+        # pyproject.toml addopts already supplies --cov=cerebra
+        # --cov-report=term-missing --cov-fail-under=80; we add XML
+        # for the artifact upload step below.
+        run: pytest -m "not integration" --cov-report=xml
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ github.sha }}
+          path: coverage.xml
+          if-no-files-found: warn
