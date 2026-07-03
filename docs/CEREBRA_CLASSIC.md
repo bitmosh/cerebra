@@ -127,7 +127,7 @@ Cerebra Classic uses a dual persistence strategy:
 
 **WAL discipline.** Inspector event writes must happen *after* `conn.close()` on any connection that just modified related tables. This prevents "database is locked" errors under SQLite's WAL concurrency model. This discipline is hand-enforced across `TruthTower`, `LifecycleManager`, and other modules — essentially a distributed coordination protocol implemented by convention rather than by the storage engine.
 
-**Synthetic provenance sentinels (M018).** Cycle episodes have no real source file — they are outputs of cognitive cycles, not ingested documents. SQLite's FK constraints on `memory_records` require valid `(source_id, document_id, chunk_id)` references for every row. The workaround: insert three fake sentinel rows at migration time so episode inserts satisfy the FK constraints without violating them semantically. In a pure event-sourced system, episodes are just events on a stream. There are no FK constraints to satisfy because there is no relational schema.
+**Synthetic provenance sentinels (M018).** Cycle episodes have no real source file — they are outputs of cognitive cycles, not ingested documents. SQLite's FK constraints on `memory_records` require valid `(source_id, document_id, chunk_id)` references for every row. The workaround: insert three fake sentinel rows at migration time so episode inserts satisfy the FK constraints without violating them semantically. In a pure event-sourced system, episodes are events on a stream. There are no FK constraints to satisfy because there is no relational schema.
 
 **Dual-write burden.** Every meaningful state change requires both a SQLite write (current state) and a FossicStore append (event history). These two writes must remain consistent without a distributed transaction primitive. The system manages this through careful sequencing and the inspector-event-after-close pattern, but the coupling is real and every new subsystem must be designed around it.
 
@@ -174,7 +174,7 @@ examples/
 
 ## Setup and Usage
 
-See [`README.md`](../README.md) for setup instructions and prerequisites.
+See [`docs/CEREBRA_SETUP.md`](CEREBRA_SETUP.md) for setup instructions and prerequisites.
 
 **Quick start:**
 
@@ -192,5 +192,5 @@ cerebra inspect cycle show <cycle_id> --signals --vault ~/my-vault
 
 ## Related
 
-- **[fossic](https://github.com/bitmosh/fossic)** — the content-addressed event store substrate (v1.6.0 shipped 2026-06-21, concurrent with this archive)
+- **[fossic](https://github.com/bitmosh/fossic)** — the content-addressed event store substrate (v1.8.1)
 - **[Cerebra](https://github.com/bitmosh/cerebra)** — active development, post-dyson-sphere evolution
