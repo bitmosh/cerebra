@@ -3,7 +3,7 @@
 Pre-built dependencies that ship with the archive. Each file here exists for
 a specific reason; this doc explains why and how to rebuild if needed.
 
-## fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl
+## fossic-1.8.2-cp312-cp312-manylinux_2_34_x86_64.whl
 
 ### Why it's vendored
 
@@ -29,7 +29,7 @@ where the goal is reproducible install in perpetuity.
 
 ### What this wheel is
 
-- **Upstream:** `bitmosh/fossic`, tag `v1.8.1`
+- **Upstream:** `bitmosh/fossic`, tag `v1.8.2`
 - **Build profile:** release
 - **Target platform:** CPython 3.12 on Linux x86_64 with `glibc >= 2.34`
 - **Size:** ~3.4 MB
@@ -49,16 +49,16 @@ git clone https://github.com/bitmosh/fossic.git /tmp/fossic
 cd /tmp/fossic
 
 # 2. Check out the desired tag
-git checkout v1.8.1   # or whatever target version
+git checkout v1.8.2   # or whatever target version
 
 # 3. Build a release wheel
 cd fossic-py
 maturin build --release
 
 # 4. Copy the resulting wheel back here
-cp target/wheels/fossic-*.whl /path/to/cerebra-classic/vendor/
+cp target/wheels/fossic-*.whl /path/to/cerebra/vendor/
 
-# 5. Update pyproject.toml's `fossic @ file:vendor/...` to match the new filename
+# 5. Update pyproject.toml's [tool.uv.sources] fossic path to match the new filename
 # 6. Delete the old wheel
 ```
 

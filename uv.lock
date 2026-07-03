@@ -81,7 +81,7 @@ dev = [
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = "==24.4.2" },
     { name = "click", specifier = ">=8.1" },
-    { name = "fossic", path = "vendor/fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl" },
+    { name = "fossic", path = "vendor/fossic-1.8.2-cp312-cp312-manylinux_2_34_x86_64.whl" },
     { name = "mypy", marker = "extra == 'dev'", specifier = "==1.10.0" },
     { name = "numpy", specifier = ">=2.0,<3.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.7" },
@@ -238,10 +238,10 @@ wheels = [
 
 [[package]]
 name = "fossic"
-version = "1.8.1"
-source = { path = "vendor/fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl" }
+version = "1.8.2"
+source = { path = "vendor/fossic-1.8.2-cp312-cp312-manylinux_2_34_x86_64.whl" }
 wheels = [
-    { filename = "fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:637f89983d87d0a8761705ccaa644286a7e0634542614acb17324135e5df6d54" },
+    { filename = "fossic-1.8.2-cp312-cp312-manylinux_2_34_x86_64.whl", hash = "sha256:42198496cb991e7126fc447c176a57264e86096aa3398bef947de23a64b20552" },
 ]
 
 [[package]]

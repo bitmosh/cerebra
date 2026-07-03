@@ -1,6 +1,6 @@
 ---
 name: Archive issue
-about: Report a problem with the cerebra-classic archive at v0.4.4-pre-dyson
+about: Report a problem with Cerebra at v0.4.4-pre-dyson
 title: ''
 labels: ''
 assignees: ''

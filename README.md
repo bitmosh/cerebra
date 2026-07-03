@@ -108,7 +108,7 @@ Part of the [Lattica](https://github.com/bitmosh) ecosystem.
 
 ## Related
 
-- **[fossic](https://github.com/bitmosh/fossic)** — content-addressed event store substrate (v1.8.1)
+- **[fossic](https://github.com/bitmosh/fossic)** — content-addressed event store substrate (v1.8.2)
 - **[Cerebra](https://github.com/bitmosh/cerebra)** — active development, post-dyson-sphere
 
 ## License

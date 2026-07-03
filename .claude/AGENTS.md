@@ -1,4 +1,4 @@
-# cerebra-classic — Agent Context
+# cerebra — Agent Context
 
 This is an **archive repository**. No active development phases. The system is at v0.4.4-pre-dyson (14 phases complete, v0.1 ship gate passed).
 
@@ -37,4 +37,4 @@ tests/                        — unit + integration test suite
 
 ## Dependency note
 
-`fossic` ships as a pre-built wheel in `vendor/` — no Rust toolchain required. See `pyproject.toml` for the vendored dep path (`file:vendor/fossic-1.8.1-...whl`).
+`fossic` ships as a pre-built wheel in `vendor/` — no Rust toolchain required. See `pyproject.toml`'s `[tool.uv.sources]` for the vendored dep path (`vendor/fossic-1.8.2-...whl`).
