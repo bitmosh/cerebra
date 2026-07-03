@@ -37,4 +37,4 @@ tests/                        — unit + integration test suite
 
 ## Dependency note
 
-`fossic` is a Rust/PyO3 extension from `github.com/bitmosh/fossic`. A Rust toolchain is required to build it. See CI workflow (`.github/workflows/test.yml`) for the setup pattern.
+`fossic` ships as a pre-built wheel in `vendor/` — no Rust toolchain required. See `pyproject.toml` for the vendored dep path (`file:vendor/fossic-1.8.1-...whl`).
