@@ -2,13 +2,33 @@
 
 A local-first cognitive cycle runtime built in Python. Fourteen build phases, fully tested against real Ollama. Preserved here as the pre-dyson-sphere baseline — the state immediately before portions of the persistence layer migrate into a Rust-backed event-sourced substrate.
 
-**v0.4.4** · **Python 3.12+** · **MIT**
+**v0.4.5** · **Python 3.12+** · **MIT** · **Status: Archived**
 
 ---
 
+## Why this fork exists
+
+Cerebra's persistence layer uses a dual strategy: SQLite (18 schema migrations, mutable relational store) alongside FossicStore (Rust, content-addressed, causation-chained event streams). These two approaches to state — CRUD vs. event-sourced replay — coexist with real friction: WAL discipline hand-enforced across modules, synthetic FK sentinel rows to satisfy constraints that shouldn't exist, dual-write sequencing without a transaction primitive.
+
+The dyson sphere migration replaces `cerebra.db` with Rust-native projections on fossic streams. This fork preserves the before state — inspectable, runnable, and citable — so the architectural delta is concrete rather than speculative.
+
+The cognitive architecture (Clutch, Catalyst, re-injection loop, TruthTower, signal evaluators, leeway network) is identical in both versions. Only the persistence substrate changes.
+
+Full writeup: [`docs/CEREBRA_CLASSIC.md` — Why This Is Archived as Classic](docs/CEREBRA_CLASSIC.md#why-this-is-archived-as-classic--the-sqlite-mismatch)
+
+---
+
+<!-- OPERATOR: capture a terminal screenshot or GIF showing a cycle run.
+     Suggested command:
+       cerebra run-cycle simple.planning.v0 \
+         --goal "What are the key patterns in knowledge-intensive systems?" \
+         --vault examples/demo-vault
+     followed by: cerebra inspect cycle show --signals --vault examples/demo-vault
+     Save to: docs/assets/demo.gif -->
+
 ## What this is
 
-Cerebra is a configurable cognitive runtime — not a RAG pipeline, not a chatbot wrapper. Each cognitive cycle retrieves context from an ingested knowledge vault, calls a local LLM (Ollama), evaluates the output across six epistemic signals, routes the next action through a rule engine (Clutch), optionally escalates to a bandit-driven strategy selector (Catalyst), writes the result as a dual-format episode, and decides whether to continue, recurse, or stop. Every action leaves an inspectable trace.
+Cerebra is a configurable cognitive runtime — not a RAG pipeline, not a chatbot wrapper. Each cognitive cycle retrieves context from an ingested knowledge vault, calls a local LLM (Ollama), and evaluates the output across six epistemic signals. A rule engine (Clutch) routes the next action; a bandit-driven strategy selector (Catalyst) handles escalation. The cycle writes the result as a dual-format episode and decides whether to continue, recurse, or stop. Every action leaves an inspectable trace.
 
 **What's shipped at v0.4.4:**
 - 21-command CLI (init, ingest, search, run-cycle, inspect, export, serve)
@@ -30,15 +50,15 @@ Architecture reference: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
 ## Setup
 
-**Prerequisites:** Python 3.12+, Rust toolchain (for fossic, if your platform isn't covered by the vendored wheel — see `vendor/README.md`), Ollama running locally with a model pulled (e.g. `ollama pull granite3.2:3b`).
+**Prerequisites:** Python 3.12+, Ollama running locally.
+
+fossic ships as a pre-built wheel in `vendor/` — no Rust toolchain needed. See [`vendor/README.md`](vendor/README.md) for platform notes and rebuild instructions.
 
 ```bash
 git clone https://github.com/bitmosh/cerebra-classic
 cd cerebra-classic
 pip install -e ".[dev]"
 ```
-
-fossic is a Rust/PyO3 extension — pip will compile it from source automatically if Rust is installed. Install Rust via [rustup.rs](https://rustup.rs) if needed.
 
 ```bash
 # Quick demo
@@ -50,19 +70,7 @@ cerebra run-cycle simple.planning.v0 \
 cerebra inspect cycle show --signals --vault examples/demo-vault
 ```
 
-Full CLI reference (21 commands): [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#cli-surface)
-
----
-
-## Why this fork exists
-
-Cerebra's persistence layer uses a dual strategy: SQLite (18 schema migrations, mutable relational store) alongside FossicStore (Rust, content-addressed, causation-chained event streams). These two approaches to state — CRUD vs. event-sourced replay — coexist with real friction: WAL discipline hand-enforced across modules, synthetic FK sentinel rows to satisfy constraints that shouldn't exist, dual-write sequencing without a transaction primitive.
-
-The dyson sphere migration replaces `cerebra.db` with Rust-native projections on fossic streams. This fork preserves the before state — inspectable, runnable, and citable — so the architectural delta is concrete rather than speculative.
-
-The cognitive architecture (Clutch, Catalyst, re-injection loop, TruthTower, signal evaluators, leeway network) is identical in both versions. Only the persistence substrate changes.
-
-Full writeup: [`docs/CEREBRA_CLASSIC.md` — Why This Is Archived as Classic](docs/CEREBRA_CLASSIC.md#why-this-is-archived-as-classic--the-sqlite-mismatch)
+Full setup instructions (prerequisites, Ollama, vault layout): [`docs/CEREBRA_SETUP.md`](docs/CEREBRA_SETUP.md)
 
 ---
 
@@ -76,9 +84,11 @@ docs/
   CEREBRA_CLASSIC.md   — development arc, current state, architecture rationale
   ARCHITECTURE.md      — technical reference (subsystems, migrations, event types)
   KNOWN_ISSUES.md      — tracked defects acknowledged in the archive
+  CEREBRA_SETUP.md     — full setup instructions (prerequisites, Ollama, vault layout)
   archive/             — historical design docs and development logs
 examples/docs/     — demo vault documents
 tests/             — unit + integration test suite
+vendor/            — pre-built fossic wheel (see vendor/README.md)
 ```
 
 ---
@@ -90,9 +100,15 @@ Rejects: new features, architectural changes, performance improvements (those go
 
 ---
 
+## Ecosystem
+
+Part of the [Lattica](https://github.com/bitmosh) ecosystem.
+
+---
+
 ## Related
 
-- **[fossic](https://github.com/bitmosh/fossic)** — content-addressed event store substrate (v1.6.0, 2026-06-21)
+- **[fossic](https://github.com/bitmosh/fossic)** — content-addressed event store substrate (v1.8.1)
 - **[Cerebra](https://github.com/bitmosh/cerebra)** — active development, post-dyson-sphere
 
 ## License
