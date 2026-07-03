@@ -2917,7 +2917,7 @@ Searches for `class.*Bandit`, `class.*MAB`, `class.*MultiArmed`, `arm_stats`, `e
 
 No bandit test files found. No `test_*selector*` files found.
 
-A bandit implementation exists at `/home/boop/Projects/ai-lab/core/bandit.py` (see Q7). It is not accessible from Cerebra at runtime — it's a separate project.
+A bandit implementation exists at `/home/boop/Projects/[prior-project]/core/bandit.py` (see Q7). It is not accessible from Cerebra at runtime — it's a separate project.
 
 ---
 
@@ -2965,20 +2965,20 @@ Critical: `CEREBRA_CATALYST.md` references "lattica-primitives §Bandit Selector
 
 ---
 
-### Q7 — How does bons.ai's catalyst.py compare?
+### Q7 — How does [scrubbed]'s catalyst.py compare?
 
-**ANSWERED — ACCESSIBLE at `/home/boop/Projects/ai-lab/core/catalyst.py` (304 lines).**
+**ANSWERED — ACCESSIBLE at `/home/boop/Projects/[prior-project]/core/catalyst.py` (304 lines).**
 
 A companion `bandit.py` (106 lines) exists in the same directory.
 
-**`ai-lab/core/bandit.py` — the bandit implementation:**
+**`[prior-project]/core/bandit.py` — the bandit implementation:**
 - Algorithm: UCB (Upper Confidence Bound), not Thompson Sampling or epsilon-greedy
 - State shape: `dict[str, {"count": int, "total_reward": float}]` — one entry per arm, passed in as a mutable dict
 - Three functions: `select_option(options, bandit_state, total_steps, exploration=1.4)`, `update_bandit(bandit_state, key, reward)`, `ensure_bandit_structure(state)`
 - No classes. Fully stateless (state passed in/out). No external dependencies (stdlib `math` only).
 - Domains tracked: `strategy`, `mutation`, `tool` (hardcoded in `ensure_bandit_structure`)
 
-**`ai-lab/core/catalyst.py` — the multi-factor selector:**
+**`[prior-project]/core/catalyst.py` — the multi-factor selector:**
 - Imports bandit via `from core.policy_engine import select_option, update_bandit` (not from `bandit.py` — apparent legacy naming inconsistency)
 - Implements: `choose_strategy(state)`, `get_adaptive_exploration_rate(state)`, `choose_mutation(state, previous_mutation)`, `apply_mutation(idea, mutation_type)`
 - Multi-factor scoring in `choose_mutation`: `score = (base * 0.4 + chain_bonus * 0.4 + decay * 0.2) * type_penalty`
@@ -2988,7 +2988,7 @@ A companion `bandit.py` (106 lines) exists in the same directory.
 - Has `print()` statements throughout (not primitive-shaped)
 - Uses `random.random()` — not primitive-shaped (non-deterministic without seed)
 
-The bons.ai code is proof-of-concept quality: functional but not clean, not typed, not class-based, and not extractable as-is.
+The [scrubbed] code is proof-of-concept quality: functional but not clean, not typed, not class-based, and not extractable as-is.
 
 ---
 
@@ -3011,7 +3011,7 @@ No `requirements.txt`. Notable:
 - **numpy is present** — available for bandit math if needed (log, sqrt)
 - **No scipy, vowpalwabbit, ax-platform** — no existing ML/bandit library
 - `sentence-transformers` implies numpy is load-bearing (embeddings in retrieval)
-- The ai-lab bandit only uses stdlib `math` — it would not require adding numpy
+- The [prior-project] bandit only uses stdlib `math` — it would not require adding numpy
 
 ---
 
@@ -3025,7 +3025,7 @@ No `requirements.txt`. Notable:
 | HysteresisModeRouter | EXISTS     | `cerebra/_primitives/mode_router.py` | `HysteresisModeRouter.decide(signals, candidate_mode) → ModeDecision`           |
 | ScoreComposer        | EXISTS     | `cerebra/_primitives/score_composer.py` | `compose(components, weights) → CompositeScore`; `CompositeScore.explain()`   |
 | TombstoneSet         | EXISTS     | `cerebra/_primitives/tombstone_set.py` | `TombstoneSet.add/tombstone/restore/state/get()`                              |
-| Bandit (any form)    | NOT FOUND  | —                                   | No bandit primitive in `cerebra/` or `tests/`; proof-of-concept in ai-lab only  |
+| Bandit (any form)    | NOT FOUND  | —                                   | No bandit primitive in `cerebra/` or `tests/`; proof-of-concept in [prior-project] only  |
 
 Additional note on Clutch: there are two objects named "Clutch" in the codebase. The primitive (`cerebra/_primitives/clutch.py`) is the generic rule-cascade primitive. The consumer (`cerebra/cognition/clutch.py`) is `ClutchEngine` — Cerebra's cycle-runtime implementation built on the same pattern but with a distinct API and no inheritance from the primitive.
 
@@ -3045,15 +3045,15 @@ If `_primitives_canonical/` were populated, it would be the update-first target 
 
 ## Section 4 — Open Questions Surfaced
 
-1. **Bandit primitive specification is missing.** `CEREBRA_CATALYST.md` references "lattica-primitives §Bandit Selector" as the authoritative bandit spec. No such section exists in `docs/refined-runtime-model/LATTICA_PRIMITIVES.md`. The spec must be written (or sourced from ai-lab analysis) before a primitive-shaped implementation can be contracted.
+1. **Bandit primitive specification is missing.** `CEREBRA_CATALYST.md` references "lattica-primitives §Bandit Selector" as the authoritative bandit spec. No such section exists in `docs/refined-runtime-model/LATTICA_PRIMITIVES.md`. The spec must be written (or sourced from [prior-project] analysis) before a primitive-shaped implementation can be contracted.
 
 2. **The `_primitives_canonical/` directory is empty.** `VENDORED_FROM.md` says canonical copies live there; the directory contains only an empty `__init__.py`. It's unclear whether canonical copies were never written or were deleted. If the bandit is to follow the vendor-from-canonical pattern, the canonical copy would need to go there first.
 
 3. **Naming collision: `Clutch` (primitive) vs `ClutchEngine` (consumer).** Both exist in the codebase and serve different purposes. `CEREBRA_CATALYST.md` may use "Clutch" to mean either. Step 2 kickoff should clarify which one the catalyst integrates with (answer appears to be: neither — catalyst is called when ClutchEngine escalates via `escalate_to_catalyst=True`, so the catalyst is a peer of ClutchEngine, not a child).
 
-4. **The ai-lab bandit imports from `core.policy_engine`, not `core.bandit`.** The actual connection between `bandit.py` and `catalyst.py` in ai-lab is ambiguous (may be a renamed module). If Step 2 references ai-lab code for the bandit algorithm, this inconsistency should be resolved before extraction.
+4. **The [prior-project] bandit imports from `core.policy_engine`, not `core.bandit`.** The actual connection between `bandit.py` and `catalyst.py` in [prior-project] is ambiguous (may be a renamed module). If Step 2 references [prior-project] code for the bandit algorithm, this inconsistency should be resolved before extraction.
 
-5. **Bandit arm vocabulary for Cerebra.** The ai-lab bandit tracks `strategy`, `mutation`, `tool` domains. The Cerebra catalyst selects from `CLUTCH_ACTIONS` (accept, refine, critique, etc.). These are different vocabularies. The arm vocabulary for the Cerebra bandit is unspecified in the current primitives or in `LATTICA_PRIMITIVES.md`.
+5. **Bandit arm vocabulary for Cerebra.** The [prior-project] bandit tracks `strategy`, `mutation`, `tool` domains. The Cerebra catalyst selects from `CLUTCH_ACTIONS` (accept, refine, critique, etc.). These are different vocabularies. The arm vocabulary for the Cerebra bandit is unspecified in the current primitives or in `LATTICA_PRIMITIVES.md`.
 
 6. **Five of the six primitives are currently unused by Phase 8/9 cycle runtime.** `cerebra/cognition/__init__.py` re-exports them all, but only `ScoreComposer` (via `compose`) is imported downstream (`cerebra/retrieval/scorer.py`). Trajectory, HysteresisModeRouter, TombstoneSet, and the primitive Clutch are present but not wired into the cycle runtime. This is expected per roadmap, but worth noting for Step 2 kickoff: the catalyst may be the first cycle-runtime consumer of Triangulator or Trajectory.
 
@@ -9831,7 +9831,7 @@ section is required even if empty — write "No new entries this pass. No entrie
 breaking API changes, behavior changes, or new APIs that adjacent projects use, create
 `docs/aseptic/cross-pollination/pass-NN.md` using the format in
 `docs/aseptic/CROSS_POLLINATION.md`. fossic's adjacent projects are: cerebra,
-policy-scout, lumaweave, bo, ai-stack, rhyzome (benched), bons.ai (benched).
+policy-scout, lumaweave, ai-stack.
 
 **4. Write the pass report.** Use the format in `docs/aseptic/PASS_REPORTING.md`.
 The "no new entries" confirmation in section 5 is required and must be explicit.
@@ -9967,7 +9967,7 @@ Describes what changed in this project that adjacent projects need to know about
 
 Cross-pollination is separated from blast-radius because the audiences differ. Blast radius is "what this project did." Cross-pollination is "what adjacent projects should do about it."
 
-For fossic Pass 9 specifically, the cross-pollination doc would have entries for: Cerebra (subscribe API changed, list_branches semantics for main), Policy Scout (subscribe API changed), LumaWeave (glob patterns now in IPC), Bo / ai-stack (FYI only).
+For fossic Pass 9 specifically, the cross-pollination doc would have entries for: Cerebra (subscribe API changed, list_branches semantics for main), Policy Scout (subscribe API changed), LumaWeave (glob patterns now in IPC), AI Stack (FYI only).
 
 ---
 
@@ -10321,7 +10321,7 @@ Cerebra has organic versions of several Aseptic patterns:
 
 Direct fossic-isms in the doc set that need replacement:
 
-**Adjacent project list.** Aseptic's docs reference fossic's adjacent projects: cerebra, policy-scout, lumaweave, bo, ai-stack, rhyzome (benched), bons.ai (benched). For Cerebra-oriented Aseptic, adjacent projects become: fossic, lumaweave, bons.ai, policy-scout, rhyzome (if active), bo (if active). The list is inverted — fossic becomes an adjacent project where it was the host before.
+**Adjacent project list.** Aseptic's docs reference fossic's adjacent projects: cerebra, policy-scout, lumaweave, ai-stack. For Cerebra-oriented Aseptic, adjacent projects become: fossic, lumaweave, policy-scout. The list is inverted — fossic becomes an adjacent project where it was the host before.
 
 **File path references.** `docs/aseptic/...` could stay or could move to `docs/agent/aseptic/...` to fit Cerebra's existing `docs/agent/` convention. Bandit reads from `docs/agent/` for deviation logs already; consistency favors integration into that namespace.
 
@@ -10763,7 +10763,7 @@ summary: Spec clarification — purge semantics, branch conventions, BranchInfo 
 ### Created
 
 - `docs/aseptic/blast-radius/pass-10.v.md` — this file.
-- `docs/aseptic/cross-pollination/pass-10.v.md` — adjacent-project impact notes (Cerebra FYI, Policy Scout FYI, LumaWeave NEEDS-AWARENESS on Rust vs binding tilde, Rhyzome FYI on BranchInfo fields).
+- `docs/aseptic/cross-pollination/pass-10.v.md` — adjacent-project impact notes (Cerebra FYI, Policy Scout FYI, LumaWeave NEEDS-AWARENESS on Rust vs binding tilde, [scrubbed] FYI on BranchInfo fields).
 
 ---
 
@@ -11152,10 +11152,9 @@ blast-radius file under "Living report updates").
 | cerebra | Python | `fossic-py` | `register_reducer`, `read_state`, `take_snapshot`, subscriptions |
 | policy-scout | Python | `fossic-py` | `append`, `read_range`, `register_payload_transform` |
 | lumaweave | TypeScript | `fossic-node` + Tauri IPC | subscriptions (Graph B), event read, Tauri commands |
-| bo (discord-bot) | Python | `fossic-py` | `append`, `read_range` (agent trace logging) |
 | ai-stack | Docker/Python | `fossic-py` | indirect (through cerebra) |
-| rhyzome | Python | `fossic-py` | branches, `create_branch`, `promote_branch` (benched) |
-| bons.ai | Python | `fossic-py` | `indexed_tags`, aggregation, `SimilaritySearchProvider` (benched) |
+| [scrubbed] | Python | `fossic-py` | branches, `create_branch`, `promote_branch` (benched) |
+| [scrubbed] | Python | `fossic-py` | `indexed_tags`, aggregation, `SimilaritySearchProvider` (benched) |
 
 ---
 
@@ -11262,7 +11261,7 @@ a missed one.
 pass: 9
 version: v0.9.0
 date: "(retroactive estimate, not verified)"
-impacts: [cerebra, policy-scout, bo]
+impacts: [cerebra, policy-scout]
 ---
 
 # Cross-Pollination — Pass 9 (v0.9.0)
@@ -11312,16 +11311,13 @@ confirmed no breaking change.
 
 ---
 
-## bo
-
-**Severity:** FYI — same as policy-scout. No action needed.
 
 ---
 
-## lumaweave, ai-stack, rhyzome, bons.ai
+## lumaweave, ai-stack, [scrubbed]
 
-No impact. lumaweave uses Node binding (unchanged). ai-stack is indirect. rhyzome and
-bons.ai are benched.
+No impact. lumaweave uses Node binding (unchanged). ai-stack is indirect. [scrubbed] and
+[scrubbed] are benched.
 
 ---
 
@@ -11372,7 +11368,7 @@ Your Phase 6/7/8 cycle runtime vocabulary contribution is now canonical at `AGEN
 
 ---
 
-## Policy Scout / Bo / ai-stack
+## Policy Scout / AI Stack
 
 **Severity: FYI**
 
@@ -11382,11 +11378,11 @@ No action required. Awareness only.
 
 ---
 
-## Rhyzome / bons.ai
+## [scrubbed] / [scrubbed]
 
 **Severity: FYI**
 
-AGENT_TRACE_VOCABULARY.md section numbers shifted — rhyzome vocabulary is now §5 (was §4); bons.ai vocabulary is now §6 (was §5). Update any internal docs that reference specific section numbers.
+AGENT_TRACE_VOCABULARY.md section numbers shifted — [scrubbed] vocabulary is now §5 (was §4); [scrubbed] vocabulary is now §6 (was §5). Update any internal docs that reference specific section numbers.
 
 No behavioral changes. Awareness only for cross-references.
 
@@ -11449,29 +11445,29 @@ summary: Add event_type_filter to ReadQuery across all four layers
 
 ---
 
-## Bo / discord-bot / ai-stack
+## AI Stack
 
 **Severity: FYI**
 
-- No impact. Bo reads events but does not use `ReadQuery` with type filtering yet.
+- No impact.
 
 ---
 
-## Rhyzome
+## [scrubbed]
 
 **Severity: FYI**
 
-- Rhyzome uses `read_range` for stream introspection. `event_type_filter` is available
-  if Rhyzome needs to read only repair-related event types from a mixed stream. No
+- [scrubbed] uses `read_range` for stream introspection. `event_type_filter` is available
+  if [scrubbed] needs to read only repair-related event types from a mixed stream. No
   action required now.
 
 ---
 
-## bons.ai
+## [scrubbed]
 
 **Severity: FYI**
 
-- The `event_type_filter` field makes ReadQuery parity with AggregateQuery. When bons.ai
+- The `event_type_filter` field makes ReadQuery parity with AggregateQuery. When [scrubbed]
   reads from idea or session streams that carry mixed event types (e.g. `IdeaCreated`,
   `IdeaScored`, `IdeaDiscarded`), filtering can now be done server-side.
 
@@ -11483,7 +11479,7 @@ summary: Add event_type_filter to ReadQuery across all four layers
 pass: 10
 version: v0.10.0
 date: "(retroactive estimate, not verified)"
-impacts: [cerebra, bons.ai]
+impacts: [cerebra, [scrubbed]]
 ---
 
 # Cross-Pollination — Pass 10 (v0.10.0)
@@ -11536,26 +11532,26 @@ snapshots, latency grows linearly with event count.
 
 ---
 
-## bons.ai
+## [scrubbed]
 
 **Severity:** FYI
 
-**What changed:** Same DynReducer protocol update as cerebra. bons.ai is currently benched
+**What changed:** Same DynReducer protocol update as cerebra. [scrubbed] is currently benched
 but should be aware that when it resumes, reducer classes need the three class-level
 attributes.
 
 **Advocate-agent message:**
 > fossic v0.10.0: DynReducer protocol now requires `name`, `version`, `state_schema_version`
-> class attributes on reducer objects. Impact for bons.ai: FYI while benched. When
-> bons.ai resumes and uses fossic reducers, add these attributes to your reducer classes
+> class attributes on reducer objects. Impact for [scrubbed]: FYI while benched. When
+> [scrubbed] resumes and uses fossic reducers, add these attributes to your reducer classes
 > before calling register_reducer.
 
 ---
 
-## policy-scout, bo, lumaweave, ai-stack, rhyzome
+## policy-scout, lumaweave, ai-stack
 
-No impact. policy-scout and bo don't use reducers. lumaweave uses the Node binding
-(no Python reducer path). ai-stack is indirect. rhyzome is benched.
+No impact. policy-scout doesn't use reducers. lumaweave uses the Node binding
+(no Python reducer path). ai-stack is indirect. [scrubbed] is benched.
 
 ---
 
@@ -11612,21 +11608,20 @@ summary: Spec clarification — purge semantics, branch conventions, BranchInfo 
 
 ---
 
-## Bo / discord-bot / ai-stack
+## AI Stack
 
 **Severity: FYI**
 
-- No impact. Spec clarifications in this pass do not affect Bo's use of fossic (Bo
-  is Python, reads events, does not use branches or purge).
+- No impact.
 
 ---
 
-## Rhyzome
+## [scrubbed]
 
 **Severity: FYI**
 
 - `BranchInfo` field names now documented canonically in §8: `.id`, `.lifecycle`
-  (not `.branch_id`, `.status`). Rhyzome uses branches heavily — confirm all branch
+  (not `.branch_id`, `.status`). [scrubbed] uses branches heavily — confirm all branch
   code uses the correct field names before implementing new branch features.
 
 ---
@@ -11668,7 +11663,7 @@ changes — this is additive.
 
 ---
 
-## cerebra, policy-scout, bo, ai-stack, rhyzome, bons.ai
+## cerebra, policy-scout, ai-stack, [scrubbed]
 
 No impact. Python binding unchanged. This pass touched only `fossic-node/index.js`.
 
@@ -16667,7 +16662,7 @@ Your audience is the developer (Ryan) and a senior planner who has been guiding 
 
 ## Project context
 
-Cerebra is a local-first cognitive runtime under the **Lattica** suite (alongside LumaWeave, Bons.ai, and the deferred Policy Scout). It is architecture-complete at v0.1 with ~28 planning docs at `docs/refined-runtime-model/`. The implementing agent is named **bandit**; it has shipped Phase 0 (v0.0.0), Phase 1 (v0.0.1), and a v0.0.1a follow-up. The protocol it operates under is in `.claude/AGENTS.md`, with the Discord coordination in `docs/agent/CEREBRA_DISCORD_PROTOCOL.md` and the persistent reference in `docs/agent/CEREBRA_CLAUDE.md`.
+Cerebra is a local-first cognitive runtime under the **Lattica** suite (alongside LumaWeave, [scrubbed], and the deferred Policy Scout). It is architecture-complete at v0.1 with ~28 planning docs at `docs/refined-runtime-model/`. The implementing agent is named **bandit**; it has shipped Phase 0 (v0.0.0), Phase 1 (v0.0.1), and a v0.0.1a follow-up. The protocol it operates under is in `.claude/AGENTS.md`, with the Discord coordination in `docs/agent/CEREBRA_DISCORD_PROTOCOL.md` and the persistent reference in `docs/agent/CEREBRA_CLAUDE.md`.
 
 Phase 2 — **SKU classifier and addressing** — is the first phase where LLM calls become load-bearing. The classifier assigns a 10-digit hex SKU address to every memory record (~745 ingested chunks from the planning docs). The full SKU format is documented in `docs/refined-runtime-model/CEREBRA_SKU_ADDRESSING.md`. For v0.1.0 (Phase 2 target version), only D1 (primary cognitive category from 16 options), D4 (relationship axis), D7-D8 (occupancy index), D9 (modality), and D10 (provenance) are populated. D2, D3, D5, D6 are intentionally stubbed.
 

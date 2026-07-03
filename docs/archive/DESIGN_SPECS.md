@@ -84,14 +84,14 @@ graph emission contract
 Example cycle definitions:
 
 ```text
-bonsai.ideation.v1
+example.ideation.v1
 research_synthesis.v1
 code_review.v1
 planning_review.v1
 decision_analysis.v1
 ```
 
-Bons.ai becomes one cycle definition.
+[scrubbed] becomes one cycle definition.
 
 ---
 
@@ -538,7 +538,7 @@ This is also what makes the catalyst safe to combine with the clutch. The clutch
 
 The catalyst selects from action vocabularies declared by the cycle config. Vocabularies are per-cycle-config; what's available depends on what the cycle is doing.
 
-For a Bons.ai-shaped ideation cycle:
+For a [scrubbed]-shaped ideation cycle:
 
 ```text
 exploration       try a divergent direction
@@ -762,7 +762,7 @@ The weighted-random sampling is the discipline that makes the catalyst's explora
 
 Combined with the clutch (which decides when to act) and the leeway network (which decides what's permitted), the catalyst is the *what to try* layer of a system that can think about hard problems without rigid prescription.
 
-It is also where Bons.ai's most sophisticated existing logic lives. The bandit-blended chain-aware type-penalized scoring already in `catalyst.py` is the proof of concept. Cerebra inherits the pattern; the implementation gets cleaned and made primitive-shaped.
+It is also where [scrubbed]'s most sophisticated existing logic lives. The bandit-blended chain-aware type-penalized scoring already in `catalyst.py` is the proof of concept. Cerebra inherits the pattern; the implementation gets cleaned and made primitive-shaped.
 
 This is one of the load-bearing parts of the cognitive runtime. Get it right.
 
@@ -824,10 +824,10 @@ graph_events
 
 ---
 
-## 4. Example Cycle: Bons.ai Ideation
+## 4. Example Cycle: [scrubbed] Ideation
 
 ```yaml
-cycle_id: bonsai.ideation.v1
+cycle_id: example.ideation.v1
 purpose: Generate, critique, improve, and evaluate ideas.
 roles:
   - generator
@@ -848,7 +848,7 @@ stop_conditions:
   - user_stop
 ```
 
-Bons.ai becomes a config loaded by Cerebra, not Cerebra itself.
+[scrubbed] becomes a config loaded by Cerebra, not Cerebra itself.
 
 ---
 
@@ -1056,7 +1056,7 @@ memory write events
 graph event export
 ```
 
-Bons.ai compatibility can be a v0.2 target unless it is easy to express as a config.
+[scrubbed] compatibility can be a v0.2 target unless it is easy to express as a config.
 
 ---
 
@@ -2609,7 +2609,7 @@ Cerebra diagrams should show memory flow, provenance, retrieval, lifecycle, and 
 
 This index explains the Cerebra documentation set and recommended reading order.
 
-Cerebra is a **local-first cognitive runtime** that uses memory as one major subsystem. It is not Policy Scout. It is not LumaWeave. Bons.ai will eventually be expressible as one cycle configuration that Cerebra runs.
+Cerebra is a **local-first cognitive runtime** that uses memory as one major subsystem. It is not Policy Scout. It is not LumaWeave. [scrubbed] will eventually be expressible as one cycle configuration that Cerebra runs.
 
 Cerebra runs configurable cognitive cycles, maintains durable state and memory, manages working context, evaluates signals, consolidates experience, learns from prediction error, and emits graph-native records.
 
@@ -2718,7 +2718,7 @@ For a fresh reader (human or implementing agent), read in this order:
 │                                                              │
 │   ┌────────────────────────────────────────────────────┐    │
 │   │ Cycle Runtime                                      │    │
-│   │   - Cycle Definitions (Bons.ai as one config)      │    │
+│   │   - Cycle Definitions ([scrubbed] as one config)      │    │
 │   │   - Clutch (priority-rule controller)              │    │
 │   │   - Catalyst (multi-factor strategy selector)      │    │
 │   │   - Signal Pipeline (6 perennial threads)          │    │
@@ -2780,7 +2780,7 @@ These laws guide every Cerebra implementation decision:
 12. Safety is structural (capabilities + leeway), not procedural (rules-on-rules).
 13. The constitutional layer is small (5-10 rules) and inviolable.
 14. Graph export is derived from memory records.
-15. Bons.ai is a cycle config, not the engine.
+15. [scrubbed] is a cycle config, not the engine.
 16. Policy Scout is optional source material, not Cerebra's core.
 17. LumaWeave consumes Cerebra's events; Cerebra does not depend on LumaWeave.
 ```
@@ -2920,7 +2920,7 @@ interrupt_slot        3          Salience-monitor interrupt candidates pending r
 TOTAL: 34 maximum attention items
 ```
 
-Per-cycle configs may override defaults. The Bons.ai ideation cycle might want hypothesis_slot=5 (more divergent ideas competing); a planning cycle might want constraint_slot=8 (more constraints to track).
+Per-cycle configs may override defaults. The [scrubbed] ideation cycle might want hypothesis_slot=5 (more divergent ideas competing); a planning cycle might want constraint_slot=8 (more constraints to track).
 
 **Eviction policy when capacity is reached:**
 
@@ -2945,7 +2945,7 @@ Cycle definitions are YAML files with the following schema:
 
 ```yaml
 # Required fields
-cycle_id: string             # globally unique, dotted-path convention (e.g. "bonsai.ideation.v1")
+cycle_id: string             # globally unique, dotted-path convention (e.g. "example.ideation.v1")
 name: string                 # human-readable name
 purpose: string              # short purpose statement
 schema_version: integer      # cycle schema version (currently 1)
@@ -3420,7 +3420,7 @@ lattica-cognition     (cognitive harness: truth tower, re-injection, leeway, etc
        ↑
 cerebra               (memory runtime built on lattica-cognition)
        ↑
-bonsai (config)       (cycle config that Cerebra runs)
+[scrubbed] (config)       (cycle config that Cerebra runs)
 ```
 
 Until extraction, the internal module discipline approximates the eventual package boundary. This means the eventual extraction is mechanical, not a refactor.
@@ -3686,7 +3686,7 @@ Examples:
 Cerebra
 LumaWeave
 Policy Scout
-Bons.ai
+[scrubbed]
 Echoes of the Glade
 ```
 
@@ -4939,7 +4939,7 @@ $ cerebra inspect cycle cyc_42
 Cycle cyc_42                                            [completed: 12m ago]
   Session:        sess_xyz
   Goal:           Plan the Cerebra prototype gate
-  Cycle config:   bonsai.ideation.v1
+  Cycle config:   example.ideation.v1
   Started:        2026-06-04 09:14:22
   Duration:       4m 18s
   Status:         accepted
@@ -5085,7 +5085,7 @@ LumaWeave's perspective presets filter events for specific views:
   "Cycle Trace"     shows one cycle's full event sequence
   "Tower Evolution" shows truth tower state over time
   "Retrieval Atlas" shows SKU navigation paths
-  "Archive Refinery" (Bons.ai ↔ Cerebra dogfood view)
+  "Archive Refinery" ([scrubbed] ↔ Cerebra dogfood view)
 ```
 
 The handoff is one-way: Cerebra produces events, LumaWeave renders them. Cerebra does not consume LumaWeave state. This preserves the standalone property.
@@ -6302,7 +6302,7 @@ Examples:
 ```text
 Cerebra owns cognitive runtime behavior.
 LumaWeave owns visualization.
-Bons.ai is one cycle definition.
+[scrubbed] is one cycle definition.
 ```
 
 Semantic memory should be source-supported.
@@ -6316,7 +6316,7 @@ Durable process knowledge.
 Examples:
 
 ```text
-how to run a Bons.ai ideation cycle
+how to run a [scrubbed] ideation cycle
 how to assemble a ContextPacket
 how to consolidate a session
 how to score retrieval quality
@@ -7412,7 +7412,7 @@ async background cognition
 advanced prediction models
 automatic interrupts
 multi-cycle marketplace
-full Bons.ai migration
+full [scrubbed] migration
 Policy Scout integration
 full LumaWeave integration
 universal file parsing
@@ -7596,7 +7596,7 @@ Specific subcategory schemas for each of the 16 SKU categories
 Specific clutch rule weights and thresholds
    - Need real cycle data to tune
    - Reasonable defaults specified; tuning in v0.2
-Specific catalyst vocabulary entries per cycle config beyond Bons.ai ideation
+Specific catalyst vocabulary entries per cycle config beyond [scrubbed] ideation
    - Build cycle configs as needed; not all in v0.1
 Specific cross-product entries for digit 4 relationship axis
    - The 16 relationship types are pinned; specific usage patterns
@@ -8247,7 +8247,7 @@ planning cycle
 debugging cycle
 ```
 
-Bons.ai becomes one possible cycle configuration, not the whole engine.
+[scrubbed] becomes one possible cycle configuration, not the whole engine.
 
 ### 3.2 Memory
 
@@ -8299,9 +8299,9 @@ Cerebra produces, reads, and interprets graph-native memory.
 
 ## 4. Product Boundary
 
-### Bons.ai
+### [scrubbed]
 
-Bons.ai is a reference cognitive cycle.
+[scrubbed] is a reference cognitive cycle.
 
 It contains useful patterns:
 
@@ -8317,10 +8317,10 @@ branching
 
 Cerebra should extract these as runtime-level primitives.
 
-Bons.ai should eventually be expressible as:
+[scrubbed] should eventually be expressible as:
 
 ```text
-Cerebra running the Bons.ai ideation cycle config.
+Cerebra running the [scrubbed] ideation cycle config.
 ```
 
 ### LumaWeave
@@ -9129,7 +9129,7 @@ Cerebra is the runtime that remembers, attends, evaluates, consolidates, and dec
 ## Boundary Rules
 
 ```text
-Bons.ai = one cognitive cycle configuration / reference lab.
+[scrubbed] = one cognitive cycle configuration / reference lab.
 Cerebra = cognitive runtime, state, memory, attention, synthesis.
 LumaWeave = graph visualization and exploration.
 Policy Scout = optional safety/event source.
@@ -12814,7 +12814,7 @@ interrupt_slot        3          Salience-monitor interrupt candidates pending r
 TOTAL: 34 maximum attention items
 ```
 
-Per-cycle configs may override defaults. The Bons.ai ideation cycle might want hypothesis_slot=5 (more divergent ideas competing); a planning cycle might want constraint_slot=8 (more constraints to track).
+Per-cycle configs may override defaults. The [scrubbed] ideation cycle might want hypothesis_slot=5 (more divergent ideas competing); a planning cycle might want constraint_slot=8 (more constraints to track).
 
 **Eviction policy when capacity is reached:**
 
@@ -13017,7 +13017,7 @@ A UCB-based arm selector with per-arm reward tracking. Provides arm-statistics p
 
 ```text
 Used by: Cerebra (Catalyst's base_reward and confidence_ramp factors),
-         Bons.ai (cycle-config strategy and mutation selection),
+         [scrubbed] (cycle-config strategy and mutation selection),
          Policy Scout (planned: tool-selection learning)
 Stability: medium-high; algorithm is textbook UCB, but multi-consumer
            validation pending
@@ -13044,7 +13044,7 @@ multi-factor selectors.
 This primitive is the foundation for richer selectors. Cerebra's Catalyst
 uses arm statistics from this primitive to compute a five-factor score
 and applies weighted-random sampling. Other consumers (Policy Scout's
-tool selection, Bons.ai's strategy selection) can use UCB selection
+tool selection, [scrubbed]'s strategy selection) can use UCB selection
 directly.
 
 The primitive is domain-agnostic. Arm identifiers are caller-supplied
@@ -13090,13 +13090,13 @@ class Bandit:
     ):
         self.exploration_weight = exploration_weight
         self.arms: dict[str, ArmStats] = {}
-        self._rng = rng if rng is not None else random.Random()
+        self._rng = rng if rng is not None else random.Random
 
     def ensure_arms(self, arm_ids: Iterable[str]) -> None:
         """Register arms in the bandit. Idempotent."""
         for arm_id in arm_ids:
             if arm_id not in self.arms:
-                self.arms[arm_id] = ArmStats()
+                self.arms[arm_id] = ArmStats
 
     def select(
         self,
@@ -13157,18 +13157,18 @@ class Bandit:
     def update(self, arm_id: str, reward: float) -> None:
         """Apply reward feedback to an arm. Creates the arm if missing."""
         if arm_id not in self.arms:
-            self.arms[arm_id] = ArmStats()
+            self.arms[arm_id] = ArmStats
         self.arms[arm_id].count += 1
         self.arms[arm_id].total_reward += reward
 
     def get_stats(self, arm_id: str) -> ArmStats:
         """Return arm statistics for inspection or higher-level scoring.
 
-        Returns a fresh ArmStats() if arm has never been registered or updated.
+        Returns a fresh ArmStats if arm has never been registered or updated.
         Use this when consuming the bandit as a stats provider for a richer
         selector (e.g., Cerebra's Catalyst).
         """
-        return self.arms.get(arm_id, ArmStats())
+        return self.arms.get(arm_id, ArmStats)
 
     def explain(self, arm_ids: Iterable[str], total_steps: int) -> list[dict]:
         """Return per-arm scoring trace for inspector."""
@@ -13204,7 +13204,7 @@ class Bandit:
                     "total_reward": stats.total_reward,
                     "last_selected_step": stats.last_selected_step,
                 }
-                for arm_id, stats in self.arms.items()
+                for arm_id, stats in self.arms.items
             },
         }
 
@@ -13215,7 +13215,7 @@ class Bandit:
             exploration_weight=state.get("exploration_weight", 1.4),
             rng=rng,
         )
-        for arm_id, arm_data in state.get("arms", {}).items():
+        for arm_id, arm_data in state.get("arms", {}).items:
             bandit.arms[arm_id] = ArmStats(
                 count=arm_data.get("count", 0),
                 total_reward=arm_data.get("total_reward", 0.0),
@@ -13258,7 +13258,7 @@ The RNG is currently used only in `select`'s tiebreaking path (not implemented i
 
 The primitive doesn't dictate where arm stats live. Consumers can:
 
-- Persist `to_state()` output in a SQLite column (session-scoped or vault-scoped)
+- Persist `to_state` output in a SQLite column (session-scoped or vault-scoped)
 - Emit it as a fossic event payload (for cross-session learning via event replay)
 - Hold it in-memory only (per-process bandit state, lost between runs)
 
@@ -13294,7 +13294,7 @@ Bandit.update increments count by 1 and adds reward to total_reward
 Bandit.update creates the arm if it doesn't exist
 Bandit.update with negative reward is allowed (semantics are consumer-defined)
 
-Bandit.get_stats returns ArmStats() for unknown arm (does not raise)
+Bandit.get_stats returns ArmStats for unknown arm (does not raise)
 Bandit.get_stats returns the actual stats for known arms
 
 Bandit.explain produces trace entries for all candidate arms
@@ -13308,9 +13308,9 @@ Determinism: same seed + same operations produce identical state
 
 ---
 
-## Adjacent: legacy ai-lab implementation
+## Adjacent: legacy [prior-project] implementation
 
-The proof-of-concept implementation at `~/Projects/ai-lab/core/bandit.py` predates this specification. It implements the same UCB algorithm but with the following differences:
+The proof-of-concept implementation at `~/Projects/[prior-project]/core/bandit.py` predates this specification. It implements the same UCB algorithm but with the following differences:
 
 - Procedural (free functions over dicts) rather than class-based
 - Hardcoded domain assumption in `ensure_bandit_structure` (strategy/mutation/tool)
@@ -13319,9 +13319,9 @@ The proof-of-concept implementation at `~/Projects/ai-lab/core/bandit.py` predat
 - No explain trace
 - No deterministic RNG injection
 
-The algorithm core in ai-lab's `select_option` is structurally identical to this primitive's `select` UCB branch. Implementations targeting this spec can verify behavioral equivalence by running both against the same arm-update sequences and confirming identical selections.
+The algorithm core in [prior-project]'s `select_option` is structurally identical to this primitive's `select` UCB branch. Implementations targeting this spec can verify behavioral equivalence by running both against the same arm-update sequences and confirming identical selections.
 
-The ai-lab implementation should be considered the historical precedent, not the canonical reference. This specification supersedes it.
+The [prior-project] implementation should be considered the historical precedent, not the canonical reference. This specification supersedes it.
 
 ---
 
@@ -13331,7 +13331,7 @@ The ai-lab implementation should be considered the historical precedent, not the
 
 ## 1. Purpose
 
-This document specifies the small set of pure primitives that are intended to be reused across the Lattica suite (Cerebra, LumaWeave, Policy Scout, Bons.ai as a cycle config).
+This document specifies the small set of pure primitives that are intended to be reused across the Lattica suite (Cerebra, LumaWeave, Policy Scout, [scrubbed] as a cycle config).
 
 Per the project independence doctrine, Lattica projects do not have runtime dependencies on each other. This is a hard rule.
 
@@ -13375,7 +13375,7 @@ Six primitives have demonstrated reuse potential across at least two Lattica pro
 A priority-rule control function. Pure function from typed signal bundle to typed control action via priority-ordered cascade of guarded rules, with explanation as a first-class output.
 
 ```text
-Used by: Bons.ai (cycle control), Policy Scout (enforcement mode routing),
+Used by: [scrubbed] (cycle control), Policy Scout (enforcement mode routing),
          Cerebra (cycle runtime control valve)
 Stability: high; pattern has held across two distinct domains already
 ```
@@ -13389,7 +13389,7 @@ Combines a raw score with a confidence multiplier and signal-strength multiplier
 ```text
 reward = score × confidence × signal_strength
 
-Used by: Bons.ai (reward computation), Cerebra (signal pipeline),
+Used by: [scrubbed] (reward computation), Cerebra (signal pipeline),
          Policy Scout (risk score triangulation)
 Stability: high; ubiquitous pattern
 ```
@@ -13401,7 +13401,7 @@ See full specification in §7.
 Maintains rolling delta history, computes smoothed trend, labels trajectory state, tracks failure streak. Pure-ish (has bounded internal state).
 
 ```text
-Used by: Bons.ai (cycle dynamics), Cerebra (signal evolution),
+Used by: [scrubbed] (cycle dynamics), Cerebra (signal evolution),
          Policy Scout (incident-trajectory tracking)
 Stability: high
 ```
@@ -13413,7 +13413,7 @@ See full specification in §8.
 Mode-persistence with minimum duration and emergency-override.
 
 ```text
-Used by: Bons.ai (cognitive_router), Policy Scout (clutch mode routing),
+Used by: [scrubbed] (cognitive_router), Policy Scout (clutch mode routing),
          Cerebra (will need it for cycle mode selection)
 Stability: high
 ```
@@ -13425,7 +13425,7 @@ See full specification in §9.
 Multi-component scoring with named weights, normalized output, preserved components ("don't collapse early" doctrine).
 
 ```text
-Used by: Bons.ai (scoring), Cerebra (salience scoring + signal composition),
+Used by: [scrubbed] (scoring), Cerebra (salience scoring + signal composition),
          Policy Scout (risk component composition)
 Stability: high; the pattern is identical across all three uses
 ```
@@ -13781,14 +13781,14 @@ def compose(components: dict[str, float], weights: dict[str, float],
     Returns:
         CompositeScore with preserved components for inspection
     """
-    if set(components.keys()) != set(weights.keys()):
+    if set(components.keys) != set(weights.keys):
         raise ValueError(
             f"Component and weight keys must match. "
             f"Components: {set(components)}, Weights: {set(weights)}"
         )
     
     if validate_weights:
-        weight_sum = sum(weights.values())
+        weight_sum = sum(weights.values)
         if not (0.95 <= weight_sum <= 1.05):
             raise ValueError(
                 f"Weights must sum to ~1.0, got {weight_sum}"
@@ -13897,9 +13897,9 @@ Approximately 80 lines. Stateful (in-memory; persistence is consumer's responsib
 
 Things that look like they might be primitives but aren't (yet):
 
-**Bandit Selector.** Well-known algorithm with a specific Bons.ai shape. Lives in the catalyst doc. Not a primitive yet because the shape is still maturing — it may evolve toward Thompson Sampling or other approaches before stabilizing.
+**Bandit Selector.** Well-known algorithm with a specific [scrubbed] shape. Lives in the catalyst doc. Not a primitive yet because the shape is still maturing — it may evolve toward Thompson Sampling or other approaches before stabilizing.
 
-**Multi-Factor Action Selector (catalyst pattern).** Mature in Bons.ai but Cerebra-specific in current shape. Wait for second consumer before extracting.
+**Multi-Factor Action Selector (catalyst pattern).** Mature in [scrubbed] but Cerebra-specific in current shape. Wait for second consumer before extracting.
 
 **Provenance Chain Edge.** Used everywhere but the implementations differ slightly across projects. Wait for shape convergence before extracting.
 
@@ -17358,7 +17358,7 @@ These are v0.3 design questions. For v0.2 the simpler implementation (fixed 3-mo
 
 ## What this document addresses
 
-The Lattica suite has multiple projects (Cerebra, LumaWeave, Policy Scout, the LLM hosting stack, the discord-bot, potentially Bons.ai and Rhyzome) that all produce structured cognitive activity worth observing. Each project has its own internal logging and event capture. The cross-project question is how observation flows between them — how a user looking at Lattica's dashboard sees what is happening across all projects, how a developer debugging one project benefits from visibility into another, how training methodology can extract signal from operation across the ecosystem rather than from a single project's events in isolation.
+The Lattica suite has multiple projects (Cerebra, LumaWeave, Policy Scout, the LLM hosting stack, Cerebra, potentially [scrubbed]) that all produce structured cognitive activity worth observing. Each project has its own internal logging and event capture. The cross-project question is how observation flows between them — how a user looking at Lattica's dashboard sees what is happening across all projects, how a developer debugging one project benefits from visibility into another, how training methodology can extract signal from operation across the ecosystem rather than from a single project's events in isolation.
 
 The straightforward approach is each project building its own observability surface and Lattica calling each one's API. This is fragile, requires coordination on every cross-project query, and produces inconsistent observability experiences. The approach this document proposes is that all projects emit observability data in a single standard format (OpenTelemetry), that the event sourcing toolkit provides the substrate where that data accumulates, and that Lattica reads from the unified stream rather than from per-project surfaces.
 
@@ -17430,7 +17430,7 @@ For LumaWeave, graph operations become spans. Adding a node is a span; adjusting
 
 For Policy Scout, eval runs become traces. Each EvalCase execution is a span; the eval suite as a whole is a trace; assertion results become span events. This gives developers visibility into which assertions are passing and failing over time.
 
-For the discord-bot, each conversation becomes a trace. Each message is a span; tool calls within the message are child spans; LLM calls are also child spans. The conversational structure becomes visible in OTel views.
+For Cerebra, each conversation becomes a trace. Each message is a span; tool calls within the message are child spans; LLM calls are also child spans. The conversational structure becomes visible in OTel views.
 
 For the LLM hosting stack, each inference request is a span. Model selection, batching, response generation all become child spans. Production telemetry like token usage, latency, and error rates emerges naturally from the OTel data.
 
@@ -17472,7 +17472,7 @@ Phase two is Cerebra's OTel instrumentation. Cerebra's existing inspector module
 
 Phase three is Lattica's first observability views. The event stream view comes first because it is the simplest to build (consume any OTel stream, render). The pipeline view comes next once enough Cerebra events are flowing to make pipeline rendering valuable.
 
-Phase four extends instrumentation to other projects. LumaWeave, Policy Scout, the discord-bot, and others get their OTel mappings. The pattern is established by Cerebra's work; each subsequent project benefits from the precedent.
+Phase four extends instrumentation to other projects. LumaWeave, Policy Scout, Cerebra, and others get their OTel mappings. The pattern is established by Cerebra's work; each subsequent project benefits from the precedent.
 
 Phase five adds the decision view to Lattica. This requires event types across the ecosystem to carry alternatives data (the lattice's shadows, the retrieval substrate's abstention candidates, etc.). It may also require some events to be enriched with additional data that the decision view consumes.
 
@@ -17864,7 +17864,7 @@ This is foundational to Phase 6. Phase 6 design proceeds from the commitments in
 
 The original toolkit roadmap was drafted as a TypeScript-first project with a Rust port noted as a possible Phase 2 addition. That framing was reasonable in isolation — the developer most often works in TypeScript, the toolkit's primary near-term consumers are JS/Node-shaped, and TypeScript-first ships faster. But the framing did not account for the broader ecosystem the toolkit is being built within.
 
-The Lattica suite includes projects in Python (Cerebra, ai-stack, discord-bot, Policy Scout, potentially Bons.ai, potentially Rhyzome) and projects in TypeScript or Rust-with-TypeScript (Lattica itself as a Tauri app, LumaWeave). The toolkit is intended to be infrastructure these projects depend on. Infrastructure consumed by multiple projects in multiple languages benefits from being implemented in a *single-source-of-truth* core that all language ecosystems can call into, not as a per-language implementation that needs to be maintained in parallel.
+The Lattica suite includes projects in Python (Cerebra, ai-stack, Cerebra, Policy Scout, ) and projects in TypeScript or Rust-with-TypeScript (Lattica itself as a Tauri app, LumaWeave). The toolkit is intended to be infrastructure these projects depend on. Infrastructure consumed by multiple projects in multiple languages benefits from being implemented in a *single-source-of-truth* core that all language ecosystems can call into, not as a per-language implementation that needs to be maintained in parallel.
 
 The revision proposes implementing the core in Rust and exposing it through Python and TypeScript adapters. The conceptual model, API surface, storage layout, and use cases from the original roadmap remain valid. What changes is the language of the core implementation and the distribution model.
 
@@ -17886,7 +17886,7 @@ The Rust core implements the conceptual model from the original roadmap: events,
 
 **A native Rust API** for Rust consumers. This is the lowest-overhead path. Projects written in Rust link the toolkit as a crate dependency and call its functions directly. Use cases include Lattica's Tauri backend (which is Rust) and any future Rust-based projects in the Lattica suite.
 
-**A Python adapter** built with PyO3. Python consumers install the toolkit as a PyPI package and use a Pythonic API that wraps the Rust core. The Python adapter handles serialization across the FFI boundary (msgpack for performance, with optional JSON for debugging) and provides idiomatic Python ergonomics (context managers for transactions, generators for event streams, dataclasses for event types). Cerebra, the LLM hosting stack, the discord-bot, and Policy Scout are the near-term Python consumers.
+**A Python adapter** built with PyO3. Python consumers install the toolkit as a PyPI package and use a Pythonic API that wraps the Rust core. The Python adapter handles serialization across the FFI boundary (msgpack for performance, with optional JSON for debugging) and provides idiomatic Python ergonomics (context managers for transactions, generators for event streams, dataclasses for event types). Cerebra, the LLM hosting stack, Cerebra, and Policy Scout are the near-term Python consumers.
 
 **A TypeScript adapter** built with napi-rs. TypeScript consumers install the toolkit as an npm package and use an API consistent with the original roadmap's TypeScript design. The TypeScript adapter handles the same serialization layer as Python but exposes a JS-idiomatic API. LumaWeave, Lattica's React frontend, and any future TypeScript projects consume through this adapter.
 
@@ -17906,7 +17906,7 @@ A consuming pattern that wants cross-project event visibility uses shared-file m
 
 **Daemon mode** is the heaviest deployment but the most flexible. The Rust core runs as a background process holding the event log; consumers connect via Unix domain sockets and submit events or read projections through an IPC protocol. The daemon handles concurrency, lifecycle, and isolation between consumers.
 
-A production deployment that hosts multiple projects' event logs together uses daemon mode. Lattica's eventual production surface might be a daemon that owns event logs for Cerebra, LumaWeave, Policy Scout, and the discord bot simultaneously. Each project connects to the daemon rather than owning event log files directly. The daemon centralizes lifecycle management, backup, and access control.
+A production deployment that hosts multiple projects' event logs together uses daemon mode. Lattica's eventual production surface might be a daemon that owns event logs for Cerebra, LumaWeave, Policy Scout, and the Cerebra simultaneously. Each project connects to the daemon rather than owning event log files directly. The daemon centralizes lifecycle management, backup, and access control.
 
 The three modes are not mutually exclusive within a single ecosystem. A development environment might use embedded mode for fast iteration; the same code in production might be reconfigured to use shared-file mode for cross-project visibility or daemon mode for centralized management. The Rust core abstracts the mode choice; consuming code is largely agnostic to which mode is active.
 
@@ -17928,7 +17928,7 @@ The toolkit roadmap's Phase 3 mentions OpenTelemetry as an exporter capability. 
 
 Rust has mature OpenTelemetry support through the opentelemetry-rust crate. The toolkit's Rust core can export events as OTel spans directly, with the span hierarchy mapping naturally onto the toolkit's stream and aggregate structure. A stream becomes a parent span; events within the stream become child spans; subscriptions and projections become processing relationships visible in span links.
 
-The cross-project implication is substantial. If Cerebra, LumaWeave, Policy Scout, and the discord-bot all use the toolkit and all enable OTel export, their events accumulate in a unified observability stream. Any standard OTel-compatible tool (Grafana Tempo, Jaeger, Honeycomb) can consume the stream and provide visualization, alerting, and analysis without per-project integration work.
+The cross-project implication is substantial. If Cerebra, LumaWeave, Policy Scout, and Cerebra all use the toolkit and all enable OTel export, their events accumulate in a unified observability stream. Any standard OTel-compatible tool (Grafana Tempo, Jaeger, Honeycomb) can consume the stream and provide visualization, alerting, and analysis without per-project integration work.
 
 Lattica's observability layer becomes a thin consumer of the OTel stream rather than a custom-built event aggregator. The work of "show me what's happening across all projects" is solved by the OTel ecosystem; Lattica's role becomes "provide the project-specific context and the interactive UI" on top of OTel data. This is substantially less work than building a custom observability layer from scratch.
 
@@ -18085,14 +18085,14 @@ const TextEdited = defineEvent('TextEdited', 1, {
 // 2. Define an aggregate.
 const Note = defineAggregate({
   name: 'Note',
-  initial: () => ({ id: '', text: '', deleted: false }),
+  initial:  => ({ id: '', text: '', deleted: false }),
   reducers: {
     NoteCreated: (s, e) => ({ ...s, id: e.id, text: e.text }),
     TextEdited:  (s, e) => ({ ...s, text: applyEdit(s.text, e) }),
   },
   commands: {
     create: (s, c: { text: string }) =>
-      [{ type: 'NoteCreated', id: ulid(), text: c.text }],
+      [{ type: 'NoteCreated', id: ulid, text: c.text }],
     edit: (s, c: { pos: number; insert: string; remove: number }) =>
       [{ type: 'TextEdited', ...c }],
   },
@@ -18142,7 +18142,7 @@ User edits a note over weeks. They delete a paragraph. Months later they want it
 ```ts
 const note = await store.aggregate(Note, noteId);
 const yesterday = await store.aggregateAt(Note, noteId, {
-  at: Date.now() - 86400000
+  at: Date.now - 86400000
 });
 diff(yesterday.state.text, note.state.text);
 ```
@@ -18179,7 +18179,7 @@ const counterfactual = await store.replay(Run, branch.id);
 
 This is *exactly* the substrate lumaweave needs for static-vs-live dogfooding. The static run is the original stream; the live run is a branch with edits.
 
-### 5.3 Bonsai idea evolution as event log
+### 5.3 [scrubbed] idea evolution as event log
 
 Every mutation, every fitness evaluation, every cull is an event:
 
@@ -18190,7 +18190,7 @@ type IdeaEvent =
   | { type: 'Culled';   id: id, reason: string };
 ```
 
-Genealogy is automatic — to find an idea's ancestry, walk parent edges in the `Mutated` events. The current population is a projection. Bonsai can branch at any historical point to run a counterfactual evolution (what if we had selected differently at generation 200?).
+Genealogy is automatic — to find an idea's ancestry, walk parent edges in the `Mutated` events. The current population is a projection. [scrubbed] can branch at any historical point to run a counterfactual evolution (what if we had selected differently at generation 200?).
 
 ### 5.4 Personal finance with audit-grade history
 
@@ -18419,7 +18419,7 @@ event-sourcing-toolkit/
 ├── examples/
 │   ├── notes/
 │   ├── agent-runner/
-│   └── bonsai-evolution/
+│   └── [scrubbed]/
 ├── docs/
 ├── benchmarks/
 └── README.md
@@ -18432,7 +18432,7 @@ Each package publishes independently. Core has zero dependencies. The store pack
 ## 12. What success looks like
 
 - **v0.1.0 published by Friday** — basic ES works, README is clear, one example runs.
-- **One real user in two weeks** — either your own use in lumaweave/cerebra/bonsai, or someone you've shown the demo to.
+- **One real user in two weeks** — either your own use in lumaweave/cerebra, or someone you've shown the demo to.
 - **Time-travel viewer demo gets shared** at end of week 2 — that's the moment the project becomes legible to people who don't know ES.
 - **Branching feature lands at end of week 3** — that's the moment you have something the field doesn't have.
 - **By week 6**, the toolkit is the persistence story for at least one of your other modules.
@@ -19749,7 +19749,7 @@ By that criterion, Phase 2 is close to done.
 # Agent Trace Vocabulary
 
 **Status:** v1 specification · 2026-06-12
-**Scope:** Standard event types fossic ships for agent trace recording, the per-tool determinism registry, the rhyzome and bons.ai extensions, and the OpenTelemetry GenAI span mapping.
+**Scope:** Standard event types fossic ships for agent trace recording, the per-tool determinism registry, the [scrubbed] and [scrubbed] extensions, and the OpenTelemetry GenAI span mapping.
 
 ---
 
@@ -19757,7 +19757,7 @@ By that criterion, Phase 2 is close to done.
 
 Agent trace event types grow over time. Every new agent-runtime integration potentially adds new event types. Keeping them in the main fossic spec would bloat it; keeping them only in code makes the protocol invisible. This document is the canonical vocabulary list, and it is intended to grow.
 
-The standard event types live in the `fossic` crate. The rhyzome and bons.ai extensions live in their respective consumer codebases — they are documented here for cross-project coordination but fossic core does not depend on them.
+The standard event types live in the `fossic` crate. The [scrubbed] and [scrubbed] extensions live in their respective consumer codebases — they are documented here for cross-project coordination but fossic core does not depend on them.
 
 ---
 
@@ -19909,13 +19909,13 @@ On replay through a reducer or via the time-travel viewer:
 - **deterministic=true:** the stored `tool_result` is served as the result of the tool call. The tool is not re-executed. The agent sees the same result it saw originally.
 - **deterministic=false:** the tool is re-executed against the current environment. The new result may differ from the stored one. Consumers can opt into a "comparison mode" where both the stored and re-executed results are surfaced and divergence is logged.
 
-Rhyzome uses comparison mode for `run_pytest`: a stored PASS that replays as FAIL is a first-class finding (external regression introduced between original session and replay).
+[scrubbed] uses comparison mode for `run_pytest`: a stored PASS that replays as FAIL is a first-class finding (external regression introduced between original session and replay).
 
 ---
 
-## 4. Rhyzome extension event types
+## 4. [scrubbed] extension event types
 
-These types are defined in rhyzome's codebase, not in fossic core. They are documented here so other consumers (LumaWeave's time-travel viewer, the OTel exporter) can recognize them.
+These types are defined in [scrubbed]'s codebase, not in fossic core. They are documented here so other consumers (LumaWeave's time-travel viewer, the OTel exporter) can recognize them.
 
 ### 4.1 `strategy_selected`
 
@@ -19965,9 +19965,9 @@ Emitted when all ranked strategies for a `(session, file, bug_type)` triple have
 
 ---
 
-## 5. Bons.ai extension event types
+## 5. [scrubbed] extension event types
 
-These types are defined in bons.ai's codebase, not in fossic core. Same convention as rhyzome.
+These types are defined in [scrubbed]'s codebase, not in fossic core. Same convention as [scrubbed].
 
 ### 5.1 `bandit_arm_selected`
 
@@ -20081,7 +20081,7 @@ The fossic OTel exporter (optional, subscribed to streams matching configurable 
 | `tool_result` | INTERNAL (span end) | `gen_ai.tool.result` (truncated to 1 KB), `fossic.tool.latency_ms` |
 | `reasoning_step` | INTERNAL (single span) | `fossic.reasoning.text` (truncated to 1 KB), `fossic.reasoning.step_type` |
 
-Rhyzome and bons.ai extension types map to INTERNAL spans with `fossic.event_type` set to the extension type name. Their structured fields become span attributes prefixed with `fossic.<type>.*`. The OTel exporter does not need to know the extension types specifically — it inspects the payload structure.
+[scrubbed] and [scrubbed] extension types map to INTERNAL spans with `fossic.event_type` set to the extension type name. Their structured fields become span attributes prefixed with `fossic.<type>.*`. The OTel exporter does not need to know the extension types specifically — it inspects the payload structure.
 
 ### 6.2 Exporter configuration
 
@@ -20091,7 +20091,7 @@ from fossic.otel import OtelExporter, OtelConfig
 exporter = OtelExporter(OtelConfig(
     endpoint="localhost:4317",          # OTLP gRPC default
     service_name="fossic",
-    stream_patterns=["*/agent-trace/*", "rhyzome/repair/*", "bonsai/idea/*"],
+    stream_patterns=["*/agent-trace/*", "[scrubbed]/repair/*", "[scrubbed]/idea/*"],
     batch_max_events=512,
     batch_max_wait_ms=1000,
 ))
@@ -20114,11 +20114,11 @@ To add a new standard event type to fossic core (not an extension):
 
 1. Open a proposal documenting the use case, the payload shape, and the determinism implications.
 2. The payload must be representable as JSON-compatible types (objects, arrays, strings, numbers, booleans, null). No binary blobs except as base64-encoded strings or as separate event payloads referenced by id.
-3. The type name uses `snake_case`. Standard types have no namespace prefix; extension types use `<consumer>_<type>` (e.g., `rhyzome_strategy_selected`).
+3. The type name uses `snake_case`. Standard types have no namespace prefix; extension types use `<consumer>_<type>` (e.g., `[scrubbed]_strategy_selected`).
 4. The OTel mapping is specified.
 5. Test vectors are added to the `agent-trace-test-vectors.json` file.
 
-To add a new extension type (rhyzome, bons.ai, or another consumer):
+To add a new extension type ([scrubbed], [scrubbed], or another consumer):
 
 1. Document it in the consumer's own codebase under `docs/agent-trace-extensions.md` (or equivalent).
 2. Append a section to this document via PR.
@@ -21207,7 +21207,7 @@ Phases 0–5 are complete. Here is a precise account of what they cannot do, and
 
 ### 2.1 There is no step execution
 
-The system can retrieve context and load it into working memory. It cannot run a cognitive step *using* that context. There is no `run_step()`, no cycle definition, no mechanism for the system to present a goal + context + ContextPacket to an LLM and capture structured output.
+The system can retrieve context and load it into working memory. It cannot run a cognitive step *using* that context. There is no `run_step`, no cycle definition, no mechanism for the system to present a goal + context + ContextPacket to an LLM and capture structured output.
 
 The result: everything built so far is infrastructure for a process that has no way to start.
 
@@ -21487,7 +21487,7 @@ If any future scenario introduces concurrent event writers (multiple agent proce
 
 ### 8.4 Post-action audit (Phase 7)
 
-The leeway network's post-action audit is a replay-heavy operation: "for this session, show me all actions that were executed and verify that each one had a corresponding grant." This is a linear scan from version 0 of the session's stream — exactly ES's linear replay pattern. The current `query_by_session()` in SQLiteEventLog is a manual implementation of this; ES gives it for free.
+The leeway network's post-action audit is a replay-heavy operation: "for this session, show me all actions that were executed and verify that each one had a corresponding grant." This is a linear scan from version 0 of the session's stream — exactly ES's linear replay pattern. The current `query_by_session` in SQLiteEventLog is a manual implementation of this; ES gives it for free.
 
 ### 8.5 EvaluationPacket as a structured ES payload
 
@@ -21626,7 +21626,7 @@ None of the following capabilities exist:
 
 ### 2.1 No step execution
 
-The system can retrieve context and load it into working memory. It cannot run a cognitive step *using* that context. There is no `run_step()`, no cycle definition schema, no mechanism to present a goal + ContextPacket to an LLM and capture structured output. The `llm_adapter.py` in `cerebra/cognition/` is a thin wrapper with no caller.
+The system can retrieve context and load it into working memory. It cannot run a cognitive step *using* that context. There is no `run_step`, no cycle definition schema, no mechanism to present a goal + ContextPacket to an LLM and capture structured output. The `llm_adapter.py` in `cerebra/cognition/` is a thin wrapper with no caller.
 
 ### 2.2 No signal evaluation
 
@@ -22224,7 +22224,7 @@ The v1 thesis (`phase6_cycle_runtime_thesis.md`) was produced without reading th
 
 ## D1 — ContextPacket composition pattern
 
-**Decision:** Each step in the cycle builds its own fresh ContextPacket via Cerebra's existing retrieval pipeline (`cerebra.retrieval.run_query()`).
+**Decision:** Each step in the cycle builds its own fresh ContextPacket via Cerebra's existing retrieval pipeline (`cerebra.retrieval.run_query`).
 
 **Specifics:**
 - Step 1 (understand_goal): query = the user's goal text
@@ -22397,7 +22397,7 @@ cerebra run-cycle <config_name> --goal "<text>" [options]
 - Signal handlers (SIGINT/SIGTERM) are installed for graceful interrupt — they set a flag the cycle loop checks at step boundaries
 
 **What this means for fossic:**
-- All `store.append()` calls happen on the cycle thread, sequentially
+- All `store.append` calls happen on the cycle thread, sequentially
 - Causation chains are preserved trivially (single-threaded sequential emission per Phase 7's discipline)
 - No locks needed in Cerebra code; fossic handles its own internal concurrency
 
@@ -22409,7 +22409,7 @@ cerebra run-cycle <config_name> --goal "<text>" [options]
 
 **Reasoning:** Concurrent cycle execution would introduce complexity (locks, async error handling, race conditions in event ordering) without v0.1 benefit. Single-threaded is correct for the cycle's semantic structure (steps are sequentially ordered) and matches the LeewayGrantApplied causation discipline. v0.2 can introduce daemon mode (`cerebra serve`) with proper async at the IPC boundary; the cycle itself stays sequential.
 
-**Concrete code rule:** No `async def` in cycle runtime code. No `threading.Thread` in cycle runtime code. The cycle is a `while not should_stop()` loop with synchronous calls.
+**Concrete code rule:** No `async def` in cycle runtime code. No `threading.Thread` in cycle runtime code. The cycle is a `while not should_stop` loop with synchronous calls.
 
 ---
 
@@ -22811,7 +22811,7 @@ Three commitments shape every sub-phase. These must be honored throughout implem
 Lattice nodes (and eventually other memory records) become event-sourced aggregates with reducers folding events into continuous state. The architecture follows three-way write decomposition:
 
 - Pre-Phase-6 cognitive events (ingest, classification, retrieval, working memory, tower) continue writing to Cerebra's `inspector_events` via SQLiteEventLog. Adapter surfaces these into fossic streams read-only when adapter ships (v0.2 work).
-- Phase 6 cycle runtime events write directly to fossic via `store.append()` into `cerebra/agent-trace/<cycle_id>` streams.
+- Phase 6 cycle runtime events write directly to fossic via `store.append` into `cerebra/agent-trace/<cycle_id>` streams.
 - Lattice node aggregate events write directly to fossic into `cerebra/lattice/<lineage_id>` streams. Reducers registered against `cerebra/lattice/*` via pattern-based registration per fossic's DynReducer pattern.
 
 Read adapter is NOT Phase 6 critical path. It's v0.2 cleanup work.
@@ -22832,7 +22832,7 @@ For Phase 6 specifically: cycles are synchronous internally. The daemon mode (ce
 
 Eight decisions locked from v2 thesis section 17 plus subsequent coordination:
 
-1. **ES adoption timing:** fossic is ready (v1.0-rc.1, 158 tests passing). Phase 6 uses fossic natively from day one. No EventLog seam wrapping fossic — Cerebra's SQLiteEventLog stays for its existing purposes; cycle runtime calls `store.append()` directly.
+1. **ES adoption timing:** fossic is ready (v1.0-rc.1, 158 tests passing). Phase 6 uses fossic natively from day one. No EventLog seam wrapping fossic — Cerebra's SQLiteEventLog stays for its existing purposes; cycle runtime calls `store.append` directly.
 
 2. **Stream granularity:** Per-session streams for cycle events (`cerebra/agent-trace/<cycle_id>`); per-lineage streams for lattice aggregates (`cerebra/lattice/<lineage_id>`).
 
