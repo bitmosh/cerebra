@@ -79,8 +79,11 @@ events/*.ndjson
 .pyenv
 unsloth_compiled_cache/
 
-# LoRA adapter weights (large binary files — not versioned)
-scripts/v02_training/output/lora_adapters/
+# LoRA training run artifacts (eval results, corpus files — not source)
+scripts/v02_training/output/
+
+# Pass review working directory
+.review/
 
 # OS junk
 Thumbs.db
