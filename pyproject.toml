@@ -14,8 +14,11 @@ dependencies = [
     "click>=8.1",
     "numpy>=2.0,<3.0",
     "sentence-transformers>=3.0",
-    "fossic @ file:vendor/fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl",
+    "fossic",
 ]
+
+[tool.uv.sources]
+fossic = { path = "vendor/fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl" }
 
 [project.optional-dependencies]
 # Lint/format/type-check tools are pinned to the exact versions that produced
