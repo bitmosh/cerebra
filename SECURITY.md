@@ -39,3 +39,12 @@ Out of scope:
 - Issues fixed in later Cerebra versions (report at the
   [main Cerebra repository](https://github.com/bitmosh/cerebra))
 - Issues only reproducible in non-archival forks or modifications
+
+## Attack surface
+
+Cerebra's runtime scope is intentionally narrow:
+
+- No credentials or network-accessible user data are handled
+- The vault is local filesystem only; no cloud sync
+- LLM calls go to a local Ollama instance; no external API traffic by default
+- The HTTP daemon (`cerebra serve`) binds to localhost only
