@@ -4,8 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cerebra"
-version = "0.4.4"
+version = "0.4.5"
 description = "Local-first cognitive runtime"
+authors = [{name = "Ryan Johnson"}]
 requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.7",
