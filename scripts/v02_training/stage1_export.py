@@ -7,7 +7,7 @@ filtered records to JSONL for use in Stage 2 (cross-model consensus) and
 Stage 3 (manual review).
 
 Usage:
-    cd /home/boop/Projects/cerebra
+    cd <repo-root>
     python scripts/v02_training/stage1_export.py [--threshold 0.70] [--vault PATH]
 
 Output:

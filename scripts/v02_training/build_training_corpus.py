@@ -12,7 +12,7 @@ Constructs Pass 1 + Pass 2 JSONL training pairs, applies class balancing weights
 splits into train/val/test, and runs hygiene checks.
 
 Usage:
-    cd /home/boop/Projects/cerebra
+    cd <repo-root>
     python scripts/v02_training/build_training_corpus.py [--output-dir PATH]
 
 Output:

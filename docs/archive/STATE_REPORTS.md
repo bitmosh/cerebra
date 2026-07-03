@@ -23,7 +23,7 @@ The system is designed to run locally with Ollama as its LLM backend and Fossic 
 ## 2. Repository Topology
 
 ```
-/home/boop/Projects/cerebra/
+<repo-root>/
 ├── pyproject.toml                      # build, deps, tool config
 ├── cerebra-relay.py                    # relay agent: vault → hub (not a package module)
 ├── cycles/
@@ -146,7 +146,7 @@ pyyaml = ">=6.0"
 click = ">=8.1"
 numpy = ">=2.0,<3.0"
 sentence-transformers = ">=3.0"
-fossic = {path = "/home/boop/Projects/fossic/fossic-py"}   # local editable dep
+fossic = "file:vendor/fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl"   # vendored wheel (current)
 ```
 
 ### Dev dependencies
@@ -321,7 +321,7 @@ These two buses are written to independently. The same logical event (e.g., `Con
 
 | Dependency | Role | Notes |
 |---|---|---|
-| `fossic` (local) | Content-addressed event store | `file:///home/boop/Projects/fossic/fossic-py`; must reinstall with `--reinstall` after fossic changes |
+| `fossic` (vendored) | Content-addressed event store | Pre-built wheel in `vendor/`; no Rust toolchain needed; current: v1.8.1 |
 | `sentence-transformers ≥3.0` | Embedding model loader | Downloads `mxbai-embed-large-v1` (~1.5 GB) on first use |
 | `pydantic ≥2.7` | Data validation | Used in cycle config, governance models |
 | `pyyaml ≥6.0` | YAML cycle config loading | Cycle files in `cycles/` |

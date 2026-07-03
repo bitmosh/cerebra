@@ -5,7 +5,7 @@ Compares against Round 1 baselines (Qwen 3.5 9B, Granite 4.0 Micro).
 NOT PRODUCTION CODE. Experimental harness.
 
 Usage:
-    cd /home/boop/Projects/cerebra
+    cd <repo-root>
     python scripts/experimental/multi_model_calibration_round2.py
 
 Output:

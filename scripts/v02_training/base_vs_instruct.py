@@ -5,7 +5,7 @@ Establishes the base model's pre-LoRA classification accuracy so post-training
 improvements can be attributed honestly.
 
 Run with the training venv (not the main cerebra venv):
-    /home/boop/Projects/cerebra-v02-training/.venv/bin/python \\
+    <lora-venv>/bin/python \\
         scripts/v02_training/base_vs_instruct.py [--skip-ollama]
 
 Flags:

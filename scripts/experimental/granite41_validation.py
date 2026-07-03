@@ -6,7 +6,7 @@ capturing mechanical reliability, quality, distribution, and performance.
 NOT PRODUCTION CODE. Validation harness.
 
 Usage:
-    cd /home/boop/Projects/cerebra
+    cd <repo-root>
     python scripts/experimental/granite41_validation.py
 
 Output:

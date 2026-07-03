@@ -5,7 +5,7 @@ Trains a LoRA adapter on Granite 4.1 3B base using the Path A-lite corpus
 (Pass 1 + Pass 2 JSONL pairs), with inverse-frequency class balancing.
 
 Run with the training venv:
-    /home/boop/Projects/cerebra-v02-training/.venv/bin/python \\
+    <lora-venv>/bin/python \\
         scripts/v02_training/train_lora.py [options]
 
 Modes:

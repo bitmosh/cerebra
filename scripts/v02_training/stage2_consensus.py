@@ -10,7 +10,7 @@ Estimated runtime: ~3 hours for 583 records × 3 models. Resumable: already-
 processed records are skipped on restart.
 
 Usage:
-    cd /home/boop/Projects/cerebra
+    cd <repo-root>
     python scripts/v02_training/stage2_consensus.py [--limit N] [--dry-run]
 
     --limit N    Process only first N records (for testing)

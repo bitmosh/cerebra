@@ -2917,7 +2917,7 @@ Searches for `class.*Bandit`, `class.*MAB`, `class.*MultiArmed`, `arm_stats`, `e
 
 No bandit test files found. No `test_*selector*` files found.
 
-A bandit implementation exists at `/home/boop/Projects/[prior-project]/core/bandit.py` (see Q7). It is not accessible from Cerebra at runtime — it's a separate project.
+A bandit implementation exists at `~/Projects/[prior-project]/core/bandit.py` (see Q7). It is not accessible from Cerebra at runtime — it's a separate project.
 
 ---
 
@@ -2967,7 +2967,7 @@ Critical: `CEREBRA_CATALYST.md` references "lattica-primitives §Bandit Selector
 
 ### Q7 — How does [scrubbed]'s catalyst.py compare?
 
-**ANSWERED — ACCESSIBLE at `/home/boop/Projects/[prior-project]/core/catalyst.py` (304 lines).**
+**ANSWERED — ACCESSIBLE at `~/Projects/[prior-project]/core/catalyst.py` (304 lines).**
 
 A companion `bandit.py` (106 lines) exists in the same directory.
 
@@ -3003,7 +3003,7 @@ dependencies = [
     "click>=8.1",
     "numpy>=2.0,<3.0",
     "sentence-transformers>=3.0",
-    "fossic @ file:///home/boop/Projects/fossic/fossic-py",
+    "fossic @ file://vendor/fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl",
 ]
 ```
 
@@ -3080,13 +3080,13 @@ Phase 6 Step 1 adds fossic-py as a production dependency (fossic v1.0-rc.1, Rust
 fossic-py is a PyO3-built Rust extension. It ships as a pre-built `.so` at:
 
 ```
-/home/boop/Projects/fossic/fossic-py/python/fossic/_fossic.cpython-312-x86_64-linux-gnu.so
+vendor/fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl/python/fossic/_fossic.cpython-312-x86_64-linux-gnu.so
 ```
 
 Install into the Cerebra venv using editable mode:
 
 ```bash
-uv pip install -e /home/boop/Projects/fossic/fossic-py
+uv pip install -e vendor/fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl
 ```
 
 This installs `fossic==0.1.0` into the venv. Verify:
@@ -3100,7 +3100,7 @@ uv run python -c "import fossic; print(fossic.__file__)"
 The dependency is declared as a path dependency:
 
 ```toml
-"fossic @ file:///home/boop/Projects/fossic/fossic-py",
+"fossic @ file://vendor/fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl",
 ```
 
 mypy is configured to ignore fossic imports (Rust extension, no stubs):
@@ -3116,7 +3116,7 @@ ignore_missing_imports = true
 If you need to rebuild the fossic-py extension (e.g., on a new machine or after Rust source changes):
 
 ```bash
-cd /home/boop/Projects/fossic/fossic-py
+cd vendor/fossic-1.8.1-cp312-cp312-manylinux_2_34_x86_64.whl
 maturin develop --release
 ```
 

@@ -6,7 +6,7 @@ and v0.2 LoRA training target.
 NOT PRODUCTION CODE. Experimental harness.
 
 Usage:
-    cd /home/boop/Projects/cerebra
+    cd <repo-root>
     python scripts/experimental/multi_model_calibration.py
 
 Output:

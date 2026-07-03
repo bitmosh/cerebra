@@ -3,7 +3,7 @@ Evaluate a LoRA adapter against the 30 calibration fixtures and the 24-example
 held-out test set from build_training_corpus.py.
 
 Run with the training venv:
-    /home/boop/Projects/cerebra-v02-training/.venv/bin/python \\
+    <lora-venv>/bin/python \\
         scripts/v02_training/evaluate_lora.py \\
         --adapter output/lora_adapters/run_1780979597/adapter \\
         --output  output/lora_run_1780979597_eval.json
