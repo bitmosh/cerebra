@@ -1,20 +1,8 @@
-# cerebra-classic
+# cerebra
 
-A local-first cognitive cycle runtime built in Python. Fourteen build phases, fully tested against real Ollama. Preserved here as the pre-dyson-sphere baseline — the state immediately before portions of the persistence layer migrate into a Rust-backed event-sourced substrate.
+A local-first cognitive cycle runtime built in Python. Structured multi-step reasoning against a personal knowledge vault, with signal-based evaluation and rule-driven control.
 
-**v0.4.5** · **Python 3.12+** · **MIT** · **Status: Archived**
-
----
-
-## Why this fork exists
-
-Cerebra's persistence layer uses a dual strategy: SQLite (18 schema migrations, mutable relational store) alongside FossicStore (Rust, content-addressed, causation-chained event streams). These two approaches to state — CRUD vs. event-sourced replay — coexist with real friction: WAL discipline hand-enforced across modules, synthetic FK sentinel rows to satisfy constraints that shouldn't exist, dual-write sequencing without a transaction primitive.
-
-The dyson sphere migration replaces `cerebra.db` with Rust-native projections on fossic streams. This fork preserves the before state — inspectable, runnable, and citable — so the architectural delta is concrete rather than speculative.
-
-The cognitive architecture (Clutch, Catalyst, re-injection loop, TruthTower, signal evaluators, leeway network) is identical in both versions. Only the persistence substrate changes.
-
-Full writeup: [`docs/CEREBRA_CLASSIC.md` — Why This Is Archived as Classic](docs/CEREBRA_CLASSIC.md#why-this-is-archived-as-classic--the-sqlite-mismatch)
+**v0.4.5** · **Python 3.12+** · **MIT** · **Status: Active — alpha**
 
 ---
 
@@ -30,7 +18,7 @@ Full writeup: [`docs/CEREBRA_CLASSIC.md` — Why This Is Archived as Classic](do
 
 Cerebra is a configurable cognitive runtime — not a RAG pipeline, not a chatbot wrapper. Each cognitive cycle retrieves context from an ingested knowledge vault, calls a local LLM (Ollama), and evaluates the output across six epistemic signals. A rule engine (Clutch) routes the next action; a bandit-driven strategy selector (Catalyst) handles escalation. The cycle writes the result as a dual-format episode and decides whether to continue, recurse, or stop. Every action leaves an inspectable trace.
 
-**What's shipped at v0.4.4:**
+**What's shipped in v0.4.5:**
 - 21-command CLI (init, ingest, search, run-cycle, inspect, export, serve)
 - Hybrid retrieval — lexical (FTS5) + vector (mxbai-embed-large-v1) + SKU-shaped + graph-expanded
 - ClutchEngine — priority-rule controller with hysteresis, mode persistence, cascade depth
@@ -40,11 +28,14 @@ Cerebra is a configurable cognitive runtime — not a RAG pipeline, not a chatbo
 - Six epistemic signal evaluators — coherence, groundedness, relevance, precision, generativity, epistemic humility
 - Leeway network — three-tier safety architecture (constitutional, capability, conditional grants)
 - Inspector CLI — forensic query surface over events, sessions, cycles, signals, leeway
-- Dual persistence — SQLite (18 migrations) + FossicStore causation-chained event streams
+- Dual persistence — SQLite (18 migrations) + optional FossicStore causation-chained event streams
 - Graph export to visualization-compatible JSON
 
-Full technical narrative: [`docs/CEREBRA_CLASSIC.md`](docs/CEREBRA_CLASSIC.md)  
-Architecture reference: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+## Status
+
+Active development. The system is functional end-to-end and tested against real Ollama, but this is alpha software with known limitations. Use at your own risk; see [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) and [`docs/TECH_DEBT.md`](docs/TECH_DEBT.md) for what's tracked. Contributions welcome.
+
+For historical context on how the system was built (14-phase development arc, architecture rationale) see [`docs/HISTORY.md`](docs/HISTORY.md). For per-subsystem technical detail see [`docs/ARCHITECTURE_STATE.md`](docs/ARCHITECTURE_STATE.md).
 
 ---
 
@@ -52,12 +43,17 @@ Architecture reference: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 
 **Prerequisites:** Python 3.12+, Ollama running locally.
 
-fossic ships as a pre-built wheel in `vendor/` — no Rust toolchain needed. See [`vendor/README.md`](vendor/README.md) for platform notes and rebuild instructions.
+Cerebra runs standalone. fossic provides the causation-chained event store used by the cycle runtime and daemon; install with the `fossic` extra when using `run-cycle` or `serve`.
 
 ```bash
-git clone https://github.com/bitmosh/cerebra-classic
-cd cerebra-classic
+git clone https://github.com/bitmosh/cerebra
+cd cerebra
+
+# Minimal install (search, ingest, inspect — no cycle runtime)
 pip install -e ".[dev]"
+
+# Full install (adds fossic for run-cycle, serve, graph export event emission)
+pip install -e ".[dev,fossic]"
 ```
 
 ```bash
@@ -70,7 +66,21 @@ cerebra run-cycle simple.planning.v0 \
 cerebra inspect cycle show --signals --vault examples/demo-vault
 ```
 
-Full setup instructions (prerequisites, Ollama, vault layout): [`docs/CEREBRA_SETUP.md`](docs/CEREBRA_SETUP.md)
+Full setup instructions (prerequisites, Ollama, vault layout): [`docs/SETUP.md`](docs/SETUP.md)
+
+---
+
+## Which commands need fossic
+
+| Command | Fossic required | What fossic adds |
+|---|---|---|
+| `init`, `ingest`, `search`, `classify`, `context`, `lifecycle`, `memory`, `reindex`, `session`, `status` | No | SQLite-only paths, no event emission |
+| `run-cycle` | Yes | All cycle/step/signal events — the entire inspector trail |
+| `serve` | Yes | PostureChanged, CheckpointSaved events over HTTP |
+| `export graph` | No | Optional GraphSnapshotAvailable notification to hub |
+| `inspect` (event streams) | Yes | Reads directly from FossicStore |
+
+If a fossic-requiring command is invoked without the extra installed, it fails at startup with a clear message. Everything else runs.
 
 ---
 
@@ -81,36 +91,31 @@ cerebra/           — runtime source (CLI, cognition, retrieval, storage, sourc
 cerebra/_primitives/ — vendored shared primitives (Clutch, Catalyst components, etc.)
 cycles/            — built-in cycle configs (YAML)
 docs/
-  CEREBRA_CLASSIC.md   — development arc, current state, architecture rationale
-  ARCHITECTURE.md      — technical reference (subsystems, migrations, event types)
-  KNOWN_ISSUES.md      — tracked defects acknowledged in the archive
-  CEREBRA_SETUP.md     — full setup instructions (prerequisites, Ollama, vault layout)
-  archive/             — historical design docs and development logs
+  HISTORY.md            — development arc, 14 build phases, architectural rationale
+  ARCHITECTURE.md       — architecture overview
+  ARCHITECTURE_STATE.md — per-subsystem technical state reports
+  SETUP.md              — full setup instructions
+  KNOWN_ISSUES.md       — tracked open issues
+  TECH_DEBT.md          — tracked debt and deferred work
 examples/docs/     — demo vault documents
 tests/             — unit + integration test suite
-vendor/            — pre-built fossic wheel (see vendor/README.md)
 ```
-
----
-
-## Maintenance policy
-
-Accepts: critical security patches, documentation corrections, dependency pin updates.  
-Rejects: new features, architectural changes, performance improvements (those go in the live Cerebra).
 
 ---
 
 ## Ecosystem
 
-Part of the [Lattica](https://github.com/bitmosh) ecosystem.
+Cerebra is part of the [Lattica](https://github.com/bitmosh/lattica) ecosystem — a set of local-first tools that share the [fossic](https://github.com/bitmosh/fossic) event store as their persistence substrate. Related projects:
+
+- **[fossic](https://github.com/bitmosh/fossic)** — content-addressed event store substrate
+- **[lattica](https://github.com/bitmosh/lattica)** — observability hub for the ecosystem
+- **[lumaweave](https://github.com/bitmosh/lumaweave)** — graph visualization
+- **[policy-scout](https://github.com/bitmosh/policy-scout)** — safety harness
+
+Cerebra can be used standalone (SQLite-only) or as part of the ecosystem (with fossic).
 
 ---
 
-## Related
-
-- **[fossic](https://github.com/bitmosh/fossic)** — content-addressed event store substrate (v1.8.2)
-- **[Cerebra](https://github.com/bitmosh/cerebra)** — active development, post-dyson-sphere
-
 ## License
 
-MIT — see `LICENSE`.
+MIT — see [`LICENSE`](LICENSE).
