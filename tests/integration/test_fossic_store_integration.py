@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration test: FossicStore + EventEmitter snapshot lifecycle.
 
 Tests the full 100-event cadence scenario against a real fossic store on disk.

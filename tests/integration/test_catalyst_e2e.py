@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration test — CatalystEngine within a running cycle (Phase 9 Step 3).
 
 Tests the full escalation path:

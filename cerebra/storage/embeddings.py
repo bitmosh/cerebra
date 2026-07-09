@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Embedding generation and vector index — mxbai-embed-large-v1.
 

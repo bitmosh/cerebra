@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for cerebra session show and cerebra session reset CLI commands."""
 
 from __future__ import annotations

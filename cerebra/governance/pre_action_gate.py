@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 7 — Leeway pre-action gate."""
 
 from __future__ import annotations

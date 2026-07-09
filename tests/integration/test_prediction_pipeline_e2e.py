@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """End-to-end integration test for the prediction/outcome pipeline.
 
 Tests the full predict → resolve → emit → persist → read cycle against

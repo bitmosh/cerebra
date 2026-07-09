@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 8 v0.3.5a — EpisodeWriter: cycle episode persistence.
 
 Phase 10: EpisodeWriter now dual-writes to both cycle_episode_records (primary,

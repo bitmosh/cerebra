@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Truth Tower — two-tier evidence stack (Phase 5).
 

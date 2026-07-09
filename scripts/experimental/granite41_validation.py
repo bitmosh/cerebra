@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Granite 4.1 3B production substrate validation.
 Runs the v0.1.0 two-pass classifier on 50 sampled real corpus chunks,

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 SKU classifier — assigns D1-D10 SKU addresses to memory records.
 

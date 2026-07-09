@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """CycleRuntime — Phase 8 Step 2 composition class.
 
 Binds Phase 6 evaluation pipeline, Phase 7 governance gate, and Phase 8

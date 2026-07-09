@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Tests for Migration012 — evaluations table."""
 
 from __future__ import annotations

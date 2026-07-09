@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Vault write-path lockfile using fcntl.flock.
 

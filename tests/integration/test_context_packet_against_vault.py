@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration test: build a ContextPacket from a real vault query.
 
 Skips automatically if numpy is unavailable (vector search requires it)

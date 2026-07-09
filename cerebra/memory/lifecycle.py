@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 11 — LifecycleManager: memory_records lifecycle state machine.
 
 Valid states:  active | archived | tombstoned

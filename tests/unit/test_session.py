@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for working_memory session management functions."""
 
 from __future__ import annotations

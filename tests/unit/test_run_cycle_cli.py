@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 8 Step 3 unit tests — cerebra run-cycle CLI command.
 
 Run with: pytest tests/unit/test_run_cycle_cli.py -v

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Cerebra user configuration — manages ~/.config/cerebra/config.toml.
 

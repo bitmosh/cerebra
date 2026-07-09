@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Tests for ProposedAction and GateDecision frozen dataclasses."""
 
 from __future__ import annotations

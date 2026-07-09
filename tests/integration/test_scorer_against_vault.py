@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration tests for score_candidates() against the dev vault (745 records).
 
 Skips automatically if numpy is unavailable or the dev vault is absent.

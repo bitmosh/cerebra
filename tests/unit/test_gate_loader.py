@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Tests for load_pre_action_gate() loader helper."""
 
 from __future__ import annotations

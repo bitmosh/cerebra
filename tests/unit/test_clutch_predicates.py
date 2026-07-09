@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 9 Step 1 unit tests — new ClutchEngine predicates and cascade_depth.
 
 Tests for:

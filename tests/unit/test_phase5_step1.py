@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Phase 5 Step 1 tests: Migration009 schema, _constants, and event vocabulary.
 """

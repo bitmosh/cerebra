@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration test for vault lockfile contention.
 
 Tests that cerebra write-path commands respect the vault lockfile when

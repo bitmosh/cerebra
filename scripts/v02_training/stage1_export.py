@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Stage 1 — confidence filtering and export for v0.2 LoRA training corpus.
 

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Build v0.2 LoRA training corpus using Path A-lite rules (no Stage 3 review).
 

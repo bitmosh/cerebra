@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Unit tests for TruthTower and TowerItem (Phase 5 Step 5).
 

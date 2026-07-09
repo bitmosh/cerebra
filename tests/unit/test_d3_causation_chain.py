@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 8 Step 3 — D3 fix verification tests.
 
 DEV-018: open_session() returns (RuntimeSession, bytes) tuple.

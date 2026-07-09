@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """PRECISION signal prompt — v1.
 
 Maps to Thread 5 (Clarity of Distinction): does the output keep distinct what should be kept distinct?

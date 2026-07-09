@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Base parser adapter ABC."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration tests for SignalEvaluator against local Ollama.
 
 These tests make real LLM calls — they are slow (up to 300s on cold model load)

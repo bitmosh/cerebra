@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Run v0.1.0 two-pass calibration against multiple Ollama model backends.
 Produces comparison table to inform Phase 2 production model choice

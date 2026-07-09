@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """GENERATIVITY signal prompt — v1.
 
 Maps to Thread 3 (Productive Tension): does the output advance understanding?

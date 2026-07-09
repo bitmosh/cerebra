@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for the six-step SKU traversal (cerebra/retrieval/traversal.py)."""
 
 from __future__ import annotations

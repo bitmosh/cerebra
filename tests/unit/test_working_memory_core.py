@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for WorkingMemory and WorkingMemoryItem (Phase 5 Step 3)."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for cerebra._primitives.bandit — Phase 9 Step 2.
 
 Covers the 19 test cases from LATTICA_PRIMITIVES.md §11 "Test requirements".

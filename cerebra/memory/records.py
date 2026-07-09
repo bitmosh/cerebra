@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Memory record builder — converts chunks into memory_records rows.
 

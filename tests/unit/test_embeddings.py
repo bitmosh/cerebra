@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for cerebra/storage/embeddings.py.
 
 sentence-transformers is mocked — the real model is never loaded here.

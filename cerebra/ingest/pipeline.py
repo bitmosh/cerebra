@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Ingest pipeline — orchestrates source discovery → registration →
 detection → parsing → normalization → chunking → record building →

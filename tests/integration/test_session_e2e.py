@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration tests for Phase 8 Step 1 — session persistence + event pipeline.
 
 Tests the full open→persist→SessionOpened event→build_session_state→PredictionInput→flush chain

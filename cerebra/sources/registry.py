@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Source registry — registers files as sources, checks idempotency,
 handles changed/stale lifecycle transitions.

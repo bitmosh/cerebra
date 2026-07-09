@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 File type detection — combines extension, content sniffing, and
 MIME heuristics into a confidence-bearing DetectionResult.

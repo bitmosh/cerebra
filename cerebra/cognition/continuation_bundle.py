@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 8 Step 3 — ContinuationBundle and BundleDistiller.
 
 ContinuationBundle is a frozen distillation of a session's cognitive state,

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Recover stage2_consensus.jsonl from stage2_run.log.
 

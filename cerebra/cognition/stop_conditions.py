@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Stop condition evaluator for the cycle runtime — Phase 8 Step 2.
 
 StopConditionEvaluator.check(state) returns (should_stop, condition_name | None).

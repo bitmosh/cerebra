@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Governance YAML loaders — read constitutional and leeway rules from vault.
 

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for cerebra.cognition.clutch_stub — Phase 8 Step 2."""
 
 from __future__ import annotations

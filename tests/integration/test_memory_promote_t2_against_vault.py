@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Integration tests: cerebra memory promote --tier 2 against the real dev vault.
 

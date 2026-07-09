@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Granite 4.1 3B — base vs instruct comparison on 30 calibration fixtures.
 

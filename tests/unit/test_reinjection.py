@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for ReinjectionTriggerEvaluator — Phase 9 Step 4."""
 
 from __future__ import annotations

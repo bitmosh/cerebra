@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 File discovery — recursive directory walk with exclusion patterns and
 canonical path resolution.

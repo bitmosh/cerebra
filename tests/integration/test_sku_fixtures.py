@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Calibration integration test — runs the real SKU classifier against the
 30-fixture set and asserts ≥70% top-1 D1 agreement.

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 8 v0.3.5a integration tests — D1 closure: episode persistence.
 
 Verifies that CycleRuntime.run() on accept writes real episode records to

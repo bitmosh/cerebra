@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Unsloth QLoRA training script for Cerebra v0.2 SKU classifier.
 

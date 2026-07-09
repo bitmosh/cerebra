@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Export data models for the graph exporter."""
 
 from __future__ import annotations

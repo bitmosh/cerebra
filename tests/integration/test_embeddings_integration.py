@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration tests for cerebra/storage/embeddings.py — loads the real model.
 
 These tests require sentence-transformers and the mxbai-embed-large-v1 weights

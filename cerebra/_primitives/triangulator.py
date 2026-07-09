@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Triangulates a raw score with confidence and signal-strength multipliers.
 

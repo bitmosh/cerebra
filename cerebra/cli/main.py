@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Cerebra CLI — entry point for all `cerebra` commands.
 """

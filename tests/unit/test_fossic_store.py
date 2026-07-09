@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for FossicStore — requires fossic-py (integration-style but fast).
 
 These tests use real fossic stores in tmp_path (no ML models, no full vault init).

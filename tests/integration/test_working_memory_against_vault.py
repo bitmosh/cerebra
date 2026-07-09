@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration tests: WorkingMemory against the dev vault.
 
 Uses the real SQLite database at ~/cerebra-vaults/dev/data/cerebra.db.

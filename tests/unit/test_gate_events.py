@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Tests for emit_leeway_grant_applied event emission helper."""
 
 from __future__ import annotations

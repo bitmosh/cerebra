@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 7 — LeewayGrantApplied event emission helper."""
 
 from __future__ import annotations

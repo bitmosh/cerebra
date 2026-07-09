@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Graph store — CRUD and traversal for graph_nodes and graph_edges.
 

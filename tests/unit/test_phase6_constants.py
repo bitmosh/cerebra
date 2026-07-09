@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for Phase 6 _constants.py additions."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for cerebra.cognition.catalyst — Phase 9 Step 3."""
 
 from __future__ import annotations

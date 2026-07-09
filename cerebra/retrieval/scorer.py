@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Salience scorer — computes per-component scores and assembles ScoredCandidate objects.
 

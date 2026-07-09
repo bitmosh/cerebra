@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 8 v0.3.5a unit tests — EpisodeWriter, EpisodeRecord, Migration016.
 
 Run with: pytest tests/unit/test_episode_writer.py -v

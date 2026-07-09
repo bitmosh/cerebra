@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for the `cerebra search` CLI command.
 
 Tests argparse handling, output formats, exit codes, and flag behaviour

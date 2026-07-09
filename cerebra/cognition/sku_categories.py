@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 D1 cognitive categories — the 16 primary classification targets.
 

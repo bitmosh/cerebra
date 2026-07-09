@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for cerebra/cognition/session.py — Phase 8 Step 1."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Governance data models — schemas for constitutional and leeway rules.
 

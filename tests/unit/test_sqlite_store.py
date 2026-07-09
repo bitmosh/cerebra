@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for SQLiteStore CRUD operations."""
 
 from __future__ import annotations

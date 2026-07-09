@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """SignalEvaluator — six-signal epistemological evaluation of LLM outputs.
 
 Evaluates one signal at a time. EPISTEMIC_HUMILITY uses marker-based scoring

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 LLM adapter layer — abstract interface + two implementations.
 

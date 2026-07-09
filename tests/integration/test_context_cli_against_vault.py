@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration test: run `cerebra context` CLI against the real dev vault.
 
 Skips automatically if numpy is unavailable or the dev vault is absent.

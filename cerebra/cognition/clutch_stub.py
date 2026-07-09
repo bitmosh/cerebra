@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 8 minimal Clutch stub — replaced by full ClutchEngine in Phase 9.
 
 BUILTIN_PREDICATES: dict of name → callable(ClutchContext, params) → bool

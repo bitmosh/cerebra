@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 8 Step 2 end-to-end integration tests — CycleRuntime full execution.
 
 Runs the full CycleRuntime cycle against a real migrated temp vault.

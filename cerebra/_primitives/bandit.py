@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Bandit selector — UCB-based arm selection with per-arm reward statistics.
 

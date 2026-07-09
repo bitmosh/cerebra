@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Retrieval trace writer — persists query audit rows to Migration008 tables.
 

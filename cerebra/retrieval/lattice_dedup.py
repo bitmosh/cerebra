@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Lattice-aware sibling deduplication (Phase Lattice Step 2).
 

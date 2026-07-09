@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 cerebra inspect — runtime observability commands.
 

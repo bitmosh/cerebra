@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 A set with three states per item: present, tombstoned, absent.
 

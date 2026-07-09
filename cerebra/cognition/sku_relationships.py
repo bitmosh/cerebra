@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 D4 relationship axis — the 16 types encoding how D2 relates to D3.
 

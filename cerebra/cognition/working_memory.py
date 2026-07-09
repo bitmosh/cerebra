@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Working memory — session management and item-level operations (Phase 5).
 """

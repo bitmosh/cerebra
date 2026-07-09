@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Maintains rolling delta history, derives smoothed trend and trajectory label,
 tracks failure streak.

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """
 cerebra-relay.py — Cerebra → Lattica hub relay agent.
 

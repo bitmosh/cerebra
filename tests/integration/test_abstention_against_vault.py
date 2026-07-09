@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration tests for the abstention path against the real dev vault.
 
 Verifies that the floor check, exit codes, abstained packet shape, and

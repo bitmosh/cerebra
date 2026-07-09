@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Graph exporter — builds and writes cerebra/v1 JSON for LumaWeave.
 

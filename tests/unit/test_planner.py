@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for the query planner (cerebra/retrieval/planner.py)."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Ingest data models — ParseResult, NormalizedDocument, Section.
 

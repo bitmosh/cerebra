@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 14 — spine E2E integration test.
 
 Full pipeline against a real Ollama instance:

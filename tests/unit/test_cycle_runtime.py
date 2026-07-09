@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for cerebra.cognition.cycle_runtime — Phase 8 Step 2.
 
 Uses a real migrated SQLite DB + real FossicStore, but stubs out:

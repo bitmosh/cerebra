@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Interpretive lattice — confidence-gated multi-commit decision logic.
 

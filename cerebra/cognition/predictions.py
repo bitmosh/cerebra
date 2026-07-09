@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Prediction/outcome pipeline for the six-signal epistemology.
 
 PredictionPipeline.predict() selects the most informed basis available

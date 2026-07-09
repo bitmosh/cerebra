@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Priority-rule controller for cognitive or operational decisions.
 

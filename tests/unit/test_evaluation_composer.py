@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for EvaluationComposer and emit_evaluation_events helper."""
 
 from __future__ import annotations

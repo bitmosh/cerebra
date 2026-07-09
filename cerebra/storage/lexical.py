@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Lexical index — SQLite FTS5 full-text search over memory_records.
 

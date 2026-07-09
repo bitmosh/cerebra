@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Stage 3 Review TUI — manual curation for v0.2 LoRA training corpus.
 

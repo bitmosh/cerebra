@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration tests — re-injection trigger and child session spawn (Phase 9 Step 4).
 
 Tests the full continuation path:

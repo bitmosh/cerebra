@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for governance rule schemas and loaders."""
 
 from __future__ import annotations

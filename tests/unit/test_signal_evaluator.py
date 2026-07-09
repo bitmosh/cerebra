@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for SignalEvaluator with a mock LLM adapter.
 
 Tests cover signal-by-signal evaluation, EPISTEMIC_HUMILITY marker path,

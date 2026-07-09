@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """COHERENCE signal prompt — v1.
 
 Maps to Thread 1 (Internal Consistency): does the output hold together?

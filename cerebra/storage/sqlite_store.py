@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Phase 1 SQLite store — CRUD operations for sources, documents, chunks,
 and memory_records.

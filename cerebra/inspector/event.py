@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Inspector event envelope — full schema per CEREBRA_INSPECTOR.md §4.
 

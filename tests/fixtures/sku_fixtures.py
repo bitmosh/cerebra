@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 30-fixture calibration set for D1 SKU classification.
 

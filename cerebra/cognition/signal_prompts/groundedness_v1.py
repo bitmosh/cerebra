@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """GROUNDEDNESS signal prompt — v1.
 
 Maps to Thread 2 (Grounding in Evidence): is the output anchored in evidence or experience?

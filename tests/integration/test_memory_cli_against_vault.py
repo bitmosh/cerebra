@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration tests for cerebra memory CLI against the dev vault.
 
 Uses ~/cerebra-vaults/dev. Skips if the vault is absent.

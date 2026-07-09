@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Integration tests: cerebra context T1 auto-promotion against the real dev vault.
 

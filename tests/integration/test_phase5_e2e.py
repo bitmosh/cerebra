@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 5 end-to-end integration tests.
 
 Exercises the full Phase 5 surface (working memory, truth tower, session

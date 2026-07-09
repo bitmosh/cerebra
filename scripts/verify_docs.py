@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
 """
 verify_docs.py — archive-aware check that every reference in CEREBRA_DOC_INDEX.md
 exists somewhere in docs/.

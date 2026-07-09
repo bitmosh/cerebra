@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """EPISTEMIC HUMILITY signal — v1.
 
 Maps to Thread 6 (Awareness of Own Limits): does the output appropriately bound its claims?

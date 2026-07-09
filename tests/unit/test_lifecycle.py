@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 11 unit tests — LifecycleManager state machine, FTS5 sync, re-ingestion block.
 
 Run with: pytest tests/unit/test_lifecycle.py -v

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Cycle configuration schema, loader, and validator — Phase 8 Step 2.
 
 Public API:

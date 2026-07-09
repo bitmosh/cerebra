@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Index freshness tracking per docs/agent/plans/v01_phase3_design.md §3.
 

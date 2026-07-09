@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Normalization layer — writes NormalizedDocument artifacts to vault storage.
 

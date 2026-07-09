@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for the `cerebra reindex` CLI command."""
 
 from __future__ import annotations

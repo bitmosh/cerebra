@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """CatalystEngine — Phase 9 Step 3.
 
 Consumes the Bandit primitive (cerebra/_primitives/bandit.py) to provide

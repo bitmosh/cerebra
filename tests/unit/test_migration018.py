@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for Migration018_SyntheticEpisodeProvenance and EpisodeWriter dual-write.
 
 Phase 10: cycle episodes are bridged into memory_records so the retrieval pipeline

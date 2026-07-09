@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 8 Step 3 unit tests — ContinuationBundle and BundleDistiller.
 
 Run with: pytest tests/unit/test_continuation_bundle.py -v

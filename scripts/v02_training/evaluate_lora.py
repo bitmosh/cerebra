@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Evaluate a LoRA adapter against the 30 calibration fixtures and the 24-example
 held-out test set from build_training_corpus.py.

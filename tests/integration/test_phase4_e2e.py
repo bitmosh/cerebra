@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Phase 4 end-to-end integration tests.
 
 Exercises the full pipeline (search and context) against the dev vault to

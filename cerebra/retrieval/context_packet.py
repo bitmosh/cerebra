@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 ContextPacket builder — assembles the §5 data structure from a retrieval trace.
 

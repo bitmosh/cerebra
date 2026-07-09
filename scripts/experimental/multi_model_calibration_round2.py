@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Round 2 calibration — Granite 4.1 base models only.
 Compares against Round 1 baselines (Qwen 3.5 9B, Granite 4.0 Micro).

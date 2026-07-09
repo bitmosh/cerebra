@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for retrieval salience scoring.
 
 Run with: python -m pytest tests/unit/test_scorer.py -m unit

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """End-to-end integration test for the leeway pre-action gate.
 
 Tests the full load → evaluate → emit → persist → read cycle against

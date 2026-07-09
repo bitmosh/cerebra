@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """EvaluationComposer — weighted composition of six-signal scores.
 
 Produces EvaluationPacket dataclasses. Does not emit events — the cycle

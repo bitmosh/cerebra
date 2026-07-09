@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for the abstention path — Step 10.
 
 Covers: floor trigger logic, --floor flag override, abstained ContextPacket

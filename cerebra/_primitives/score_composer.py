@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 Multi-component scoring with named weights and preserved components.
 

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for EventEmitter.
 
 CCE note: fossic deduplicates events with identical content (stream_id, event_type,

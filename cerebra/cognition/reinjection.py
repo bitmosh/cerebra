@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """ReinjectionTriggerEvaluator — Phase 9 Step 4.
 
 Evaluates whether a terminated cycle should spawn a child session for

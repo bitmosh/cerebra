@@ -2,7 +2,7 @@
 
 A local-first cognitive cycle runtime built in Python. Structured multi-step reasoning against a personal knowledge vault, with signal-based evaluation and rule-driven control.
 
-**v0.4.5** · **Python 3.12+** · **MIT** · **Status: Active — alpha**
+**v0.4.5** · **Python 3.12+** · **Apache-2.0** · **Status: Active — alpha**
 
 ---
 
@@ -88,7 +88,7 @@ If a fossic-requiring command is invoked without the extra installed, it fails a
 
 ```
 cerebra/           — runtime source (CLI, cognition, retrieval, storage, sources)
-cerebra/_primitives/ — vendored shared primitives (Clutch, Catalyst components, etc.)
+cerebra/_primitives/ — internal shared primitives (Clutch, Catalyst components, etc.)
 cycles/            — built-in cycle configs (YAML)
 docs/
   HISTORY.md            — development arc, 14 build phases, architectural rationale
@@ -118,4 +118,4 @@ Cerebra can be used standalone (SQLite-only) or as part of the ecosystem (with f
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+Apache-2.0 — see [`LICENSE`](LICENSE) for the full text.

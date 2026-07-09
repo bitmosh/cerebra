@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """RELEVANCE signal prompt — v1.
 
 Maps to Thread 4 (Fit to Purpose): does the output serve what was actually asked?

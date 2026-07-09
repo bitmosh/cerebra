@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for cerebra.config — vault resolution and config file I/O."""
 
 from __future__ import annotations

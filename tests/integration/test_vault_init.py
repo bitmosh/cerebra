@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """Integration tests for vault init — uses temp vault fixture."""
 
 from __future__ import annotations

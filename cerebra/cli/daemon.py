@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 """
 cerebra serve — lightweight HTTP daemon for tile control surface.
 
