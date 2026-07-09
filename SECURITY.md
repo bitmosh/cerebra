@@ -31,7 +31,7 @@ as a new minor version.
 Reports are in scope if they affect Cerebra at its archive state. Examples:
 
 - Vulnerabilities in pinned dependencies that the archive depends on
-- Vulnerabilities in vendored code (e.g. `vendor/fossic-*.whl`)
+- Vulnerabilities in optional dependencies (e.g. `fossic` when installed via the `[fossic]` extra) — report to those projects directly. Cerebra's scope is only its own code.
 - Privilege-escalation or data-exfiltration issues in the runtime itself
 
 Out of scope:

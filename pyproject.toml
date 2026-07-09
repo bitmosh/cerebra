@@ -7,26 +7,27 @@ name = "cerebra"
 version = "0.4.5"
 description = "Local-first cognitive runtime"
 authors = [{name = "Ryan Johnson"}]
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.12,<3.14"
 dependencies = [
     "pydantic>=2.7",
     "pyyaml>=6.0",
     "click>=8.1",
     "numpy>=2.0,<3.0",
     "sentence-transformers>=3.0",
-    "fossic",
 ]
 
-[tool.uv.sources]
-fossic = { path = "vendor/fossic-1.8.2-cp312-cp312-manylinux_2_34_x86_64.whl" }
-
 [project.optional-dependencies]
-# Lint/format/type-check tools are pinned to the exact versions that produced
-# this archive (matches .pre-commit-config.yaml). See docs/CEREBRA_CLASSIC.md
-# for archive policy. Range pins (>=X,<Y) caused patch-level drift to bite us
-# in CI runs #8–#14 — pre-commit ran one version locally, CI installed a
-# newer patch and surfaced different violations. Exact pins make CI
-# deterministic.
+# Fossic is optional. Cerebra runs standalone against SQLite alone; installing
+# with [fossic] enables the causation-chained event store used by run-cycle,
+# serve, and inspect (event streams). Without it, those commands fail at
+# startup with a clear message.
+fossic = ["fossic>=1.8.3"]
+
+# Lint/format/type-check tools are pinned to exact versions for CI reproducibility
+# (matches .pre-commit-config.yaml). Range pins (>=X,<Y) previously caused
+# patch-level drift to bite us in CI — pre-commit ran one version locally, CI
+# installed a newer patch and surfaced different violations. Exact pins make CI
+# deterministic. See docs/TECH_DEBT.md TD-DEP-001 for the tool bump cadence.
 dev = [
     "pytest>=8.2",
     "pytest-cov>=5.0",

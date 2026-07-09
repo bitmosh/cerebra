@@ -5,7 +5,7 @@ at least one commit SHA. Dates are ISO 8601.
 
 ---
 
-## [v0.4.4-pre-dyson] — 2026-06-21 (baseline tag)
+## [v0.4.5] — 2026-07-08
 
 The state preserved as cerebra-classic. All 14 build phases complete and
 spine-tested against real Ollama.
@@ -74,17 +74,15 @@ No changes to the cognitive architecture or CLI surface.
   (`2239061`)
 
 ### Changed
-
-- README rewritten: capabilities-first structure, setup quickstart, archival
-  rationale. (`f39f10b`)
-- fossic dependency changed from hardcoded local path to vendored pre-built
-  wheel; no Rust toolchain required for install. (`2239061`)
+- Fossic is now an optional dependency installed from PyPI (`fossic>=1.8.3`) rather than a vendored wheel. Install with `pip install cerebra[fossic]` to enable the event store used by `run-cycle`, `serve`, and event-stream inspection. Cerebra runs standalone (SQLite-only) without it.
+- `requires-python` widened from `>=3.12,<3.13` to `>=3.12,<3.14`. Fossic 1.8.3 ships wheels for both.
 
 ### Removed
 
 - 21 LoRA training artifact files (`scripts/v02_training/output/`) removed from
   tracking; covered by `.gitignore`. Training scripts and corpus methodology
   remain.
+- `vendor/` directory (contained the fossic 1.8.2 cp312-only wheel).
 
 ### Fixed
 

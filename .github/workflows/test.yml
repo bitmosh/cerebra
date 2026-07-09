@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install deps
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev,fossic]"
       - name: ruff
         run: ruff check cerebra tests
       - name: black
@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install deps
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev,fossic]"
       - name: mypy
         run: mypy cerebra
 
@@ -51,7 +51,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install deps
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev,fossic]"
       - name: pytest
         # pyproject.toml addopts already supplies --cov=cerebra
         # --cov-report=term-missing --cov-fail-under=80; we add XML
