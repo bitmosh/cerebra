@@ -54,6 +54,10 @@ coverage.xml
 local-vault/
 test-vault/
 tmp-vault/
+/POLISH_DEBT.md
+/PROJECT_DIAGNOSTIC.md
+/.claude/
+/.review/
 
 # Defensive: vault artifacts must never be at project root
 /artifacts/
@@ -64,6 +68,15 @@ tmp-vault/
 /leeway/
 /constitutional/
 /config.yaml
+/docs/_internal/
+/docs/agent/
+/docs/aseptic/
+/docs/coordination/
+/docs/planning/
+/docs/session-notes/
+/AGENTS.md
+/CLAUDE.md
+*.session.md
 
 # Inspector event logs (these can be huge)
 events/*.ndjson
