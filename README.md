@@ -1,4 +1,9 @@
 # cerebra
+[![Release](https://img.shields.io/github/v/release/bitmosh/cerebra?include_prereleases)](https://github.com/bitmosh/cerebra/releases)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CI](https://github.com/bitmosh/cerebra/actions/workflows/test.yml/badge.svg)](https://github.com/bitmosh/cerebra/actions/workflows/test.yml)
+[![Coverage](https://img.shields.io/badge/Coverage-82%25-green.svg)](https://github.com/bitmosh/cerebra)
 
 A local-first cognitive cycle runtime built in Python. Structured multi-step reasoning against a personal knowledge vault, with signal-based evaluation and rule-driven control.
 
